@@ -1,0 +1,15 @@
+{
+  "name": "waves-wallets-transfer",
+  "version": "1.0.0",
+  "description": "Perform transaction between Waves wallets",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sergey Boltonosov",
+  "license": "ISC",
+  "dependencies": {
+    "@waves/waves-api": "^0.28.4",
+    "request": "github:request/request"
+  }
+}
