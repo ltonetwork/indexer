@@ -25,4 +25,11 @@ switch(type) {
         };
 
         dataTransaction(params);
+    case 'dataTransactionAnchor':        
+        const dataTransactionAnchor = require('./scripts/data-transaction-anchor.js');
+        params = {
+            walletSeed: process.env.SOURCE_WALLET_SEED
+        };
+
+        dataTransactionAnchor(params);
 }

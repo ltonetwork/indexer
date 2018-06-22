@@ -2,11 +2,12 @@
 
 const util = require('util');
 const request = require('request');
+const crypto = require('crypto');
 const WavesAPI = require('@waves/waves-api');
 const Waves = WavesAPI.create(WavesAPI.TESTNET_CONFIG);
 
 module.exports = function(params) {
-    console.log('transaction params: ', params);
+    console.log('transaction params: ', params);    
 
     const seed = Waves.Seed.fromExistingPhrase(params.walletSeed);
 
@@ -19,13 +20,18 @@ module.exports = function(params) {
 //Create transaction data
 function createTransactionData(params, seed) {
     return new Promise((resolve, reject) => {
+        const sha256Data = crypto.createHmac('sha256', 'Some secret');
+        sha256Data.update('Some binary data');
+        const sha256Hash = sha256Data.digest('hex');
+        const base64Hash = Buffer.from(sha256Hash).toString('base64');
+
         const data = {
             version: 1,
             type: 12,
             sender: seed.address,          
             senderPublicKey: seed.keyPair.publicKey,  
             data: [
-                {key: 'Foo key', type: 'string', value: 'Some foo value'}
+                {key: '\u2693', type: 'binary', value: 'base64:' + base64Hash}
             ],
             fee: 0,
             timestamp: Date.now()
