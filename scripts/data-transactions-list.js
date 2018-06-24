@@ -80,27 +80,13 @@ function processNextTransaction(transactions, resolve, reject) {
         .catch(error => reject(error));
 }
 
-//TEST
-var count = 0;
-
 //Get transaction data for anchor key
 function getAnchorData(transaction) {
-    if (!transaction /*|| transaction.type !== DATA_TRANSACTION_TYPE*/) return null;
+    const skip = !transaction || 
+        transaction.type !== DATA_TRANSACTION_TYPE || 
+        typeof transaction.data === 'undefined';
 
-    count++;
-
-    //TEST
-    const sha256Data = crypto.createHmac('sha256', 'Some secret');
-        sha256Data.update('Some binary data ' + count);
-        const sha256Hash = sha256Data.digest('hex');
-        const base64Hash = Buffer.from(sha256Hash).toString('base64');
-
-    transaction.data = [
-        {key: 'foo', type: 'string', value: 'bar'},
-        {key: '\u2693', type: 'binary', value: 'base64:' + base64Hash},
-        {key: 'zoo', type: 'string', value: 'baz'}
-    ];
-    //END TEST
+    if (skip) return null;
 
     for (var i = 0; i < transaction.data.length; i++) {
         var item = transaction.data[i];
