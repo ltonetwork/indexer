@@ -3,10 +3,15 @@
 const util = require('util');
 const request = require('request');
 const WavesAPI = require('@waves/waves-api');
-const Waves = WavesAPI.create(WavesAPI.TESTNET_CONFIG);
+const defaultWavesConfig = WavesAPI.TESTNET_CONFIG;
+
+var Waves = null;
 
 module.exports = function(params) {
     console.log('transaction params: ', params);
+
+    const wavesConfig = params.wavesConfig ? params.wavesConfig : defaultWavesConfig;
+    Waves = WavesAPI.create(wavesConfig);
 
     const seed = Waves.Seed.fromExistingPhrase(params.walletSeed);
 
@@ -27,7 +32,7 @@ function createTransactionData(params, seed) {
             data: [
                 {key: 'Foo key', type: 'string', value: 'Some foo value'}
             ],
-            fee: 0,
+            fee: 100000,
             timestamp: Date.now()
         };
 
