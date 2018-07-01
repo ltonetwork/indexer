@@ -1,6 +1,6 @@
 'use strict'
 
-const getNodeWalletSeed = require('./scripts/node-wallet-info.js');
+const getNodeWalletSeed = require('../scripts/node-wallet-data.js');
 const type = process.env.RUN_TYPE;
 const wavesConfig = { 
     minimumSeedLength: 25,
@@ -20,7 +20,7 @@ console.log('run script: ', type, "\n");
 
 switch(type) {
     case 'wavesTransaction':
-        path = './scripts/waves-transaction.js';
+        path = './waves-transaction.js';
         params = {
             wavesConfig: wavesConfig,
             walletSeed: process.env.SOURCE_WALLET_SEED,
@@ -32,21 +32,27 @@ switch(type) {
         };
     break;
     case 'dataTransaction':        
-        path = './scripts/data-transaction.js';
+        path = './data-transaction.js';
         params = {
             wavesConfig: wavesConfig,
             walletSeed: process.env.SOURCE_WALLET_SEED
         };
     break;
     case 'dataTransactionAnchor':        
-        path = './scripts/data-transaction-anchor.js';
+        const sha256Data = crypto.createHmac('sha256', 'Some secret');
+        sha256Data.update('Some binary data');
+        const sha256Hash = sha256Data.digest('hex');
+        const base64Hash = Buffer.from(sha256Hash).toString('base64');
+
+        path = '../scripts/data-transaction-anchor.js';
         params = {
+            dataHash: base64Hash,
             wavesConfig: wavesConfig,
             walletSeed: process.env.SOURCE_WALLET_SEED
         };
     break;
     case 'dataTransactionsList':
-        path = './scripts/data-transactions-list.js';
+        path = '../scripts/data-transactions-list.js';
         params = {
             // wavesConfig: wavesConfig
         };
@@ -64,8 +70,20 @@ if (!params.walletSeed) {
         .then(data => {
             params.walletSeed = data.walletSeed;
             params.senderAdress = data.senderAdress;
-            func(params);
-        }).catch(error => console.error(error))
+            return func(params);
+        })
+        .then(response => onDone(response))
+        .catch(error => onError(error));
 } else {
     func(params);    
+}
+
+//Perform some final actions after transaction is completed
+function onDone(transferResponse) {
+    console.log(transferResponse);
+}
+
+//Perform some actions if an error occured
+function onError(error) {
+    console.error('Error while performing transaction: ' + error);
 }

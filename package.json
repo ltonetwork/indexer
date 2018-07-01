@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@waves/waves-api": "^0.28.4",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
     "redis": "^2.8.0",
     "request": "github:request/request"
   }
