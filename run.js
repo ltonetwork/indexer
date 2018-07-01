@@ -1,6 +1,6 @@
 'use strict'
 
-const getNodeWalletSeed = require('../scripts/node-wallet-info.js');
+const getNodeWalletSeed = require('./scripts/node-wallet-info.js');
 const type = process.env.RUN_TYPE;
 const wavesConfig = { 
     minimumSeedLength: 25,
