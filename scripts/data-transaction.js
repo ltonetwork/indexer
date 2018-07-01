@@ -27,7 +27,7 @@ function createTransactionData(params, seed) {
         const data = {
             version: 1,
             type: 12,
-            sender: seed.address,          
+            sender: params.senderAdress,          
             senderPublicKey: seed.keyPair.publicKey,  
             data: [
                 {key: 'Foo key', type: 'string', value: 'Some foo value'}
@@ -54,8 +54,7 @@ function transferTransaction(data, params) {
             uri: ' http://localhost:6869/addresses/data',
             body: JSON.stringify(data),
             method: 'POST'
-        }, (error, responseCode, response) => {
-            console.log('responseCode: ', responseCode);
+        }, (error, responseObj, response) => {
             console.log('response: ', response);
             error ? reject(error) : resolve(response);
         });

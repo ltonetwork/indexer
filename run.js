@@ -1,5 +1,6 @@
 'use strict'
 
+const getNodeWalletSeed = require('../scripts/node-wallet-info.js');
 const type = process.env.RUN_TYPE;
 const wavesConfig = { 
     minimumSeedLength: 25,
@@ -55,4 +56,16 @@ switch(type) {
 if (!path) return console.error('module type is not specified correctly');
 
 const func = require(path);
-func(params);
+
+if (!params.walletSeed) { 
+    const initParams = { wavesConfig };
+
+    getNodeWalletSeed(initParams)
+        .then(data => {
+            params.walletSeed = data.walletSeed;
+            params.senderAdress = data.senderAdress;
+            func(params);
+        }).catch(error => console.error(error))
+} else {
+    func(params);    
+}

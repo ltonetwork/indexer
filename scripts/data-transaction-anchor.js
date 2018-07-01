@@ -33,7 +33,7 @@ function createTransactionData(params, seed) {
         const data = {
             version: 1,
             type: 12,
-            sender: seed.address,          
+            sender: params.senderAdress,          
             senderPublicKey: seed.keyPair.publicKey,  
             data: [
                 {key: '\u2693', type: 'binary', value: 'base64:' + base64Hash}
