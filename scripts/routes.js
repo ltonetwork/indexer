@@ -2,26 +2,48 @@
  * Set app routes
  */
 
+const redis = require('redis').createClient();
 const config = require('./config.js')();
 const getNodeWalletData = require('./node-wallet-data.js');
 const dataTransactionAnchor = require('./data-transaction-anchor.js');
 
 module.exports = function(app) {    
-    app.post('/hash', (request, response, next) => {
-        const hash = request.body.hash;
-        if (!hash) {
-            return next('Hash should not be empty');
-        }
+    app.post('/:hash/save', saveAction);
+    app.get('/:hash/verify', verifyAction);
+}
 
-        getNodeWalletData(config)
-            .then(data => {
-                config.dataHash = hash;
-                config.walletSeed = data.walletSeed;
-                config.senderAdress = data.senderAdress;
+//Check if hash is saved to blockchain
+function verifyAction(request, response, next) {
+    const hash = request.params.hash;
+    if (!hash) {
+        return next('Hash should not be empty');
+    }
 
-                return dataTransactionAnchor(config);
-            })
-            .then(transactionId => response.json({ transactionId }))
-            .catch(error => next(error));   
+    console.log('searching for the hash: ', hash);
+
+    redis.get(hash, (error, data) => {
+        console.log('obtained from redis: ', data);
+        if (error) return next('Error while getting hash ' + key + ' from db: ' + error);
+
+        response.json({ transactionId: data });
     });
+}
+
+//Post hash to data transaction
+function saveAction(request, response, next) {
+    const hash = request.params.hash;
+    if (!hash) {
+        return next('Hash should not be empty');
+    }
+
+    getNodeWalletData(config)
+        .then(data => {
+            config.dataHash = hash;
+            config.walletSeed = data.walletSeed;
+            config.senderAdress = data.senderAdress;
+
+            return dataTransactionAnchor(config);
+        })
+        .then(transactionId => response.json({ transactionId }))
+        .catch(error => next(error));   
 }
