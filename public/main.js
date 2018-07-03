@@ -1,20 +1,18 @@
 'use strict'
 
 +function() {
+    var hash = '';
     var fileContent = '';
 
     //Handle changes in text
     $(document).on('change keyup', '#text-data .text', function(e) {
-        showButton('.verify');
-        showMessage('');
+        reset();
     });
 
     //Handle changes in file input
     $(document).on('change.bs.fileinput clear.bs.fileinput', '#file-data .fileinput', function(e) {
         console.log('change file!');
-        showButton('.verify');
-        showMessage('');
-        fileContent = '';
+        reset();
 
         const $file = $(this).find('input[type="file"]');
         getFileContents($file);
@@ -29,7 +27,7 @@
             return showMessage('No data to verify');
         }
 
-        const hash = createHash(data);
+        hash = createHash(data);
         verifyHash(hash, (result, error) => {
             if (error) {
                 return showMessage(error);
@@ -45,11 +43,40 @@
         });
     });
 
+    //Save hash to blockchain
+    $(document).on('click', '.save', function(e) {
+        if (!hash) {
+            return showMessage('App error: the hash is not set');
+        }
+
+        saveHash(hash, (result, error) => {
+            if (error) {
+                return showMessage(error);
+            }
+
+            if (!result.transaction) {
+                showMessage('There was an error while saving hash ' + hash);
+                return;
+            }
+
+            reset();
+            showMessage(result.transaction);
+        });
+    });
+
+    //Reset app state
+    function reset() {
+        showButton('.verify');
+        showMessage('');
+        fileContent = '';
+        hash = '';
+    }
+
     //Create hash of data
     function createHash(data) {
-        const hash = sha256.create();
-        hash.update(data);
-        return hash.hex();
+        const hashObj = sha256.create();
+        hashObj.update(data);
+        return hashObj.hex();
     }
 
     //Verify existens of hash in blockchain
@@ -63,6 +90,20 @@
             callback(response);
         }).fail(function(xhr) {
             callback({}, 'There was an error while verifing hash ' + hash);
+        });
+    }
+
+    //Save hash to blockchain
+    function saveHash(hash, callback) {
+        console.log('save hash: ', hash);
+
+        $.ajax({
+            url: '/' + hash + '/save',
+            type: 'post'
+        }).done(function(response) {
+            callback(response);
+        }).fail(function(xhr) {
+            callback({}, 'There was an error while saving hash ' + hash);
         });
     }
 
@@ -83,7 +124,11 @@
     }
 
     //Show message about verification or save process
-    function showMessage(message) {
+    function showMessage(message) {        
+        if ($.type(message) === 'object') {
+            message = JSON.stringify(message, null, '\t');
+        }
+
         $('.response').show().html(message);
     }
 

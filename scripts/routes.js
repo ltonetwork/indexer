@@ -25,7 +25,7 @@ function verifyAction(request, response, next) {
         console.log('obtained from redis: ', data);
         if (error) return next('Error while getting hash ' + key + ' from db: ' + error);
 
-        response.json({ transactionId: data });
+        response.json({ transaction: data });
     });
 }
 
@@ -38,12 +38,12 @@ function saveAction(request, response, next) {
 
     getNodeWalletData(config)
         .then(data => {
-            config.dataHash = hash;
+            config.dataHash = Buffer.from(hash).toString('base64');
             config.walletSeed = data.walletSeed;
             config.senderAdress = data.senderAdress;
 
             return dataTransactionAnchor(config);
         })
-        .then(transactionId => response.json({ transactionId }))
+        .then(transaction => response.json({ transaction }))
         .catch(error => next(error));   
 }
