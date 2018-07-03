@@ -18,7 +18,7 @@ module.exports = function(params) {
     const wavesConfig = params.wavesConfig ? params.wavesConfig : defaultWavesConfig;
     Waves = WavesAPI.create(wavesConfig);
 
-    getLastBlock()
+    return getLastBlock()
         .then(lastBlock => processBlock(lastBlock))
         .then(lastBlock => processPrevBlock(lastBlock))
         .then(() => onDone())

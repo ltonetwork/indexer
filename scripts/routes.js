@@ -8,8 +8,8 @@ const getNodeWalletData = require('./node-wallet-data.js');
 const dataTransactionAnchor = require('./data-transaction-anchor.js');
 
 module.exports = function(app) {    
-    app.post('/:hash/save', saveAction);
     app.get('/:hash/verify', verifyAction);
+    app.post('/:hash/save', saveAction);
 }
 
 //Check if hash is saved to blockchain
