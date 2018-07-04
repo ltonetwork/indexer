@@ -11,7 +11,6 @@
 
     //Handle changes in file input
     $(document).on('change.bs.fileinput clear.bs.fileinput', '#file-data .fileinput', function(e) {
-        console.log('change file!');
         reset();
 
         const $file = $(this).find('input[type="file"]');
@@ -89,8 +88,6 @@
 
     //Verify existens of hash in blockchain
     function verifyHash(hash, callback) {
-        console.log('verify hash: ', hash);
-
         $.ajax({
             url: '/' + hash + '/verify',
             type: 'get',
@@ -111,8 +108,6 @@
 
     //Save hash to blockchain
     function saveHash(hash, callback) {
-        console.log('save hash: ', hash);
-
         $.ajax({
             url: '/' + hash + '/save',
             type: 'post',
@@ -141,7 +136,6 @@
 
         reader.onload = function(loaded) {
             fileContent = loaded.target.result;
-            console.log('set file contents: ', fileContent);
         };
 
         reader.readAsDataURL(file);
