@@ -10,36 +10,40 @@
 <body>
     <div class="container">
         <h1>Waves Anchor</h1>
-        <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#text-data" aria-controls="text-data" role="tab" data-toggle="tab">Text</a></li>
-            <li role="presentation"><a href="#file-data" aria-controls="file-data" role="tab" data-toggle="tab">File</a></li>
-        </ul>
+        <div class="col-sm-5">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#text-data" aria-controls="text-data" role="tab" data-toggle="tab">Text</a></li>
+                <li role="presentation"><a href="#file-data" aria-controls="file-data" role="tab" data-toggle="tab">File</a></li>
+            </ul>
 
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="text-data">
-                <textarea class="text"></textarea>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="file-data">
-                <div class="fileinput fileinput-new input-group" data-provides="fileinput">
-                    <div class="form-control" data-trigger="fileinput">
-                        <i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="text-data">
+                    <textarea class="text"></textarea>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="file-data">
+                    <div class="fileinput fileinput-new input-group" data-provides="fileinput">
+                        <div class="form-control" data-trigger="fileinput">
+                            <i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span>
+                        </div>
+                        <span class="input-group-addon btn btn-default btn-file">
+                            <span class="fileinput-new">Select file</span>
+                            <span class="fileinput-exists">Change</span>
+                            <input type="file" name="file">
+                        </span>
+                        <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
                     </div>
-                    <span class="input-group-addon btn btn-default btn-file">
-                        <span class="fileinput-new">Select file</span>
-                        <span class="fileinput-exists">Change</span>
-                        <input type="file" name="file">
-                    </span>
-                    <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
                 </div>
             </div>
-        </div>
 
-        <div class="buttons">
-            <button class="verify btn btn-lg btn-success btn-block">Verify</button>
-            <button class="save btn btn-lg btn-primary btn-block">Save</button>
+            <div class="buttons">
+                <button class="verify btn btn-lg btn-success btn-block">Verify</button>
+                <button class="save btn btn-lg btn-primary btn-block">Anchor</button>
+            </div>            
         </div>
-
-        <pre class="response"></pre>
+        
+        <div class="col-sm-7">
+            <pre class="response"></pre>
+        </div>
     </div>
     
     <script src="https://code.jquery.com/jquery.js"></script>

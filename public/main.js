@@ -27,8 +27,12 @@
             return showMessage('No data to verify');
         }
 
+        toggleButtonState('.verify', 'loading');
+
         hash = createHash(data);
         verifyHash(hash, (result, error) => {
+            toggleButtonState('.verify', 'done');
+
             if (error) {
                 return showMessage(error);
             }
@@ -49,7 +53,11 @@
             return showMessage('App error: the hash is not set');
         }
 
+        toggleButtonState('.save', 'loading');
+
         saveHash(hash, (result, error) => {
+            toggleButtonState('.save', 'done');
+
             if (error) {
                 return showMessage(error);
             }
@@ -85,11 +93,19 @@
 
         $.ajax({
             url: '/' + hash + '/verify',
-            type: 'get'
+            type: 'get',
+            dataType: 'json'
         }).done(function(response) {
             callback(response);
         }).fail(function(xhr) {
-            callback({}, 'There was an error while verifing hash ' + hash);
+            var errorMessage = 'There was an error while verifing hash ' + hash;
+            const response = JSON.parse(xhr.responseText);
+
+            if ($.type(response) === 'object' && response.error) {
+                errorMessage += ":\n\n" + response.error;
+            }
+
+            callback({}, errorMessage);
         });
     }
 
@@ -99,11 +115,19 @@
 
         $.ajax({
             url: '/' + hash + '/save',
-            type: 'post'
+            type: 'post',
+            dataType: 'json'
         }).done(function(response) {
             callback(response);
         }).fail(function(xhr) {
-            callback({}, 'There was an error while saving hash ' + hash);
+            var errorMessage = 'There was an error while saving hash ' + hash;
+            const response = JSON.parse(xhr.responseText);
+
+            if ($.type(response) === 'object' && response.error) {
+                errorMessage += ":\n\n" + response.error;
+            }
+
+            callback({}, errorMessage);
         });
     }
 
@@ -126,7 +150,7 @@
     //Show message about verification or save process
     function showMessage(message) {        
         if ($.type(message) === 'object') {
-            message = JSON.stringify(message, null, '\t');
+            message = JSON.stringify(message, null, 4);
         }
 
         $('.response').show().html(message);
@@ -135,5 +159,21 @@
     //Toggle buttons
     function showButton(selector) {
         $('.buttons .btn').hide().parent().find(selector).show();    
+    }
+
+    //Toggle button state
+    function toggleButtonState(selector, state) {
+        const $button = $('.buttons').find(selector);
+
+        if (state === 'loading') {
+            $button
+                .addClass('disabled')
+                .data('text', $button.html())
+                .html('...');
+        } else if (state === 'done') {
+            $button
+                .removeClass('disabled')
+                .html($button.data('text'));
+        }
     }
 }();

@@ -63,7 +63,7 @@ function transferTransaction(data, params) {
                 return reject(message);
             }
 
-            resolve(response.tx.id);
+            resolve(response.id);
         });
     });
 }

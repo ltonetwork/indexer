@@ -2,7 +2,7 @@
 
 const config = require('./scripts/config.js')();
 const getNodeWalletSeed = require('./scripts/node-wallet-data.js');
-const dataTransactionsList = require('../scripts/data-transactions-list.js');
+const dataTransactionsList = require('./scripts/data-transactions-list.js');
 
 getNodeWalletSeed(config)
     .then(data => {
