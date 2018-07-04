@@ -2,10 +2,9 @@
 
 const util = require('util');
 const request = require('request');
-const crypto = require('crypto');//TEST
 const redis = require('redis').createClient();
 const WavesAPI = require('@waves/waves-api');
-const defaultWavesConfig = WavesAPI.TESTNET_CONFIG;
+const base64 = require('./base64.js');
 
 const DATA_TRANSACTION_TYPE = 12;
 const ANCHOR = '\u2693';
@@ -15,8 +14,7 @@ var Waves = null;
 module.exports = function(params) {
     console.log('transaction params: ', params);  
 
-    const wavesConfig = params.wavesConfig ? params.wavesConfig : defaultWavesConfig;
-    Waves = WavesAPI.create(wavesConfig);
+    Waves = WavesAPI.create(params.wavesConfig);
 
     return getLastBlock()
         .then(lastBlock => processBlock(lastBlock))
@@ -90,7 +88,11 @@ function getAnchorData(transaction) {
 
     for (var i = 0; i < transaction.data.length; i++) {
         var item = transaction.data[i];
-        if (item.key === ANCHOR) return item.value;
+
+        if (item.key === ANCHOR) {
+            var value = item.value.replace('base64:', '');
+            return base64.decode(value);
+        }
     }
 
     return null;

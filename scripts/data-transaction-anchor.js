@@ -2,8 +2,8 @@
 
 const util = require('util');
 const request = require('request');
-const crypto = require('crypto');
 const WavesAPI = require('@waves/waves-api');
+const base64 = require('./base64.js');
 
 var Waves = null;
 
@@ -20,13 +20,14 @@ module.exports = function(params) {
 //Create transaction data
 function createTransactionData(params, seed) {
     return new Promise((resolve, reject) => {        
+        const hash = base64.encode(params.dataHash);        
         const data = {
             version: 1,
             type: 12,
             sender: params.senderAdress,          
             senderPublicKey: seed.keyPair.publicKey,  
             data: [
-                {key: '\u2693', type: 'binary', value: 'base64:' + params.dataHash}
+                {key: '\u2693', type: 'binary', value: 'base64:' + hash}
             ],
             fee: 100000,
             timestamp: Date.now()

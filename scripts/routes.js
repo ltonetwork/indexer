@@ -38,7 +38,7 @@ function saveAction(request, response, next) {
 
     getNodeWalletData(config)
         .then(data => {
-            config.dataHash = Buffer.from(hash).toString('base64');
+            config.dataHash = hash;
             config.walletSeed = data.walletSeed;
             config.senderAdress = data.senderAdress;
 
