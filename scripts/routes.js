@@ -21,11 +21,12 @@ function verifyAction(request, response, next) {
 
     console.log('searching for the hash: ', hash);
 
-    redis.get(hash, (error, data) => {
-        console.log('obtained from redis: ', data);
+    redis.get(hash, (error, transactionId) => {
+        console.log('obtained from redis: ', transactionId);
         if (error) return next('Error while getting hash ' + key + ' from db: ' + error);
 
-        response.json({ transaction: data });
+        const checkpoint = asCheckpoint(hash, transactionId);
+        response.json(checkpoint);
     });
 }
 
@@ -44,6 +45,22 @@ function saveAction(request, response, next) {
 
             return dataTransactionAnchor(config);
         })
-        .then(transaction => response.json({ transaction }))
+        .then(transactionId => {
+            const checkpoint = asCheckpoint(hash, transactionId);
+            response.json(checkpoint)
+        })
         .catch(error => next(error));   
+}
+
+//Build checkpoint for given hash
+function asCheckpoint(hash, transactionId) {
+    return {
+        @context: 'https://w3id.org/chainpoint/v2',
+        type: 'ChainpointSHA256v2',
+        targetHash: hash,
+        anchors: [{
+            type: 'WAVESDataTransaction',
+            sourceId: transactionId
+        }]
+    };
 }
