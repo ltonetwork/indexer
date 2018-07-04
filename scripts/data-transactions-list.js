@@ -18,9 +18,7 @@ module.exports = function(params) {
 
     return getLastBlock()
         .then(lastBlock => processBlock(lastBlock))
-        .then(lastBlock => processPrevBlock(lastBlock))
-        .then(() => onDone())
-        .catch(error => onError(error));
+        .then(lastBlock => processPrevBlock(lastBlock));
 }
 
 //Get last block of blockchain
@@ -122,16 +120,4 @@ function save(item) {
             });
         });
     });
-}
-
-//Perform some final actions after process is complete
-function onDone() {
-    console.log('All transactions processed');
-    process.exit(0);
-}
-
-//Perform some actions if an error occured
-function onError(error) {
-    console.error('Error processing transactions list: ' + error);
-    process.exit(0);
 }

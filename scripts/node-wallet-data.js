@@ -3,7 +3,6 @@
 const util = require('util');
 const request = require('request');
 const WavesAPI = require('@waves/waves-api');
-const defaultWavesConfig = WavesAPI.TESTNET_CONFIG;
 
 var Waves = null;
 
@@ -11,16 +10,17 @@ module.exports = function(params) {
     console.log('fetching node\'s wallet info');
     console.log('params: ', params);
 
-    const wavesConfig = params.wavesConfig ? params.wavesConfig : defaultWavesConfig;
-    Waves = WavesAPI.create(wavesConfig);
+    Waves = WavesAPI.create(params.wavesConfig);
 
-    return getNodeWalletSeed()
-        .then(seed => getNodeWalletAddress(seed));
+    return getNodeWalletSeed(params)
+        .then(seed => getNodeWalletAddress(params, seed));
 }
 
-function getNodeWalletSeed() {
+function getNodeWalletSeed(params) {
     return new Promise((resolve, reject) => {
         console.log('request to get node wallet seed');
+
+        const nodeUrl = params.wavesConfig.nodeAddress;
 
         request({
             headers: {
@@ -28,10 +28,10 @@ function getNodeWalletSeed() {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            uri: ' http://localhost:6869/wallet/seed',
-            method: 'GET'
+            uri: nodeUrl + '/wallet/seed',
+            method: 'GET',
+            json: true
         }, (error, responseObj, response) => {
-            response = JSON.parse(response);
             console.log('response: ', response);
 
             if (error) return reject(error);
@@ -42,9 +42,11 @@ function getNodeWalletSeed() {
     });
 }
 
-function getNodeWalletAddress(seed) {
+function getNodeWalletAddress(params, seed) {
     return new Promise((resolve, reject) => {
         console.log('request to get list of node\'s adresses');
+
+        const nodeUrl = params.wavesConfig.nodeAddress;
 
         request({
             headers: {
@@ -52,10 +54,10 @@ function getNodeWalletAddress(seed) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            uri: ' http://localhost:6869/addresses',
-            method: 'GET'
+            uri: nodeUrl + '/addresses',
+            method: 'GET',
+            json: true
         }, (error, responseObj, response) => {
-            response = JSON.parse(response);
             console.log('response: ', response);
 
             if (error) return reject(error);

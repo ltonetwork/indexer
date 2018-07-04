@@ -2,22 +2,17 @@
 
 const util = require('util');
 const WavesAPI = require('@waves/waves-api');
-const defaultWavesConfig = WavesAPI.TESTNET_CONFIG;
 
 var Waves = null;
 
 module.exports = function(params) {
     console.log('transaction params: ', params);
 
-    const wavesConfig = params.wavesConfig ? params.wavesConfig : defaultWavesConfig;
-    Waves = WavesAPI.create(wavesConfig);
-
+    Waves = WavesAPI.create(params.wavesConfig);
     const seed = Waves.Seed.fromExistingPhrase(params.walletSeed);
 
-    issueTransaction(params, seed)
-        .then(response => transferTransaction(response, params, seed))
-        .then(response => onDone(response))
-        .catch(error => onError(error));
+    return issueTransaction(params, seed)
+        .then(response => transferTransaction(response, params, seed));
 }
 
 //Create transaction
@@ -58,14 +53,4 @@ function transferTransaction(issueResponse, params, seed) {
             resolve(response);
         }).catch(error => reject(error));
     });
-}
-
-//Perform some final actions after transaction is completed
-function onDone(transferResponse) {
-    console.log(transferResponse);
-}
-
-//Perform some actions if an error occured
-function onError(error) {
-    console.error('Error while performing transaction: ' + error);
 }
