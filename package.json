@@ -1,12 +1,22 @@
 {
-  "name": "waves-wallets-transfer",
+  "name": "legalthings/waves-anchor",
   "version": "1.0.0",
-  "description": "Perform transaction between Waves wallets",
+  "description": "Anchor arbitrary data in Waves blockchain",
+  "keywords": ["blockchain", "waves", "anchor", "data-transaction"],
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Sergey Boltonosov",
+  "authors": [
+    {
+      "name": "Arnold Daniels",
+      "email": "arnold@jasny.net"
+    },
+    {
+      "name": "Sergey Boltonosov",
+      "email": "minstriely@gmail.com"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
     "@waves/waves-api": "^0.28.4",
