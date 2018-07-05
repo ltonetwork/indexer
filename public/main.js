@@ -88,38 +88,42 @@
 
     //Verify existens of hash in blockchain
     function verifyHash(hash, callback) {
-        $.ajax({
+        const params = {
             url: '/' + hash + '/verify',
             type: 'get',
             dataType: 'json'
-        }).done(function(response) {
-            callback(response);
-        }).fail(function(xhr) {
-            var errorMessage = 'There was an error while verifing hash ' + hash;
-            const response = JSON.parse(xhr.responseText);
+        };
 
-            if ($.type(response) === 'object' && response.error) {
-                errorMessage += ":\n\n" + response.error;
-            }
-
-            callback({}, errorMessage);
-        });
+        query(params, callback);
     }
 
     //Save hash to blockchain
     function saveHash(hash, callback) {
-        $.ajax({
+        const params = {
             url: '/' + hash + '/save',
             type: 'post',
             dataType: 'json'
-        }).done(function(response) {
+        };
+
+        query(params, callback);
+    }
+
+    //Perform http query
+    function query(params, callback) {
+        $.ajax(params).done(function(response) {
             callback(response);
         }).fail(function(xhr) {
-            var errorMessage = 'There was an error while saving hash ' + hash;
             const response = JSON.parse(xhr.responseText);
+            var errorMessage = 'There was an error while processing hash ' + hash;
 
             if ($.type(response) === 'object' && response.error) {
-                errorMessage += ":\n\n" + response.error;
+                var responseError = response.error;
+
+                if ($.type(responseError) === 'object') {
+                    responseError = JSON.stringify(responseError, null, 4);
+                }
+
+                errorMessage += ":\n\n" + responseError;
             }
 
             callback({}, errorMessage);

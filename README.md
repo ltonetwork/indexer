@@ -11,21 +11,21 @@ It basicaly consists of two parts:
 
 It can be launched via standard `node index.js` command. It will run `node.js` server, that will accept and process requests either through UI or using API calls. Server listens to port `80`.
 
-Data, that can be anchored, is either a text data, or a file.
+Data, that can be anchored through UI, is either a text data, or a file.
 
 Two operations are supported:
 
 - verify, if text or file are already anchored
 - perform anchoring
 
-Through API they can be executed, using the following queries correspondingly:
+Through API these operations can be executed, using the following queries correspondingly:
 
 - `GET /{hash}/verify`
 - `POST /{hash}/save`
 
 where `{hash}` is a `sha256` hash of data.
 
-Both operations, in case if anchor exists/created, return a chainpoint, given in a format introduced by [https://chainpoint.org/](Chainpoint). Merkle tree is not used here for anchoring, so we ommit some chainpoint properties.
+Both operations, in case if anchor exists/created, return a chainpoint, given in a format introduced by [Chainpoint](https://chainpoint.org/). Merkle tree is not used here for anchoring, so we ommit some chainpoint properties.
 
 Verification is performed not on blockchain, but on anchors, uploaded from blockchain to database by a script.
 
@@ -46,7 +46,15 @@ Example response:
 where:
 
 - `targetHash` is a `sha256` data hash
-- `anchors.sourceId` is a Waves blockchain transactions id, where data is saved
+- `anchors[0].sourceId` is a Waves blockchain transactions id, where data is saved
+
+In case if an error occured during processing, the object with a single `error` property is returned, that can be either a string or an object.
+
+Example:
+
+    {
+        "error": "State check failed. Reason: negative waves balance: 3Mr6yz6hp7cDKBaNzKuMFU6Nh2UjfpdvtHa, old: 3, new: -99997"
+    }
 
 ## Script for fetching anchors list
 
