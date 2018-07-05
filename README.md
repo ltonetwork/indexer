@@ -70,3 +70,7 @@ When using API and performing `save` operation call, it does not auto-perform `v
 
 It can be launched with the `node job.js` command. It looks through all Waves blockchain transactions, starting from the latest one, and maps all the anchored data to Redis database (so Redis instance should be prepared first).
 Data is stored in the form `{data hash} -> {waves transaction id}`.
+
+## Configuration
+
+Waves node, that handles requests to blockchain, can be configured in file `/scripts/config.js`
