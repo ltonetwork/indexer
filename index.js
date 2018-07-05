@@ -9,7 +9,7 @@ const setRoutes = require('./scripts/routes');
 const setErrorHandler = require('./scripts/error-handler.js');
 
 const app = express();
-const port = 81;
+const port = 80;
 
 app.use(nocache());
 app.use(bodyParser.json());
