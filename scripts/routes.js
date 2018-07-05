@@ -25,8 +25,8 @@ function verifyAction(request, response, next) {
         console.log('obtained from redis: ', transactionId);
         if (error) return next('Error while getting hash ' + key + ' from db: ' + error);
 
-        const checkpoint = transactionId ? asCheckpoint(hash, transactionId) : null;
-        response.json({ checkpoint });
+        const chainpoint = transactionId ? asChainpoint(hash, transactionId) : null;
+        response.json({ chainpoint });
     });
 }
 
@@ -46,14 +46,14 @@ function saveAction(request, response, next) {
             return dataTransactionAnchor(config);
         })
         .then(transactionId => {
-            const checkpoint = transactionId ? asCheckpoint(hash, transactionId) : null;
-            response.json({ checkpoint })
+            const chainpoint = transactionId ? asChainpoint(hash, transactionId) : null;
+            response.json({ chainpoint })
         })
         .catch(error => next(error));   
 }
 
-//Build checkpoint for given hash
-function asCheckpoint(hash, transactionId) {
+//Build chainpoint for given hash
+function asChainpoint(hash, transactionId) {
     return {
         '@context': 'https://w3id.org/chainpoint/v2',
         type: 'ChainpointSHA256v2',

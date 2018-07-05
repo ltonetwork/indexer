@@ -36,13 +36,13 @@
                 return showMessage(error);
             }
 
-            if (!result.checkpoint) {
+            if (!result.chainpoint) {
                 showButton('.save');
                 showMessage('Hash ' + hash + ' does not exists in blockchain');
                 return;
             }
 
-            showMessage(result.checkpoint);
+            showMessage(result.chainpoint);
         });
     });
 
@@ -61,13 +61,13 @@
                 return showMessage(error);
             }
 
-            if (!result.checkpoint) {
+            if (!result.chainpoint) {
                 showMessage('There was an error while saving hash ' + hash);
                 return;
             }
 
             reset();
-            showMessage(result.checkpoint);
+            showMessage(result.chainpoint);
         });
     });
 

@@ -32,21 +32,29 @@ Verification is performed not on blockchain, but on anchors, uploaded from block
 Example response:
 
     {
-        "@context": "https://w3id.org/chainpoint/v2",
-        "type": "ChainpointSHA256v2",
-        "targetHash": "6b51d431df5d7f141cbececcf79edf3dd861c3b4069f0b11661a3eefacbba918",
-        "anchors": [
-            {
-                "type": "WAVESDataTransaction",
-                "sourceId": "DHAZrbPYDcqYnHb79jo5D6xReyUDtCvYUvXsx9DhP9NB"
-            }
-        ]
-    }
+        "chainpoint": {
+            "@context": "https://w3id.org/chainpoint/v2",
+            "type": "ChainpointSHA256v2",
+            "targetHash": "6b51d431df5d7f141cbececcf79edf3dd861c3b4069f0b11661a3eefacbba918",
+            "anchors": [
+                {
+                    "type": "WAVESDataTransaction",
+                    "sourceId": "DHAZrbPYDcqYnHb79jo5D6xReyUDtCvYUvXsx9DhP9NB"
+                }
+            ]
+        }
+    }    
 
 where:
 
 - `targetHash` is a `sha256` data hash
 - `anchors[0].sourceId` is a Waves blockchain transactions id, where data is saved
+
+If hash is not found in database on verification, the following response is returned:
+
+    {
+        "chainpoint": null
+    }
 
 In case if an error occured during processing, the object with a single `error` property is returned, that can be either a string or an object.
 
@@ -55,6 +63,8 @@ Example:
     {
         "error": "State check failed. Reason: negative waves balance: 3Mr6yz6hp7cDKBaNzKuMFU6Nh2UjfpdvtHa, old: 3, new: -99997"
     }
+
+When using API and performing `save` operation call, it does not auto-perform `verify` operation, so you should perform it manually.
 
 ## Script for fetching anchors list
 
