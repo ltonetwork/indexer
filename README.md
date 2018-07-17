@@ -20,8 +20,8 @@ Two operations are supported:
 
 Through API these operations can be executed, using the following queries correspondingly:
 
-- `GET /{hash}/verify`
-- `POST /{hash}/save`
+- `GET /{hash}`
+- `POST /{hash}`
 
 where `{hash}` is a `sha256` hash of data.
 
