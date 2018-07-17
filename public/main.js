@@ -89,7 +89,7 @@
     //Verify existens of hash in blockchain
     function verifyHash(hash, callback) {
         const params = {
-            url: '/' + hash + '/verify',
+            url: '/' + hash,
             type: 'get',
             dataType: 'json'
         };
@@ -100,7 +100,7 @@
     //Save hash to blockchain
     function saveHash(hash, callback) {
         const params = {
-            url: '/' + hash + '/save',
+            url: '/' + hash,
             type: 'post',
             dataType: 'json'
         };
