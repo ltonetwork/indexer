@@ -27,8 +27,6 @@ where `{hash}` is a `sha256` hash of data.
 
 Both operations, in case if anchor exists/created, return a chainpoint, given in a format introduced by [Chainpoint](https://chainpoint.org/). Merkle tree is not used here for anchoring, so we ommit some chainpoint properties.
 
-Verification is performed not on blockchain, but on anchors, uploaded from blockchain to database by a script.
-
 Example response:
 
     {
@@ -65,6 +63,8 @@ Example:
     }
 
 When using API and performing `save` operation call, it does not auto-perform `verify` operation, so you should perform it manually.
+
+Verification is performed not on blockchain, but on anchors, uploaded from blockchain to database by a script.
 
 ## Script for fetching anchors list
 
