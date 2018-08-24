@@ -1,6 +1,6 @@
-# Waves Anchor
+# Anchoring service
 
-This is a small web app for saving and anchoring arbitrary data into Waves blockchain.
+This is a small web app for saving and anchoring arbitrary data into the global blockchain.
 
 It basicaly consists of two parts:
 
@@ -46,7 +46,7 @@ Example response:
 where:
 
 - `targetHash` is a `sha256` data hash
-- `anchors[0].sourceId` is a Waves blockchain transactions id, where data is saved
+- `anchors[0].sourceId` is a blockchain transactions id, where data is saved
 
 If hash is not found in database on verification, the following response is returned:
 
@@ -68,9 +68,9 @@ Verification is performed not on blockchain, but on anchors, uploaded from block
 
 ## Script for fetching anchors list
 
-It can be launched with the `node job.js` command. It looks through all Waves blockchain transactions, starting from the latest one, and maps all the anchored data to Redis database (so Redis instance should be prepared first).
+It can be launched with the `node job.js` command. It looks through all blockchain transactions, starting from the latest one, and maps all the anchored data to Redis database (so Redis instance should be prepared first).
 Data is stored in the form `{data hash} -> {waves transaction id}`.
 
 ## Configuration
 
-Waves node, that handles requests to blockchain, can be configured in file `/scripts/config.js`
+Node that handles requests to global blockchain, can be configured in file `/scripts/config.js`
