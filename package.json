@@ -1,10 +1,16 @@
 {
-  "name": "legalthings/waves-anchor",
+  "name": "waves-anchor",
   "version": "1.0.0",
   "description": "Anchor arbitrary data in Waves blockchain",
-  "keywords": ["blockchain", "waves", "anchor", "data-transaction"],
-  "main": "index.js",
+  "keywords": [
+    "blockchain",
+    "waves",
+    "anchor",
+    "data-transaction"
+  ],
+  "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "authors": [
@@ -19,11 +25,16 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@waves/waves-api": "^0.28.4",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
+    "ioredis": "^4.0.0",
     "nocache": "^2.0.0",
-    "redis": "^2.8.0",
-    "request": "github:request/request"
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "winston": "^3.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
   }
 }

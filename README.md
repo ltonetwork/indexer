@@ -2,14 +2,9 @@
 
 This is a small web app for saving and anchoring arbitrary data into the global blockchain.
 
-It basicaly consists of two parts:
+## Application
 
-- web-app, for anchoring data and veryfing, if it's anchored
-- a script, that runs in the background and pulls out all anchored data to the database
-
-## Web Application
-
-It can be launched via standard `node index.js` command. It will run `node.js` server, that will accept and process requests either through UI or using API calls. Server listens to port `80`.
+It can be launched via standard `node src/index.js` command. It will run the anchor service, that will accept and process requests either through UI or using API calls. Server listens to port `3000` or change the port number through the `PORT` env variable.
 
 Data, that can be anchored through UI, is either a text data, or a file.
 
@@ -20,10 +15,17 @@ Two operations are supported:
 
 Through API these operations can be executed, using the following queries correspondingly:
 
-- `GET /{hash}`
-- `POST /{hash}`
+- `GET /hash/{hash}` This will check for `hex` encoded hashses.
+- `GET /hash/{hash}/encoding/{encoding}` With allow encoding types being: `base64`, `base58` and `hex`
+- `POST /hash`
 
-where `{hash}` is a `sha256` hash of data.
+With the body contain the hash and optionally the encoding of the hash:
+```$json
+{ 
+    hash: {hash},
+    encoding: {hex} // Defaults to 'hex'
+}
+```
 
 Both operations, in case if anchor exists/created, return a chainpoint, given in a format introduced by [Chainpoint](https://chainpoint.org/). Merkle tree is not used here for anchoring, so we ommit some chainpoint properties.
 
@@ -36,7 +38,7 @@ Example response:
             "targetHash": "6b51d431df5d7f141cbececcf79edf3dd861c3b4069f0b11661a3eefacbba918",
             "anchors": [
                 {
-                    "type": "WAVESDataTransaction",
+                    "type": "`LTODataTransaction",
                     "sourceId": "DHAZrbPYDcqYnHb79jo5D6xReyUDtCvYUvXsx9DhP9NB"
                 }
             ]
@@ -64,12 +66,7 @@ Example:
 
 When using API and performing `save` operation call, it does not auto-perform `verify` operation, so you should perform it manually.
 
-Verification is performed not on blockchain, but on anchors, uploaded from blockchain to database by a script.
-
-## Script for fetching anchors list
-
-It can be launched with the `node job.js` command. It looks through all blockchain transactions, starting from the latest one, and maps all the anchored data to Redis database (so Redis instance should be prepared first).
-Data is stored in the form `{data hash} -> {waves transaction id}`.
+Verification is performed not on blockchain, but on anchors, uploaded from blockchain to database.
 
 ## Configuration
 
