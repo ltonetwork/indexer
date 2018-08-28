@@ -70,4 +70,4 @@ Verification is performed not on blockchain, but on anchors, uploaded from block
 
 ## Configuration
 
-Node that handles requests to global blockchain, can be configured in file `/scripts/config.js`
+Node that handles requests to global blockchain, can be configured in file `/config/default.js`

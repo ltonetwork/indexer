@@ -7,7 +7,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const setRoutes = require('./routes');
 const setErrorHandler = require('./middleware/error-handler.js');
-const config = require('./conf/config');
+const config = require('config');
 const AnchorProcessor = require('./utils/anchorprocessor');
 const logger = require('./utils/logger');
 

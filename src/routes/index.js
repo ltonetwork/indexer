@@ -5,7 +5,8 @@
 const router = require('express').Router();
 const Redis = require('ioredis');
 const logger = require('../utils/logger');
-const config = require('../conf/config');
+const config = require('config');
+
 const Hash = require('../utils/hash');
 const Node = require('../utils/node');
 const node = new Node(config);
