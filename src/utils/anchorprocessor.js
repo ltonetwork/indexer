@@ -1,5 +1,4 @@
 const request = require('request-promise');
-const Redis = require('ioredis');
 const logger = require('./logger');
 const Hash = require('./hash');
 
@@ -21,7 +20,7 @@ class Anchorprocessor {
     this.processing = false;
 
     this.interval = interval || 30000;
-    this.client = Array.isArray(config.dbUrl) ? new Redis.Cluster(config.dbUrl) : new Redis(config.dbUrl);
+    this.client = require('./redis-client');
   }
 
   startMonitor() {
