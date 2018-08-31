@@ -11,6 +11,8 @@ const Hash = require('../utils/hash');
 const Node = require('../utils/node');
 const node = new Node(config);
 
+const client = require('../utils/redis-client');
+
 //Check if hash is saved to blockchain
 router.get('/:hash', async (request, response, next) => {
   const hash = request.params.hash;
@@ -19,8 +21,6 @@ router.get('/:hash', async (request, response, next) => {
   }
 
   logger.debug('searching for the hash: ', hash);
-
-  const client = Array.isArray(config.dbUrl) ? new Redis.Cluster(config.dbUrl) : new Redis(config.dbUrl);
 
   try {
     const transactionId = await client.get(`lto-anchor:anchor:${hash}`);
@@ -34,8 +34,6 @@ router.get('/:hash', async (request, response, next) => {
 
   } catch(error) {
     return next('Error while getting hash ' + hash + ' from db: ' + error);
-  } finally {
-    client.quit();
   }
 });
 
@@ -51,7 +49,6 @@ router.get('/:hash/encoding/:encoding', async (request, response, next) => {
   }
 
   const hexHash = Hash.hexEncode(Hash.decode(hash, encoding));
-  const client = Array.isArray(config.dbUrl) ? new Redis.Cluster(config.dbUrl) : new Redis(config.dbUrl);
 
   try {
     const transactionId = await client.get(`lto-anchor:anchor:${hexHash}`);
@@ -65,8 +62,6 @@ router.get('/:hash/encoding/:encoding', async (request, response, next) => {
 
   } catch(error) {
     return next('Error while getting hash ' + hexhash + ' from db: ' + error);
-  } finally {
-    client.quit();
   }
 });
 
