@@ -18,8 +18,9 @@ class Anchorprocessor {
       this.lastBlock = config.startingBlock
     }
 
-    this.interval = interval || 10000;
+    this.processing = false;
 
+    this.interval = interval || 30000;
     this.client = Array.isArray(config.dbUrl) ? new Redis.Cluster(config.dbUrl) : new Redis(config.dbUrl);
   }
 
@@ -35,19 +36,28 @@ class Anchorprocessor {
   async runMonitor() {
     this.taskId = setTimeout(this.runMonitor.bind(this), this.interval);
     logger.debug('Run monitor');
-    await this.checkNewBlock();
+    if(!this.processing) {
+      await this.checkNewBlock();
+    }
   }
 
   async checkNewBlock() {
-    const currentHeight = await this.getLastBlockHeight();
-    let lastHeight = await this.getProcessingHeight() + 1;
+    this.processing = true;
+    try {
+      const currentHeight = await this.getLastBlockHeight();
+      let lastHeight = await this.getProcessingHeight() + 1;
 
-    for(;lastHeight<=currentHeight;lastHeight++) {
-      let block = await this.getBlock(lastHeight);
-      await this.processBlock(block);
-      await this.saveProcessingHeight(lastHeight);
+      for (; lastHeight <= currentHeight; lastHeight++) {
+        let block = await this.getBlock(lastHeight);
+        await this.processBlock(block);
+        await this.saveProcessingHeight(lastHeight);
+      }
+      logger.debug(`Processed blocks to block: ${lastHeight}`);
+    } catch (e) {
+      this.processing = false;
+      throw e;
     }
-    logger.debug(`Processed blocks to block: ${lastHeight}`);
+    this.processing = false;
   }
 
   stopMonitor() {
