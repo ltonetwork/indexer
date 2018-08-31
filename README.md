@@ -70,4 +70,14 @@ Verification is performed not on blockchain, but on anchors, uploaded from block
 
 ## Configuration
 
+
+**You can run container with predefined environment variables:**
+
+|env variable   |description|
+|---------------|-----------|
+|`LTO_API_KEY`  | ApiKey used in communication with the public node|
+|`LOG_LEVEL`    | Node logging level, available values: `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG` |
+|`PORT`         | Port number the service should use|
+
+
 Node that handles requests to global blockchain, can be configured in file `/config/default.js`
