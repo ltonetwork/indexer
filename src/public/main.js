@@ -29,10 +29,11 @@
         toggleButtonState('.verify', 'loading');
 
         hash = createHash(data);
-        verifyHash(hash, (result, error) => {
+        verifyHash(hash, (result, error, xhr) => {
             toggleButtonState('.verify', 'done');
 
-            if (error) {
+            if (error && error != 'Hash not found') {
+                console.log(result);
                 return showMessage(error);
             }
 
@@ -89,7 +90,7 @@
     //Verify existens of hash in blockchain
     function verifyHash(hash, callback) {
         const params = {
-            url: '/' + hash,
+            url: '/hash/' + hash,
             type: 'get',
             dataType: 'json'
         };
@@ -100,9 +101,13 @@
     //Save hash to blockchain
     function saveHash(hash, callback) {
         const params = {
-            url: '/' + hash,
-            type: 'post',
-            dataType: 'json'
+            url: '/hash',
+            type: 'POST',
+            dataType: 'json',
+            data: JSON.stringify({
+              hash: hash
+            }),
+            contentType: "application/json"
         };
 
         query(params, callback);
@@ -113,20 +118,24 @@
         $.ajax(params).done(function(response) {
             callback(response);
         }).fail(function(xhr) {
-            const response = JSON.parse(xhr.responseText);
-            var errorMessage = 'There was an error while processing hash ' + hash;
+            if(xhr.status >= 500) {
+              const response = JSON.parse(xhr.responseText);
+              var errorMessage = 'There was an error while processing hash ' + hash;
 
-            if ($.type(response) === 'object' && response.error) {
+              if ($.type(response) === 'object' && response.error) {
                 var responseError = response.error;
 
                 if ($.type(responseError) === 'object') {
-                    responseError = JSON.stringify(responseError, null, 4);
+                  responseError = JSON.stringify(responseError, null, 4);
                 }
 
                 errorMessage += ":\n\n" + responseError;
-            }
+              }
 
-            callback({}, errorMessage);
+              callback({}, errorMessage);
+            } else {
+                callback({});
+            }
         });
     }
 
