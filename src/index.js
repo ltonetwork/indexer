@@ -13,7 +13,7 @@ const logger = require('./utils/logger');
 
 (async () => {
   const app = express();
-  const port = process.env.PORT || 1337;
+  const port = process.env.PORT || 3000;
 
   app.use(nocache());
   app.use(bodyParser.json());
