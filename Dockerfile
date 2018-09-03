@@ -14,4 +14,4 @@ RUN npm i pm2 -g
 COPY . .
 
 EXPOSE 3000
-ENTRYPOINT ["pm2-runtime", "src/index.js"]
+CMD ["pm2-runtime", "src/index.js"]
