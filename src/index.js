@@ -10,6 +10,9 @@ const setErrorHandler = require('./middleware/error-handler.js');
 const config = require('config');
 const AnchorProcessor = require('./utils/anchorprocessor');
 const logger = require('./utils/logger');
+const swaggerJSDoc = require('swagger-jsdoc');
+const info = require('../package');
+
 
 (async () => {
   const app = express();
@@ -17,14 +20,36 @@ const logger = require('./utils/logger');
 
   app.use(nocache());
   app.use(bodyParser.json());
-  app.use(express.static('./src/public'));
 
   app.use('/hash', setRoutes);
   app.use(setErrorHandler);
 
+  // Swagger conf
+  const options = {
+    definition: {
+      info: {
+        title: info.name,
+        version: info.version
+      },
+    },
+    apis: ['./src/routes/*.js'], // Path to the API docs
+  };
+
+  // Initialize swagger-jsdoc -> returns validated swagger spec in json format
+  const swaggerSpec = swaggerJSDoc(options);
+  app.get('/swagger.json', (req, res) => {
+    res.json(swaggerSpec);
+  });
+
+  app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+  });
+
+  app.use(express.static('./src/public'));
+
   app.listen(port, (err) => {
     if (err) {
-      return console.log('There was an error: ', err)
+      return logger.error('There was an error: ', err)
     }
 
     logger.info(`server is listening on ${port}`)

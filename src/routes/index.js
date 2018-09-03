@@ -3,7 +3,6 @@
  */
 
 const router = require('express').Router();
-const Redis = require('ioredis');
 const logger = require('../utils/logger');
 const config = require('config');
 
@@ -13,7 +12,36 @@ const node = new Node(config);
 
 const client = require('../utils/redis-client');
 
-//Check if hash is saved to blockchain
+/**
+ * @swagger
+ * definition:
+ *   Hash:
+ *     properties:
+ *       hash:
+ *         type: string
+ *       encoding:
+ *         type: string
+ */
+
+/**
+ * @swagger
+ * /hash/{hash}:
+ *   get:
+ *     tags:
+ *       - Hash
+ *     summary: Verify if your has is anchored
+ *     parameters:
+ *       - in: path
+ *         name: hash
+ *         type: string
+ *         required: true
+ *         description: Hash you wish to verify
+ *     responses:
+ *       200:
+ *         description: chain object
+ *       404:
+ *         description: if the hash is not found
+ */
 router.get('/:hash', async (request, response, next) => {
   const hash = request.params.hash;
   if (!hash) {
@@ -23,7 +51,7 @@ router.get('/:hash', async (request, response, next) => {
   logger.debug('searching for the hash: ', hash);
 
   try {
-    const transactionId = await client.get(`lto-anchor:anchor:${hash}`);
+    const transactionId = await client.get(`lto-anchor:anchor:${hash.toLowerCase()}`);
     if (!transactionId) {
       return response.status(404).send({chainpoint: null});
     }
@@ -37,6 +65,30 @@ router.get('/:hash', async (request, response, next) => {
   }
 });
 
+/**
+ * @swagger
+ * /hash/{hash}/encoding/{encoding}:
+ *   get:
+ *     tags:
+ *       - Hash
+ *     summary: Verify if your has is anchored
+ *     parameters:
+ *       - in: path
+ *         name: hash
+ *         type: string
+ *         required: true
+ *         description: Hash you wish to verify
+ *       - in: path
+ *         name: encoding
+ *         type: string
+ *         required: true
+ *         description: The encoding of the hash
+ *     responses:
+ *       200:
+ *         description: chain object
+ *       404:
+ *         description: if the hash is not found
+ */
 router.get('/:hash/encoding/:encoding', async (request, response, next) => {
   const hash = request.params.hash;
   const encoding = request.params.encoding;
@@ -65,7 +117,24 @@ router.get('/:hash/encoding/:encoding', async (request, response, next) => {
   }
 });
 
-//Post hash to data transaction
+/**
+ * @swagger
+ * /hash:
+ *   post:
+ *     tags:
+ *       - Hash
+ *     summary: Anchor your hash to the LTO Chain
+ *     parameters:
+ *       - in: body
+ *         name: hash
+ *         schema:
+ *           $ref: '#/definitions/Hash'
+ *         required: true
+ *         description: Hash you wish to verify
+ *     responses:
+ *       200:
+ *         description: chain object
+ */
 router.post('/', async (req, res, next) => {
   const hash = req.body.hash;
   const encoding = req.body.encoding || 'hex';

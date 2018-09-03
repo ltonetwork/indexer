@@ -1,5 +1,5 @@
 {
-  "name": "waves-anchor",
+  "name": "anchor",
   "version": "1.0.0",
   "description": "Anchor arbitrary data in Waves blockchain",
   "keywords": [
@@ -32,6 +32,7 @@
     "nocache": "^2.0.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "swagger-jsdoc": "^3.0.2",
     "winston": "^3.0.0"
   },
   "devDependencies": {
