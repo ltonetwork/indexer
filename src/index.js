@@ -16,7 +16,7 @@ const info = require('../package');
 
 (async () => {
   const app = express();
-  const port = process.env.PORT || 3000;
+  const port = config.port;
 
   app.use(nocache());
   app.use(bodyParser.json());
@@ -39,10 +39,6 @@ const info = require('../package');
   const swaggerSpec = swaggerJSDoc(options);
   app.get('/swagger.json', (req, res) => {
     res.json(swaggerSpec);
-  });
-
-  app.get('/', (req, res) => {
-    res.redirect('/api-docs');
   });
 
   app.use(express.static('./src/public'));

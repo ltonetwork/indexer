@@ -13,5 +13,6 @@ RUN npm i pm2 -g
 # Bundle app source
 COPY . .
 
-EXPOSE 3000
+EXPOSE 80
+
 CMD ["pm2-runtime", "src/index.js"]
