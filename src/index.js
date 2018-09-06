@@ -41,6 +41,10 @@ const info = require('../package');
     res.json(swaggerSpec);
   });
 
+  app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+  });
+
   app.use(express.static('./src/public'));
 
   app.listen(port, (err) => {
