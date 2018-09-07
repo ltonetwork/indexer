@@ -1,5 +1,6 @@
 const request = require('request-promise');
 const logger = require('./logger');
+const Hash = require('../utils/hash');
 
 class Node {
 
@@ -75,6 +76,36 @@ class Node {
     return response.id;
   }
 
+  async getUnconfirmedAnchor(hash) {
+
+    let unconfirmedTransactions = await request({
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      uri: this.nodeUrl + '/transactions/unconfirmed',
+      method: 'GET',
+      json:true
+    });
+
+    unconfirmedTransactions = unconfirmedTransactions.filter((transaction) => {
+      if (transaction.type != 12) {
+        return false;
+      }
+
+      if (transaction.data.find((data) => data.value && data.value == `base64:${hash}`)) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (unconfirmedTransactions.length == 0) {
+      return null;
+    }
+
+    return unconfirmedTransactions.map(transaction => transaction.id)[0];
+  }
 }
 
 module.exports = Node;
