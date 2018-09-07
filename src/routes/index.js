@@ -49,9 +49,12 @@ router.get('/:hash', async (request, response, next) => {
   }
 
   logger.debug('searching for the hash: ', hash);
-
   try {
-    const transactionId = await client.get(`lto-anchor:anchor:${hash.toLowerCase()}`);
+    let transactionId = await client.get(`lto-anchor:anchor:${hash.toLowerCase()}`);
+    if (!transactionId) {
+      transactionId = await node.getUnconfirmedAnchor(Hash.base64Encode(Hash.decode(hash, 'hex')));
+    }
+
     if (!transactionId) {
       return response.status(404).send({chainpoint: null});
     }
@@ -103,7 +106,11 @@ router.get('/:hash/encoding/:encoding', async (request, response, next) => {
   const hexHash = Hash.hexEncode(Hash.decode(hash, encoding));
 
   try {
-    const transactionId = await client.get(`lto-anchor:anchor:${hexHash}`);
+    let transactionId = await client.get(`lto-anchor:anchor:${hexHash}`);
+    if (!transactionId) {
+      transactionId = await node.getUnconfirmedAnchor(Hash.base64Encode(Hash.decode(hexHash, 'hex')));
+    }
+
     if (!transactionId) {
       return response.status(404).send({chainpoint: null});
     }
