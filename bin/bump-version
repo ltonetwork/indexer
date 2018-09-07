@@ -1,0 +1,12 @@
+#!/bin/bash
+
+MM_VERSION=$(node -e "var project = require('./package.json'); console.log(project.version.substring(0,3));")
+PATCH_VERSION=$(git tag | grep v$MM_VERSION | sort -r -V | head -n 1 | awk -F . '{print $3}')
+test -n "$PATCH_VERSION" || PATCH_VERSION=-1;
+let PATCH_VERSION++
+VERSION=$MM_VERSION.$PATCH_VERSION
+RES=$(mversion $VERSION)
+git add package.json
+git commit -m "Bump version to v${VERSION}"
+git tag "v${VERSION}"
+git push origin "v${VERSION}"

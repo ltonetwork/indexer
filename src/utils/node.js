@@ -88,14 +88,10 @@ class Node {
       json:true
     });
 
-    console.log('Unconfirmed: ', unconfirmedTransactions);
-
     unconfirmedTransactions = unconfirmedTransactions.filter((transaction) => {
       if (transaction.type != 12) {
         return false;
       }
-
-      console.log('Data: ', transaction.data.find((data) => data.value && data.value == `base64:${hash}`));
 
       if (transaction.data.find((data) => data.value && data.value == `base64:${hash}`)) {
         return true;
