@@ -1,0 +1,22 @@
+language: node_js
+node_js:
+- "8.11"
+sudo: false
+
+# Add your branch here to have it tested and deployed
+branches:
+  only:
+  - master
+
+before_install:
+# Configure Git
+- git config --global user.email "travis-ci@legalthings.net"
+- git config --global user.name "Travis CI"
+
+# Get all tags of git repo
+- git fetch origin 'refs/tags/*:refs/tags/*'
+
+after_success:
+# Bump version
+- npm install mversion -g
+- test "$TRAVIS_BRANCH" != 'master' -o "$TRAVIS_PULL_REQUEST" != "false" || test -n "$(git tag --contains)" || bin/bump-version
