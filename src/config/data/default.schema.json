@@ -35,7 +35,7 @@
     "logger": {
       "console": {
         "level": {
-          "default": "info",
+          "default": "debug",
           "env": "ANCHOR_LOGGER_CONSOLE_LEVEL"
         }
       },

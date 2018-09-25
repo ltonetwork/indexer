@@ -10,7 +10,7 @@ async function swagger(app: INestApplication) {
     .setDescription('Anchor data in the blockchain')
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api-docs', app, document);
 }
 
 async function anchor(app: INestApplication) {

@@ -3,6 +3,7 @@ import { ApiImplicitParam, ApiImplicitBody, ApiOperation, ApiResponse, ApiUseTag
 import { Response, Request } from 'express';
 import { LoggerService } from '../logger/logger.service';
 import { HashService } from './hash.service';
+import { HashDto } from './dto/hash.dto';
 
 @Controller('hash')
 @ApiUseTags('hash')
@@ -14,8 +15,7 @@ export class HashController {
 
   @Post()
   @ApiOperation({ title: 'Anchor hash to the blockchain' })
-  @ApiImplicitBody({ name: 'hash', type: String })
-  @ApiImplicitBody({ name: 'encoding', type: String })
+  @ApiImplicitBody({ name: 'hash', type: HashDto})
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid body given' })
   @ApiResponse({ status: 400, description: 'no hash given' })

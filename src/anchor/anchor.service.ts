@@ -16,6 +16,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   private lastBlock: number;
   private dataTransactionType: number;
   private anchorToken: string;
+  private interval: number;
 
   constructor(
     private readonly logger: LoggerService,
@@ -26,6 +27,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   ) {
     this.dataTransactionType = 12;
     this.anchorToken = '\u2693';
+    this.interval = 10000;
   }
 
   async onModuleInit() { }
@@ -56,7 +58,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
       await this.checkNewBlock();
 
       if (this.task == null) {
-        this.task = setTimeout(this.runMonitor.bind(this), 30000);
+        this.task = setTimeout(this.runMonitor.bind(this), this.interval);
         this.logger.info(`anchor: started processor`);
       } else {
         this.logger.warn('anchor: processor already running');
@@ -71,7 +73,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   }
 
   async runMonitor() {
-    this.taskId = setTimeout(this.runMonitor.bind(this), 30000);
+    this.taskId = setTimeout(this.runMonitor.bind(this), this.interval);
     this.logger.debug('anchor: run monitor');
     if (!this.processing) {
       await this.checkNewBlock();
