@@ -9,7 +9,7 @@ describe('RedisService', () => {
 
   const imports = (() => {
     const ioredis = jest.fn().mockImplementation(() => ({
-      disconnect: jest.fn(),
+      quit: jest.fn(),
     }));
 
     return { ioredis };

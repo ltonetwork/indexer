@@ -5,7 +5,7 @@ describe('RedisConnection', () => {
     const connection = {
       get: jest.fn(),
       set: jest.fn(),
-      disconnect: jest.fn(),
+      quit: jest.fn(),
     };
 
     return { connection };
@@ -31,7 +31,7 @@ describe('RedisConnection', () => {
       const redisConnection = new RedisConnection(spies.connection as any);
       await redisConnection.close();
 
-      expect(spies.connection.disconnect.mock.calls.length).toBe(1);
+      expect(spies.connection.quit.mock.calls.length).toBe(1);
     });
   });
 });

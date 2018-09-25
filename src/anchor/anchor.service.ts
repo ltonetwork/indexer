@@ -5,6 +5,7 @@ import { ConfigService } from '../config/config.service';
 import { RedisService } from '../redis/redis.service';
 import { RedisConnection } from '../redis/classes/redis.connection';
 import { NodeService } from '../node/node.service';
+import delay from 'delay';
 
 @Injectable()
 export class AnchorService implements OnModuleInit, OnModuleDestroy {
@@ -33,34 +34,45 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
     await this.close();
   }
 
-  async start() {
-    await this.init();
-
-    if (this.task == null) {
-      this.task = setTimeout(this.runMonitor.bind(this), 30000);
-      this.logger.info(`Started processor`);
-    } else {
-      this.logger.warn('Processor already running');
-    }
-  }
-
   async init() {
     this.connection = await this.redis.connect(this.config.getRedisClient());
+  }
 
-    if (this.config.getNodeStartingBlock() === 'last') {
-      this.node.getLastBlockHeight().then((height) => {
-        this.lastBlock = height;
-      });
-    } else {
-      this.lastBlock = this.config.getNodeStartingBlock() as number;
+  async start() {
+    this.logger.debug(`anchor: starting connection`);
+
+    try {
+      await this.init();
+      await this.checkNewBlock();
+
+      if (this.config.getNodeStartingBlock() === 'last') {
+        this.node.getLastBlockHeight().then((height) => {
+          this.lastBlock = height;
+        });
+      } else {
+        this.lastBlock = this.config.getNodeStartingBlock() as number;
+      }
+
+      this.processing = false;
+
+      if (this.task == null) {
+        this.task = setTimeout(this.runMonitor.bind(this), 30000);
+        this.logger.info(`anchor: started processor`);
+      } else {
+        this.logger.warn('anchor: processor already running');
+      }
+
+      this.logger.info(`anchor: successfully started connection`);
+    } catch (e) {
+      this.logger.error(`anchor: failed to start connection: ${e}`);
+      await delay(2000);
+      return this.start();
     }
-
-    this.processing = false;
   }
 
   async runMonitor() {
     this.taskId = setTimeout(this.runMonitor.bind(this), 30000);
-    this.logger.debug('Run monitor');
+    this.logger.debug('anchor: run monitor');
     if (!this.processing) {
       await this.checkNewBlock();
     }
@@ -77,7 +89,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
         await this.processBlock(block);
         await this.saveProcessingHeight(lastHeight);
       }
-      this.logger.debug(`Processed blocks to block: ${lastHeight}`);
+      this.logger.debug(`anchor: processed blocks to block: ${lastHeight}`);
     } catch (e) {
       this.processing = false;
       throw e;
@@ -90,7 +102,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   }
 
   async processBlock(block) {
-    this.logger.debug(`Processing block: ${block.height}`);
+    this.logger.debug(`anchor: processing block: ${block.height}`);
 
     for (const transaction of block.transactions) {
       await this.processTransaction(transaction);
@@ -117,7 +129,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   }
 
   async saveAnchor(hash, transactionId) {
-    this.logger.info(`Save hash ${hash} with transactionId: ${transactionId}`);
+    this.logger.info(`anchor: save hash ${hash} with transactionId: ${transactionId}`);
     const key = `lto-anchor:anchor:${hash}`;
     return this.connection.set(key, transactionId);
   }
@@ -138,5 +150,6 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
 
   async close() {
     await this.connection.close();
+    await this.stopMonitor();
   }
 }

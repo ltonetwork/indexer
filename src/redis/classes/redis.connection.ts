@@ -15,6 +15,6 @@ export class RedisConnection {
   }
 
   async close() {
-    await this.connection.disconnect();
+    await this.connection.quit();
   }
 }
