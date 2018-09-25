@@ -23,8 +23,8 @@ describe('Application e2e test', () => {
       expect(res.header['content-type']).toMatch(/json/);
       expect(res.body).toMatchObject({
         name: 'anchor',
-        version: '0.0.1',
-        description: 'Anchor data in blockchain',
+        version: '1.0.0',
+        description: 'Anchor data in the blockchain',
         env: 'test',
       });
     });

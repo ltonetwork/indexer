@@ -1,7 +1,7 @@
 {
   "name": "anchor",
-  "version": "0.0.1",
-  "description": "Anchor data in blockchain",
+  "version": "1.0.0",
+  "description": "Anchor data in the blockchain",
   "keywords": [
     "blockchain",
     "waves",
@@ -35,10 +35,9 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "ioredis": "^4.0.0",
-    "nocache": "^2.0.0",
     "@nestjs/common": "^5.3.6",
     "@nestjs/core": "^5.3.6",
+    "@nestjs/swagger": "^2.5.1",
     "amqplib": "^0.5.2",
     "axios": "^0.18.0",
     "boolean": "^0.2.0",
@@ -46,8 +45,10 @@
     "convict": "^4.3.2",
     "delay": "^3.1.0",
     "fastify-formbody": "^2.0.1",
+    "ioredis": "^4.0.0",
     "lto-api": "^0.3.6",
     "moment": "^2.22.2",
+    "nocache": "^2.0.0",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^6.3.2",
     "winston": "^3.1.0",
