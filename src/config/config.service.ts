@@ -9,6 +9,10 @@ export class ConfigService {
     return this.config.get('env');
   }
 
+  getLtoApiKey(): string {
+    return this.config.get('lto.api.key');
+  }
+
   getNodeUrl(): string {
     return this.config.get('anchor.node.url');
   }
@@ -18,6 +22,12 @@ export class ConfigService {
   }
 
   getApiSecret(): string {
+    const config = this.getLtoApiKey();
+
+    if (config) {
+      return config;
+    }
+
     return this.config.get('anchor.api.secret');
   }
 
@@ -33,11 +43,27 @@ export class ConfigService {
     return this.config.get('anchor.redis.cluster');
   }
 
+  getLoggerGlobal(): { level } {
+    return this.config.get('log');
+  }
+
   getLoggerConsole(): { level } {
+    const config = this.getLoggerGlobal();
+
+    if (config.level) {
+      return config;
+    }
+
     return this.config.get('anchor.logger.console');
   }
 
   getLoggerCombined(): { level } {
+    const config = this.getLoggerGlobal();
+
+    if (config.level) {
+      return config;
+    }
+
     return this.config.get('anchor.logger.combined');
   }
 }

@@ -22,6 +22,10 @@ describe('ConfigService', () => {
       expect(configService.getEnv()).toBe('test');
     });
 
+    test('getLtoApiKey()', async () => {
+      expect(configService.getLtoApiKey()).toBe('');
+    });
+
     test('getNodeUrl()', async () => {
       expect(configService.getNodeUrl()).toBe('http://localhost:6869');
     });
@@ -32,6 +36,9 @@ describe('ConfigService', () => {
 
     test('getApiSecret()', async () => {
       expect(configService.getApiSecret()).toBe('lt1secretapikey!');
+
+      configService.getLtoApiKey = jest.fn(() => 'global');
+      expect(configService.getApiSecret()).toBe('global');
     });
 
     test('getRedisClient()', async () => {
@@ -46,12 +53,22 @@ describe('ConfigService', () => {
       expect(configService.getRedisCluster()).toBe('');
     });
 
+    test('getLoggerGlobal()', async () => {
+      expect(configService.getLoggerGlobal()).toEqual({ level: '' });
+    });
+
     test('getLoggerConsole()', async () => {
       expect(configService.getLoggerConsole()).toEqual({ level: 'info' });
+
+      configService.getLoggerGlobal = jest.fn(() => ({ level: 'debug' }));
+      expect(configService.getLoggerConsole()).toEqual({ level: 'debug' });
     });
 
     test('getLoggerCombined()', async () => {
       expect(configService.getLoggerCombined()).toEqual({ level: 'info' });
+
+      configService.getLoggerGlobal = jest.fn(() => ({ level: 'debug' }));
+      expect(configService.getLoggerCombined()).toEqual({ level: 'debug' });
     });
   });
 });

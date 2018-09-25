@@ -35,7 +35,7 @@
     "logger": {
       "console": {
         "level": {
-          "default": "debug",
+          "default": "info",
           "env": "ANCHOR_LOGGER_CONSOLE_LEVEL"
         }
       },
@@ -45,6 +45,21 @@
           "env": "ANCHOR_LOGGER_COMBINED_LEVEL"
         }
       }
+    }
+  },
+  "lto": {
+    "doc": "Global config of the LTO node",
+    "api": {
+      "key": {
+        "default": "",
+        "env": "LTO_API_KEY"
+      }
+    }
+  },
+  "log": {
+    "level": {
+      "default": "",
+      "env": "LOG_LEVEL"
     }
   }
 }
