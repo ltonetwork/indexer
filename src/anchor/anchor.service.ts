@@ -43,9 +43,9 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
 
     try {
       await this.init();
-      await this.checkNewBlock();
 
       if (this.config.getNodeStartingBlock() === 'last') {
+
         this.node.getLastBlockHeight().then((height) => {
           this.lastBlock = height;
         });
@@ -53,7 +53,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
         this.lastBlock = this.config.getNodeStartingBlock() as number;
       }
 
-      this.processing = false;
+      await this.checkNewBlock();
 
       if (this.task == null) {
         this.task = setTimeout(this.runMonitor.bind(this), 30000);
