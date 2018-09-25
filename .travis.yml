@@ -1,6 +1,8 @@
 language: node_js
+
 node_js:
-- "8.11"
+  - "10.4.1"
+
 sudo: false
 
 # Add your branch here to have it tested and deployed
@@ -15,6 +17,9 @@ before_install:
 
 # Get all tags of git repo
 - git fetch "https://${GH_TOKEN}@github.com/legalthings/anchor.git" 'refs/tags/*:refs/tags/*'
+
+script:
+  npm run test:all
 
 after_success:
 # Bump version
