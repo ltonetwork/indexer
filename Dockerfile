@@ -6,13 +6,18 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package*.json ./
 
-RUN npm i --only=production
+RUN npm i
 
 RUN npm i pm2 -g
 
 # Bundle app source
 COPY . .
 
-EXPOSE 80
+RUN npm run build
 
-CMD ["pm2-runtime", "src/index.js"]
+RUN rm -rf node_modules/
+
+RUN npm i --only=production
+
+EXPOSE 80
+CMD ["pm2-runtime", "dist/main.js"]

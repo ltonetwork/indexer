@@ -1,0 +1,65 @@
+{
+  "env": {
+    "doc": "The application environment.",
+    "format": [
+      "production",
+      "development",
+      "test",
+      "lto"
+    ],
+    "default": "development",
+    "env": "NODE_ENV"
+  },
+  "anchor": {
+    "doc": "The config of this application, with a namespace so it can be merged into larger configs",
+    "api": {
+      "secret": {
+        "default": "lt1secretapikey!",
+        "env": "ANCHOR_API_SECRET"
+      }
+    },
+    "redis": {
+      "url": {
+        "default": "redis://localhost",
+        "env": "ANCHOR_REDIS_URL"
+      },
+      "cluster": {
+        "default": "",
+        "env": "ANCHOR_REDIS_CLUSTER"
+      }
+    },
+    "node": {
+      "url": "http://localhost:6869",
+      "starting_block": 1
+    },
+    "logger": {
+      "console": {
+        "level": {
+          "default": "info",
+          "env": "ANCHOR_LOGGER_CONSOLE_LEVEL"
+        }
+      },
+      "combined": {
+        "level": {
+          "default": "info",
+          "env": "ANCHOR_LOGGER_COMBINED_LEVEL"
+        }
+      }
+    }
+  },
+  "lto": {
+    "doc": "Global config of the LTO node",
+    "api": {
+      "key": {
+        "default": "",
+        "env": "LTO_API_KEY"
+      }
+    }
+  },
+  "log": {
+    "level": {
+      "default": "",
+      "env": "LOG_LEVEL"
+    }
+  }
+}
