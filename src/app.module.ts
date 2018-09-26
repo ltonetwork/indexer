@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
 import { LoggerModule } from './logger/logger.module';
 import { InfoModule } from './info/info.module';
@@ -22,7 +21,7 @@ export const AppModuleConfig = {
     RedisModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 };
 
 @Module(AppModuleConfig)
