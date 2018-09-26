@@ -1,16 +1,14 @@
-import { Get, Controller } from '@nestjs/common';
+import { Get, Controller, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
+import { Response } from "express";
 
 @Controller()
-@ApiUseTags('application')
 export class AppController {
   constructor(private readonly appService: AppService) { }
 
   @Get()
-  @ApiOperation({ title: 'Get application info' })
-  @ApiResponse({ status: 200 })
-  async info(): Promise<object> {
-    return await this.appService.info();
+  async root(@Res() res: Response): Promise<void> {
+    return res.redirect('/api-docs');
   }
 }
