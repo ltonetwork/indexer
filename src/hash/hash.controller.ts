@@ -15,7 +15,7 @@ export class HashController {
 
   @Post()
   @ApiOperation({ title: 'Anchor hash to the blockchain' })
-  @ApiImplicitBody({ name: 'hash', type: HashDto})
+  @ApiImplicitBody({ name: 'hash', type: HashDto })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid body given' })
   @ApiResponse({ status: 400, description: 'no hash given' })
@@ -98,8 +98,7 @@ export class HashController {
     }
 
     try {
-      const hexHash = this.hash.encoder.hexEncode(this.hash.encoder.decode(hash, encoding));
-      const chainpoint = await this.hash.getTransactionByHash(hexHash);
+      const chainpoint = await this.hash.getTransactionByHash(hash, encoding);
 
       if (!chainpoint) {
         return res.status(404).send({ chainpoint: null });

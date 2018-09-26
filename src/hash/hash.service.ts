@@ -28,7 +28,9 @@ export class HashService implements OnModuleInit, OnModuleDestroy {
     this.connection = await this.redis.connect(this.config.getRedisClient());
   }
 
-  async anchor(hash: string, encoding: string): Promise<{ '@context', type, targetHash, anchors } | null> {
+  async anchor(hash: string, encoding: string): Promise<{
+    '@context', type, targetHash, anchors,
+  } | null> {
     await this.init();
 
     this.logger.debug(`hash: starting anchoring '${hash}' as '${encoding}'`);
@@ -51,13 +53,16 @@ export class HashService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async getTransactionByHash(hash: string): Promise<{ '@context', type, targetHash, anchors } | null> {
+  async getTransactionByHash(hash: string, encoding?: string): Promise<{
+    '@context', type, targetHash, anchors,
+  } | null> {
     await this.init();
 
     this.logger.debug(`hash: getting transaction by hash '${hash}'`);
 
     try {
-      let transactionId = await this.connection.get(`lto-anchor:anchor:${hash.toLowerCase()}`);
+      const hashEncoded = encoding ? this.encoder.hexEncode(this.encoder.decode(hash, encoding)) : hash;
+      let transactionId = await this.connection.get(`lto-anchor:anchor:${hashEncoded.toLowerCase()}`);
 
       if (!transactionId) {
         const encoded = this.encoder.base64Encode(this.encoder.decode(hash, 'hex'));
