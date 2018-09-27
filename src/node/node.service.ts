@@ -57,7 +57,7 @@ export class NodeService {
     return response.data.height - 1;
   }
 
-  async getBlock(id: string | number): Promise<object> {
+  async getBlock(id: string | number): Promise<{ height, transactions }> {
     const response = await this.api.getBlock(id);
 
     if (response instanceof Error) {

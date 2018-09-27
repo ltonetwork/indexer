@@ -58,7 +58,7 @@
   },
   "log": {
     "level": {
-      "default": "",
+      "default": "debug",
       "env": "LOG_LEVEL"
     }
   }

@@ -10,8 +10,7 @@ import delay from 'delay';
 @Injectable()
 export class AnchorService implements OnModuleInit, OnModuleDestroy {
   private connection: RedisConnection;
-  private task: number;
-  private taskId: number;
+  private started: boolean;
   private processing: boolean;
   private lastBlock: number;
   private dataTransactionType: number;
@@ -41,87 +40,77 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   }
 
   async start() {
-    this.logger.debug(`anchor: starting connection`);
+    this.logger.info(`anchor: syncing with node`);
+
+    if (this.started) {
+      return this.logger.warn('anchor: processor already running');
+    }
 
     try {
+      this.started = true;
       await this.init();
 
-      if (this.config.getNodeStartingBlock() === 'last') {
-
-        this.node.getLastBlockHeight().then((height) => {
-          this.lastBlock = height;
-        });
-      } else {
-        this.lastBlock = this.config.getNodeStartingBlock() as number;
-      }
+      this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
+        await this.node.getLastBlockHeight() :
+        this.config.getNodeStartingBlock() as number;
 
       await this.checkNewBlock();
 
-      if (this.task == null) {
-        this.task = setTimeout(this.runMonitor.bind(this), this.interval);
-        this.logger.info(`anchor: started processor`);
-      } else {
-        this.logger.warn('anchor: processor already running');
-      }
-
-      this.logger.info(`anchor: successfully started connection`);
+      await delay(this.interval);
+      this.logger.info(`anchor: successfully synced with node`);
+      await this.runMonitor();
     } catch (e) {
-      this.logger.error(`anchor: failed to start connection: ${e}`);
+      this.logger.error(`anchor: failed to sync with node: ${e}`);
+      this.started = false;
+      this.processing = false;
+
       await delay(2000);
       return this.start();
     }
   }
 
   async runMonitor() {
-    this.taskId = setTimeout(this.runMonitor.bind(this), this.interval);
-    this.logger.debug('anchor: run monitor');
     if (!this.processing) {
       await this.checkNewBlock();
     }
+
+    await delay(this.interval);
+    return this.runMonitor();
   }
 
   async checkNewBlock() {
     this.processing = true;
-    try {
-      const currentHeight = await this.node.getLastBlockHeight();
-      let lastHeight = await this.getProcessingHeight() + 1;
 
-      for (; lastHeight <= currentHeight; lastHeight++) {
-        const block = await this.node.getBlock(lastHeight);
-        await this.processBlock(block);
-        await this.saveProcessingHeight(lastHeight);
-      }
-      this.logger.debug(`anchor: processed blocks to block: ${lastHeight}`);
-    } catch (e) {
-      this.processing = false;
-      throw e;
+    const currentHeight = await this.node.getLastBlockHeight();
+    let lastHeight = await this.getProcessingHeight() + 1;
+
+    for (; lastHeight <= currentHeight; lastHeight++) {
+      const block = await this.node.getBlock(lastHeight);
+      await this.processBlock(block);
+      await this.saveProcessingHeight(lastHeight);
     }
+
     this.processing = false;
   }
 
-  async stopMonitor() {
-    clearTimeout(this.taskId);
-  }
-
-  async processBlock(block) {
-    this.logger.debug(`anchor: processing block: ${block.height}`);
+  async processBlock(block: { height, transactions }) {
+    this.logger.debug(`anchor: processing block ${block.height}`);
 
     for (const transaction of block.transactions) {
       await this.processTransaction(transaction);
     }
   }
 
-  async processTransaction(transaction) {
+  async processTransaction(transaction: { id, type, data }) {
     const skip = !transaction ||
       transaction.type !== this.dataTransactionType ||
       typeof transaction.data === 'undefined';
 
-    if (skip) return null;
+    if (skip) {
+      return;
+    }
 
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < transaction.data.length; i++) {
-      const item = transaction.data[i];
-
+    for (const item of transaction.data) {
       if (item.key === this.anchorToken) {
         const value = item.value.replace('base64:', '');
         const hexHash = this.hash.encoder.hexEncode(this.hash.encoder.base64Decode(value));
@@ -132,18 +121,11 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
 
   async saveAnchor(hash, transactionId) {
     this.logger.info(`anchor: save hash ${hash} with transaction ${transactionId}`);
-    const key = `lto-anchor:anchor:${hash}`;
-    return this.connection.set(key, transactionId);
+    return this.connection.set(`lto-anchor:anchor:${hash}`, transactionId);
   }
 
   async getProcessingHeight() {
-    // tslint:disable-next-line:radix
-    let height = parseInt(await this.connection.get(`lto-anchor:processing-height`));
-    if (!height) {
-      height = this.lastBlock;
-    }
-
-    return height;
+    return Number((await this.connection.get(`lto-anchor:processing-height`)) || this.lastBlock);
   }
 
   async saveProcessingHeight(height) {
@@ -152,6 +134,5 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
 
   async close() {
     await this.connection.close();
-    await this.stopMonitor();
   }
 }
