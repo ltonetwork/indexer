@@ -53,6 +53,10 @@ describe('ConfigService', () => {
       expect(configService.getRedisCluster()).toBe('');
     });
 
+    test('getMonitorInterval()', async () => {
+      expect(configService.getMonitorInterval()).toBe(10000);
+    });
+
     test('getLoggerGlobal()', async () => {
       expect(configService.getLoggerGlobal()).toEqual({ level: '' });
     });

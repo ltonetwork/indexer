@@ -32,6 +32,12 @@
       "url": "http://localhost:6869",
       "starting_block": 1
     },
+    "monitor": {
+      "interval": {
+        "default": 10000,
+        "env": "ANCHOR_MONITOR_INTERVAL"
+      }
+    },
     "logger": {
       "console": {
         "level": {
@@ -58,7 +64,7 @@
   },
   "log": {
     "level": {
-      "default": "debug",
+      "default": "",
       "env": "LOG_LEVEL"
     }
   }
