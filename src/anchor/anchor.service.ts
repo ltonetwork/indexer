@@ -131,7 +131,7 @@ export class AnchorService implements OnModuleInit, OnModuleDestroy {
   }
 
   async saveAnchor(hash, transactionId) {
-    this.logger.info(`anchor: save hash ${hash} with transactionId: ${transactionId}`);
+    this.logger.info(`anchor: save hash ${hash} with transaction ${transactionId}`);
     const key = `lto-anchor:anchor:${hash}`;
     return this.connection.set(key, transactionId);
   }
