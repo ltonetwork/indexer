@@ -43,6 +43,10 @@ export class ConfigService {
     return this.config.get('anchor.redis.cluster');
   }
 
+  getMonitorInterval(): number {
+    return Number(this.config.get('anchor.monitor.interval'));
+  }
+
   getLoggerGlobal(): { level } {
     return this.config.get('log');
   }
