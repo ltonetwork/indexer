@@ -1,9 +1,9 @@
-import { ApiModelProperty, ApiModelPropertyOptional } from '@nestjs/swagger';
+import { ApiModelProperty } from '@nestjs/swagger';
 
 export class HashDto {
   @ApiModelProperty()
   readonly hash: string;
 
-  @ApiModelPropertyOptional()
+  @ApiModelProperty({default: 'hex', required: false})
   readonly encoding: string;
 }
