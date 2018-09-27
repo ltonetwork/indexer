@@ -10,5 +10,3 @@ git add package.json
 git commit -m "Bump version to v${VERSION}"
 git tag "v${VERSION}"
 git push origin "v${VERSION}"
-
-git push "https://${GH_TOKEN}@github.com/legalthings/anchor.git" master

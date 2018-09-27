@@ -16,7 +16,7 @@ before_install:
 - git config --global user.name "Travis CI"
 
 # Get all tags of git repo
-- git fetch "https://${GH_TOKEN}@github.com/legalthings/anchor.git" 'refs/tags/*:refs/tags/*'
+- git fetch origin 'refs/tags/*:refs/tags/*'
 
 script:
   npm run test:all
