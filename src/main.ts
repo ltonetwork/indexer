@@ -3,6 +3,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AnchorService } from './anchor/anchor.service';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from './config/config.service';
 
 async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
@@ -13,16 +14,15 @@ async function swagger(app: INestApplication) {
   SwaggerModule.setup('api-docs', app, document);
 }
 
-async function anchor(app: INestApplication) {
-  const anchorService = app.get<AnchorService>(AnchorService);
-  await anchorService.start();
-}
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await swagger(app);
-  await app.listen(process.env.PORT || 80);
-  await anchor(app);
+
+  const configService = app.get<ConfigService>(ConfigService);
+  await app.listen(configService.getPort());
+
+  const anchorService = app.get<AnchorService>(AnchorService);
+  await anchorService.start();
 }
 
 bootstrap();
