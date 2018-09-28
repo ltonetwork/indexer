@@ -14,6 +14,10 @@ export class RedisConnection {
     return this.connection.get(key);
   }
 
+  async sadd(key: redis.KeyType, members: any[]): Promise<string> {
+    return this.connection.sadd(key, members);
+  }
+
   async close() {
     await this.connection.quit();
   }
