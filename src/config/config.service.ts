@@ -9,6 +9,10 @@ export class ConfigService {
     return this.config.get('env');
   }
 
+  getPort(): string {
+    return this.config.get('port');
+  }
+
   getLtoApiKey(): string {
     return this.config.get('lto.api.key');
   }

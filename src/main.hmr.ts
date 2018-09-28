@@ -1,12 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AnchorService } from './anchor/anchor.service';
+import { INestApplication } from '@nestjs/common';
+import { ConfigService } from './config/config.service';
 
 declare const module: any;
 
+async function swagger(app: INestApplication) {
+  const options = new DocumentBuilder()
+    .setTitle('Anchoring service')
+    .setDescription('Anchor data in the blockchain')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api-docs', app, document);
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT || 3000);
+  await swagger(app);
+
+  const configService = app.get<ConfigService>(ConfigService);
+  await app.listen(configService.getPort());
 
   const anchorService = app.get<AnchorService>(AnchorService);
   await anchorService.start();
@@ -16,4 +31,5 @@ async function bootstrap() {
     module.hot.dispose(() => app.close());
   }
 }
+
 bootstrap();

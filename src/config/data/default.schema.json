@@ -10,6 +10,11 @@
     "default": "development",
     "env": "NODE_ENV"
   },
+  "port": {
+    "doc": "The port the application runs on.",
+    "default": 80,
+    "env": "PORT"
+  },
   "anchor": {
     "doc": "The config of this application, with a namespace so it can be merged into larger configs",
     "api": {
