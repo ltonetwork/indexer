@@ -38,6 +38,16 @@ export class AnchorStorageService implements OnModuleInit, OnModuleDestroy {
     await this.connection.set(`lto-anchor:anchor:${hash}`, transactionId);
   }
 
+  async indexAnchorTx(address: string, transactionId: string): Promise<void> {
+    await this.init();
+    await this.connection.sadd(`lto-anchor:tx:anchor:${address}`, [transactionId]);
+  }
+
+  async indexTransferTx(address: string, transactionId: string): Promise<void> {
+    await this.init();
+    await this.connection.sadd(`lto-anchor:tx:transfer:${address}`, [transactionId]);
+  }
+
   async getProcessingHeight(): Promise<number | null> {
     await this.init();
     const height = await this.connection.get(`lto-anchor:processing-height`);

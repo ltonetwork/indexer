@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AnchorModuleConfig } from './anchor.module';
 import { AnchorMonitorService } from './anchor-monitor.service';
 import { AnchorStorageService } from './anchor-storage.service';
+import { AnchorIndexerService } from './anchor-indexer.service';
 import { HashService } from '../hash/hash.service';
 import { NodeService } from '../node/node.service';
 
@@ -9,6 +10,7 @@ describe('AnchorService', () => {
   let module: TestingModule;
   let monitorService: AnchorMonitorService;
   let storageService: AnchorStorageService;
+  let indexerService: AnchorIndexerService;
   let hashService: HashService;
   let nodeService: NodeService;
 
@@ -35,8 +37,12 @@ describe('AnchorService', () => {
       saveAnchor: jest.spyOn(storageService, 'saveAnchor')
         .mockImplementation(),
     };
+    const indexer = {
+      index: jest.spyOn(indexerService, 'index')
+        .mockImplementation(),
+    };
 
-    return { monitor, hash, node, storage };
+    return { monitor, hash, node, storage, indexer };
   }
 
   beforeEach(async () => {
@@ -45,6 +51,7 @@ describe('AnchorService', () => {
 
     monitorService = module.get<AnchorMonitorService>(AnchorMonitorService);
     storageService = module.get<AnchorStorageService>(AnchorStorageService);
+    indexerService = module.get<AnchorIndexerService>(AnchorIndexerService);
     hashService = module.get<HashService>(HashService);
     nodeService = module.get<NodeService>(NodeService);
   });
@@ -95,7 +102,7 @@ describe('AnchorService', () => {
           { id: 2 },
         ],
       };
-      await monitorService.processBlock(block);
+      await monitorService.processBlock(block as any);
 
       expect(spies.monitor.processTransaction.mock.calls.length).toBe(2);
       expect(spies.monitor.processTransaction.mock.calls[0][0]).toEqual(block.transactions[0]);
@@ -121,7 +128,10 @@ describe('AnchorService', () => {
           },
         ],
       };
-      await monitorService.processTransaction(transaction);
+      await monitorService.processTransaction(transaction as any);
+
+      expect(spies.indexer.index.mock.calls.length).toBe(1);
+      expect(spies.indexer.index.mock.calls[0][0]).toEqual(transaction);
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])

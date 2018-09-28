@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AnchorStorageService } from './anchor-storage.service';
+import { AnchorIndexerService } from './anchor-indexer.service';
+import { Transaction } from './interfaces/transaction.interface';
+import { Block } from './interfaces/block.interface';
 import { HashService } from '../hash/hash.service';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
@@ -19,6 +22,7 @@ export class AnchorMonitorService {
     private readonly hash: HashService,
     private readonly node: NodeService,
     private readonly storage: AnchorStorageService,
+    private readonly indexer: AnchorIndexerService,
   ) {
     this.dataTransactionType = 12;
     this.anchorToken = '\u2693';
@@ -61,7 +65,7 @@ export class AnchorMonitorService {
     this.processing = false;
   }
 
-  async processBlock(block: { height, transactions }) {
+  async processBlock(block: Block) {
     this.logger.debug(`anchor: processing block ${block.height}`);
 
     for (const transaction of block.transactions) {
@@ -69,7 +73,9 @@ export class AnchorMonitorService {
     }
   }
 
-  async processTransaction(transaction: { id, type, data: Array<{ key, value }> }) {
+  async processTransaction(transaction: Transaction) {
+    await this.indexer.index(transaction);
+
     const skip = !transaction ||
       transaction.type !== this.dataTransactionType ||
       typeof transaction.data === 'undefined';
