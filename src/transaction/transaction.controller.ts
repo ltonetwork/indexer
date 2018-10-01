@@ -21,9 +21,10 @@ export class TransactionController {
   @ApiImplicitQuery({ name: 'offset', required: false, description: 'Start search at given offset' })
   @ApiImplicitQuery({ name: 'type', required: false, description: 'Filter by type', enum: ['anchor', 'transfer'] })
   @ApiResponse({ status: 200, headers: { 'X-Total': { description: 'Total amount of transactions' } } })
-  @ApiResponse({ status: 400, description: 'no address given' })
-  @ApiResponse({ status: 400, description: 'invalid type given' })
-  @ApiResponse({ status: 400, description: 'limit may not exceed 100' })
+  @ApiResponse({
+    status: 400,
+    description: ['no address given', 'invalid type given', 'limit may not exceed 100'].join('<br>'),
+  })
   @ApiResponse({ status: 500, description: `failed to get transaction by address '[reason]'` })
   async getTransactionsForAddress(@Req() req: Request, @Res() res: Response): Promise<Response> {
     const address = req.params.address;

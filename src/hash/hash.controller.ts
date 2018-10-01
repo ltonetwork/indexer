@@ -19,10 +19,10 @@ export class HashController {
   @ApiOperation({ title: 'Anchor hash to the blockchain' })
   @ApiImplicitBody({ name: 'hash', type: HashDto })
   @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 400, description: 'invalid body given' })
-  @ApiResponse({ status: 400, description: 'no hash given' })
-  @ApiResponse({ status: 400, description: 'invalid hash given' })
-  @ApiResponse({ status: 400, description: 'invalid encoding given' })
+  @ApiResponse({
+    status: 400,
+    description: ['invalid body given', 'no hash given', 'invalid hash given', 'invalid encoding given'].join('<br>'),
+  })
   @ApiResponse({ status: 500, description: `failed to anchor '[reason]'` })
   async add(@Req() req: Request, @Res() res: Response): Promise<Response> {
     if (!req.body) {
@@ -84,8 +84,10 @@ export class HashController {
   @ApiImplicitParam({ name: 'hash' })
   @ApiImplicitParam({ name: 'encoding' })
   @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 400, description: 'no hash given' })
-  @ApiResponse({ status: 400, description: 'invalid encoding given' })
+  @ApiResponse({
+    status: 400,
+    description: ['no hash given', 'invalid encoding given'].join('<br>'),
+  })
   @ApiResponse({ status: 404 })
   @ApiResponse({ status: 500, description: `failed to get transaction by hash and encoding '[reason]'` })
   async getTransactionByHashAndEncoding(@Req() req: Request, @Res() res: Response): Promise<Response> {
