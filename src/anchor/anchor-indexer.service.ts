@@ -1,49 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { AnchorStorageService } from './anchor-storage.service';
-import { Transaction } from './interfaces/transaction.interface';
+import { StorageService } from '../storage/storage.service';
 import { LoggerService } from '../logger/logger.service';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { TransactionService } from '../transaction/transaction.service';
 
 @Injectable()
 export class AnchorIndexerService {
-  public readonly ANCHOR_TRANSACTIONS = [12, 15];
-  public readonly TRANSFER_TRANSACTIONS = [4, 11];
-
   constructor(
     private readonly logger: LoggerService,
-    private readonly storage: AnchorStorageService,
+    private readonly storage: StorageService,
+    private readonly tx: TransactionService,
   ) {
   }
 
   async index(transaction: Transaction): Promise<void> {
-    if (this.ANCHOR_TRANSACTIONS.indexOf(transaction.type) > -1) {
-      return this.indexAnchorTx(transaction);
+    const identifier = this.tx.getIdentifierByType(transaction.type);
+
+    if (!identifier) {
+      return;
     }
 
-    if (this.TRANSFER_TRANSACTIONS.indexOf(transaction.type) > -1) {
-      return this.indexTransferTx(transaction);
-    }
-  }
-
-  async indexAnchorTx(transaction: Transaction): Promise<void> {
-    this.logger.debug(`anchor: index anchor transaction ${transaction.id} for ${transaction.sender}`);
-    return await this.storage.indexAnchorTx(transaction.sender, transaction.id);
-  }
-
-  async indexTransferTx(transaction: Transaction): Promise<void> {
     if (transaction.sender) {
-      this.logger.debug(`anchor: index transfer transaction ${transaction.id} for ${transaction.sender}`);
-      await this.storage.indexTransferTx(transaction.sender, transaction.id);
+      this.logger.debug(`anchor: index ${identifier} transaction ${transaction.id} for ${transaction.sender}`);
+      await this.storage.indexTx(identifier, transaction.sender, transaction.id);
     }
 
     if (transaction.recipient) {
-      this.logger.debug(`anchor: index transfer transaction ${transaction.id} for ${transaction.recipient}`);
-      await this.storage.indexTransferTx(transaction.recipient, transaction.id);
+      this.logger.debug(`anchor: index ${identifier} transaction ${transaction.id} for ${transaction.recipient}`);
+      await this.storage.indexTx(identifier, transaction.recipient, transaction.id);
     }
 
     if (transaction.transfers) {
       for (const transfer of transaction.transfers) {
-        this.logger.debug(`anchor: index transfer transaction ${transaction.id} for ${transfer.recipient}`);
-        await this.storage.indexTransferTx(transfer.recipient, transaction.id);
+        this.logger.debug(`anchor: index ${identifier} transaction ${transaction.id} for ${transfer.recipient}`);
+        await this.storage.indexTx(identifier, transfer.recipient, transaction.id);
       }
     }
   }

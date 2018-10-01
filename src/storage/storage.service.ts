@@ -4,7 +4,7 @@ import { RedisService } from '../redis/redis.service';
 import { RedisConnection } from '../redis/classes/redis.connection';
 
 @Injectable()
-export class AnchorStorageService implements OnModuleInit, OnModuleDestroy {
+export class StorageService implements OnModuleInit, OnModuleDestroy {
   private connection: RedisConnection;
 
   constructor(
@@ -33,19 +33,29 @@ export class AnchorStorageService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async getAnchor(hash: string): Promise<string> {
+    await this.init();
+    return await this.connection.get(`lto-anchor:anchor:${hash.toLowerCase()}`);
+  }
+
   async saveAnchor(hash: string, transactionId: string): Promise<void> {
     await this.init();
-    await this.connection.set(`lto-anchor:anchor:${hash}`, transactionId);
+    await this.connection.set(`lto-anchor:anchor:${hash.toLowerCase()}`, transactionId);
   }
 
-  async indexAnchorTx(address: string, transactionId: string): Promise<void> {
+  async countTx(type: string, address: string): Promise<number> {
     await this.init();
-    await this.connection.sadd(`lto-anchor:tx:anchor:${address}`, [transactionId]);
+    return await this.connection.zcard(`lto-anchor:tx:${type}:${address.toLowerCase()}`);
   }
 
-  async indexTransferTx(address: string, transactionId: string): Promise<void> {
+  async indexTx(type: string, address: string, transactionId: string): Promise<void> {
     await this.init();
-    await this.connection.sadd(`lto-anchor:tx:transfer:${address}`, [transactionId]);
+    await this.connection.zaddIncr(`lto-anchor:tx:${type}:${address.toLowerCase()}`, [transactionId]);
+  }
+
+  async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
+    await this.init();
+    return await this.connection.zrangePaginate(`lto-anchor:tx:${type}:${address.toLowerCase()}`, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {

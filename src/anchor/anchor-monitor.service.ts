@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { AnchorStorageService } from './anchor-storage.service';
 import { AnchorIndexerService } from './anchor-indexer.service';
-import { Transaction } from './interfaces/transaction.interface';
-import { Block } from './interfaces/block.interface';
-import { HashService } from '../hash/hash.service';
+import { EncoderService } from '../encoder/encoder.service';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { NodeService } from '../node/node.service';
+import { StorageService } from '../storage/storage.service';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Block } from '../transaction/interfaces/block.interface';
 import delay from 'delay';
 
 @Injectable()
@@ -19,9 +19,9 @@ export class AnchorMonitorService {
   constructor(
     private readonly logger: LoggerService,
     private readonly config: ConfigService,
-    private readonly hash: HashService,
+    private readonly encoder: EncoderService,
     private readonly node: NodeService,
-    private readonly storage: AnchorStorageService,
+    private readonly storage: StorageService,
     private readonly indexer: AnchorIndexerService,
   ) {
     this.dataTransactionType = 12;
@@ -87,7 +87,7 @@ export class AnchorMonitorService {
     for (const item of transaction.data) {
       if (item.key === this.anchorToken) {
         const value = item.value.replace('base64:', '');
-        const hexHash = this.hash.encoder.hexEncode(this.hash.encoder.base64Decode(value));
+        const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
         this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
         await this.storage.saveAnchor(hexHash, transaction.id);
       }

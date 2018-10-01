@@ -30,6 +30,11 @@ export class NodeApiService {
     return await this.request.get(`${url}/blocks/at/${id}`);
   }
 
+  async getTransaction(id: string): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return await this.request.get(`${url}/transactions/info/${id}`);
+  }
+
   async sendTransaction(data: any): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/addresses/data`, data, {

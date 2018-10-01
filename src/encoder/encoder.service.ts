@@ -1,7 +1,12 @@
-export class HashEncoder {
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class EncoderService {
+  private alphabet: string;
   private alphabetMap: object;
 
-  constructor(private readonly alphabet: string = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz') {
+  constructor() {
+    this.alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
     this.alphabetMap = this.alphabet.split('').reduce((map, c, i) => {
       map[c] = i;
       return map;

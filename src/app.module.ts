@@ -8,6 +8,8 @@ import { HashModule } from './hash/hash.module';
 import { NodeModule } from './node/node.module';
 import { RedisModule } from './redis/redis.module';
 import { RequestModule } from './request/request.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { StorageModule } from './storage/storage.module';
 
 export const AppModuleConfig = {
   imports: [
@@ -19,6 +21,8 @@ export const AppModuleConfig = {
     HashModule,
     NodeModule,
     RedisModule,
+    TransactionModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [],

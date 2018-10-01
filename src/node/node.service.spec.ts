@@ -2,13 +2,26 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NodeModuleConfig } from './node.module';
 import { NodeService } from './node.service';
 import { NodeApiService } from './node-api.service';
+import { StorageService } from '../storage/storage.service';
 
 describe('NodeService', () => {
   let module: TestingModule;
   let nodeService: NodeService;
   let nodeApiService: NodeApiService;
+  let storageService: StorageService;
 
   function spy() {
+    const node = {
+      getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet'),
+      createAnchorTransaction: jest.spyOn(nodeService, 'createAnchorTransaction'),
+      getUnconfirmedAnchor: jest.spyOn(nodeService, 'getUnconfirmedAnchor'),
+    };
+
+    const storage = {
+      getAnchor: jest.spyOn(storageService, 'getAnchor')
+        .mockImplementation(() => 'fake_transaction'),
+    };
+
     const api = {
       getNodeAddresses: jest.spyOn(nodeApiService, 'getNodeAddresses'),
       getUnconfirmedTransactions: jest.spyOn(nodeApiService, 'getUnconfirmedTransactions'),
@@ -17,7 +30,7 @@ describe('NodeService', () => {
       sendTransaction: jest.spyOn(nodeApiService, 'sendTransaction'),
     };
 
-    return { api };
+    return { api, node, storage };
   }
 
   beforeEach(async () => {
@@ -26,6 +39,7 @@ describe('NodeService', () => {
 
     nodeService = module.get<NodeService>(NodeService);
     nodeApiService = module.get<NodeApiService>(NodeApiService);
+    storageService = module.get<StorageService>(StorageService);
   });
 
   afterEach(async () => {
@@ -89,6 +103,95 @@ describe('NodeService', () => {
 
       expect(await nodeService.createAnchorTransaction('fake_sender', 'fake_hash')).toEqual('fake_id');
       expect(spies.api.sendTransaction.mock.calls.length).toBe(1);
+    });
+  });
+
+  describe('anchor()', () => {
+    test('should anchor hash with given encoding', async () => {
+      const spies = spy();
+      spies.node.getNodeWallet.mockImplementation(() => 'fake_wallet');
+      spies.node.createAnchorTransaction.mockImplementation(() => 'fake_transaction');
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const encoding = 'hex';
+      const chainpoint = {
+        '@context': 'https://w3id.org/chainpoint/v2',
+        'anchors': [
+          {
+            sourceId: 'fake_transaction',
+            type: 'LTODataTransaction',
+          },
+        ],
+        'targetHash': hash,
+        'type': 'ChainpointSHA256v2',
+      };
+
+      expect(await nodeService.anchor(hash, encoding)).toEqual(chainpoint);
+
+      expect(spies.node.getNodeWallet.mock.calls.length).toBe(1);
+      expect(spies.node.createAnchorTransaction.mock.calls.length).toBe(1);
+      expect(spies.node.createAnchorTransaction.mock.calls[0][0]).toBe('fake_wallet');
+      expect(spies.node.createAnchorTransaction.mock.calls[0][1]).toBe('LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=');
+    });
+  });
+
+  describe('getTransactionByHash()', () => {
+    test('should get transaction by hash', async () => {
+      const spies = spy();
+      spies.node.getNodeWallet.mockImplementation(() => 'fake_wallet');
+      spies.node.createAnchorTransaction.mockImplementation(() => 'fake_transaction');
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const chainpoint = {
+        '@context': 'https://w3id.org/chainpoint/v2',
+        'anchors': [
+          {
+            sourceId: 'fake_transaction',
+            type: 'LTODataTransaction',
+          },
+        ],
+        'targetHash': hash,
+        'type': 'ChainpointSHA256v2',
+      };
+
+      expect(await nodeService.getTransactionByHash(hash)).toEqual(chainpoint);
+
+      expect(spies.storage.getAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.getAnchor.mock.calls[0][0]).toBe(hash);
+
+      expect(spies.node.getUnconfirmedAnchor.mock.calls.length).toBe(0);
+    });
+
+    test('should get transaction by hash by looking in unconfirmed transactions', async () => {
+      const spies = spy();
+      spies.node.getNodeWallet.mockImplementation(() => 'fake_wallet');
+      spies.node.createAnchorTransaction.mockImplementation(() => 'fake_transaction');
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
+
+      spies.storage.getAnchor.mockImplementation(() => undefined);
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const chainpoint = {
+        '@context': 'https://w3id.org/chainpoint/v2',
+        'anchors': [
+          {
+            sourceId: 'fake_transaction',
+            type: 'LTODataTransaction',
+          },
+        ],
+        'targetHash': hash,
+        'type': 'ChainpointSHA256v2',
+      };
+
+      expect(await nodeService.getTransactionByHash(hash)).toEqual(chainpoint);
+
+      expect(spies.storage.getAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.getAnchor.mock.calls[0][0]).toBe(hash);
+
+      expect(spies.node.getUnconfirmedAnchor.mock.calls.length).toBe(1);
+      expect(spies.node.getUnconfirmedAnchor.mock.calls[0][0]).toBe('LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=');
     });
   });
 });
