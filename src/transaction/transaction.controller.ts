@@ -23,6 +23,7 @@ export class TransactionController {
   @ApiResponse({ status: 200, headers: { 'X-Total': { description: 'Total amount of transactions' } } })
   @ApiResponse({ status: 400, description: 'no address given' })
   @ApiResponse({ status: 400, description: 'invalid type given' })
+  @ApiResponse({ status: 400, description: 'limit may not exceed 100' })
   @ApiResponse({ status: 500, description: `failed to get transaction by address '[reason]'` })
   async getTransactionsForAddress(@Req() req: Request, @Res() res: Response): Promise<Response> {
     const address = req.params.address;
@@ -36,13 +37,17 @@ export class TransactionController {
     }
 
     const { limit, offset } = req.query;
+    if (Number(limit) > 100) {
+      return res.status(400).send('limit may not exceed 100');
+    }
 
     try {
       const transactions = await this.node.getTransactionsByAddress(address, type, limit, offset);
       const count = await this.node.countTransactionsByAddress(address, type);
+      const expanded = await this.node.getTransactions(transactions);
 
       res.setHeader('X-Total', count);
-      res.status(200).json(transactions);
+      res.status(200).json(expanded);
     } catch (e) {
       this.logger.error(`transaction-controller: failed to get transaction by address '${e}'`, { stack: e.stack });
       return res.status(500).send(`failed to get transaction by address '${e}'`);

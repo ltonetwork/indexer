@@ -3,6 +3,7 @@ import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../logger/logger.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class NodeService {
@@ -71,6 +72,21 @@ export class NodeService {
     }
 
     return response.data;
+  }
+
+  async getTransaction(id: string): Promise<Transaction | null> {
+    const response = await this.api.getTransaction(id);
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
+  }
+
+  async getTransactions(id: string[]): Promise<Transaction[] | null> {
+    const promises = id.map((tx) => this.getTransaction(tx));
+    return await Promise.all(promises);
   }
 
   async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {

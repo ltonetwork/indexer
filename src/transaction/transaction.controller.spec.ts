@@ -15,6 +15,8 @@ describe('TransactionController', () => {
         .mockImplementation(() => ['fake_transaction_1', 'fake_transaction_2']),
       countTransactionsByAddress: jest.spyOn(nodeService, 'countTransactionsByAddress')
         .mockImplementation(() => 2),
+      getTransactions: jest.spyOn(nodeService, 'getTransactions')
+        .mockImplementation(() => [{ id: 'fake_transaction_1' }, { id: 'fake_transaction_2' }]),
     };
 
     return { node };
@@ -44,7 +46,7 @@ describe('TransactionController', () => {
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.header['x-total']).toBe('2');
-      expect(res.body).toEqual(['fake_transaction_1', 'fake_transaction_2']);
+      expect(res.body).toEqual([{ id: 'fake_transaction_1' }, { id: 'fake_transaction_2' }]);
 
       expect(spies.node.getTransactionsByAddress.mock.calls.length).toBe(1);
       expect(spies.node.getTransactionsByAddress.mock.calls[0][0]).toBe(address);
@@ -55,6 +57,9 @@ describe('TransactionController', () => {
 
       expect(spies.node.countTransactionsByAddress.mock.calls.length).toBe(1);
       expect(spies.node.countTransactionsByAddress.mock.calls[0][0]).toBe(address);
+
+      expect(spies.node.getTransactions.mock.calls.length).toBe(1);
+      expect(spies.node.getTransactions.mock.calls[0][0]).toEqual(['fake_transaction_1', 'fake_transaction_2']);
     });
 
     test('should get transactions for given address using specified params', async () => {
@@ -69,7 +74,7 @@ describe('TransactionController', () => {
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.header['x-total']).toBe('2');
-      expect(res.body).toEqual(['fake_transaction_1', 'fake_transaction_2']);
+      expect(res.body).toEqual([{ id: 'fake_transaction_1' }, { id: 'fake_transaction_2' }]);
 
       expect(spies.node.getTransactionsByAddress.mock.calls.length).toBe(1);
       expect(spies.node.getTransactionsByAddress.mock.calls[0][0]).toBe(address);
@@ -80,6 +85,9 @@ describe('TransactionController', () => {
 
       expect(spies.node.countTransactionsByAddress.mock.calls.length).toBe(1);
       expect(spies.node.countTransactionsByAddress.mock.calls[0][0]).toBe(address);
+
+      expect(spies.node.getTransactions.mock.calls.length).toBe(1);
+      expect(spies.node.getTransactions.mock.calls[0][0]).toEqual(['fake_transaction_1', 'fake_transaction_2']);
     });
   });
 });
