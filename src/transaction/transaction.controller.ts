@@ -1,0 +1,51 @@
+import { Controller, Post, Req, Res, Get } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiUseTags, ApiImplicitQuery, ApiImplicitParam } from '@nestjs/swagger';
+import { Response, Request } from 'express';
+import { TransactionService } from './transaction.service';
+import { LoggerService } from '../logger/logger.service';
+import { NodeService } from '../node/node.service';
+
+@Controller('transactions')
+@ApiUseTags('transaction')
+export class TransactionController {
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly node: NodeService,
+    private readonly tx: TransactionService,
+  ) { }
+
+  @Get('addresses/:address')
+  @ApiOperation({ title: 'Get transactions by address' })
+  @ApiImplicitParam({ name: 'address', description: 'Filter by address' })
+  @ApiImplicitQuery({ name: 'limit', required: false, description: 'Limit amount of transactions returned' })
+  @ApiImplicitQuery({ name: 'offset', required: false, description: 'Start search at given offset' })
+  @ApiImplicitQuery({ name: 'type', required: false, description: 'Filter by type', enum: ['anchor', 'transfer'] })
+  @ApiResponse({ status: 200, headers: { 'X-Total': { description: 'Total amount of transactions' } } })
+  @ApiResponse({ status: 400, description: 'no address given' })
+  @ApiResponse({ status: 400, description: 'invalid type given' })
+  @ApiResponse({ status: 500, description: `failed to get transaction by address '[reason]'` })
+  async getTransactionsForAddress(@Req() req: Request, @Res() res: Response): Promise<Response> {
+    const address = req.params.address;
+    if (!address) {
+      return res.status(400).send('no address given');
+    }
+
+    const type = req.query.type || 'transfer';
+    if (!this.tx.hasIdentifier(type)) {
+      return res.status(400).send('invalid type given');
+    }
+
+    const { limit, offset } = req.query;
+
+    try {
+      const transactions = await this.node.getTransactionsByAddress(address, type, limit, offset);
+      const count = await this.node.countTransactionsByAddress(address, type);
+
+      res.setHeader('X-Total', count);
+      res.status(200).json(transactions);
+    } catch (e) {
+      this.logger.error(`transaction-controller: failed to get transaction by address '${e}'`, { stack: e.stack });
+      return res.status(500).send(`failed to get transaction by address '${e}'`);
+    }
+  }
+}

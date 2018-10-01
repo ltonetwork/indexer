@@ -1,17 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnchorModuleConfig } from './anchor.module';
 import { AnchorMonitorService } from './anchor-monitor.service';
-import { AnchorStorageService } from './anchor-storage.service';
 import { AnchorIndexerService } from './anchor-indexer.service';
-import { HashService } from '../hash/hash.service';
 import { NodeService } from '../node/node.service';
+import { StorageService } from '../storage/storage.service';
 
 describe('AnchorService', () => {
   let module: TestingModule;
   let monitorService: AnchorMonitorService;
-  let storageService: AnchorStorageService;
+  let storageService: StorageService;
   let indexerService: AnchorIndexerService;
-  let hashService: HashService;
   let nodeService: NodeService;
 
   function spy() {
@@ -20,8 +18,6 @@ describe('AnchorService', () => {
       checkNewBlock: jest.spyOn(monitorService, 'checkNewBlock'),
       processBlock: jest.spyOn(monitorService, 'processBlock'),
       processTransaction: jest.spyOn(monitorService, 'processTransaction'),
-    };
-    const hash = {
     };
     const node = {
       getLastBlockHeight: jest.spyOn(nodeService, 'getLastBlockHeight')
@@ -42,7 +38,7 @@ describe('AnchorService', () => {
         .mockImplementation(),
     };
 
-    return { monitor, hash, node, storage, indexer };
+    return { monitor, node, storage, indexer };
   }
 
   beforeEach(async () => {
@@ -50,9 +46,8 @@ describe('AnchorService', () => {
     await module.init();
 
     monitorService = module.get<AnchorMonitorService>(AnchorMonitorService);
-    storageService = module.get<AnchorStorageService>(AnchorStorageService);
+    storageService = module.get<StorageService>(StorageService);
     indexerService = module.get<AnchorIndexerService>(AnchorIndexerService);
-    hashService = module.get<HashService>(HashService);
     nodeService = module.get<NodeService>(NodeService);
   });
 

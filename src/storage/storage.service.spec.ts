@@ -1,18 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisService } from '../redis/redis.service';
-import { AnchorModuleConfig } from './anchor.module';
-import { AnchorStorageService } from './anchor-storage.service';
+import { StorageModuleConfig } from './storage.module';
+import { StorageService } from './storage.service';
 
-describe('AnchorStorageService', () => {
+describe('StorageService', () => {
   let module: TestingModule;
-  let storageService: AnchorStorageService;
+  let storageService: StorageService;
   let redisService: RedisService;
 
   function spy() {
     const redisConnection = {
       get: jest.fn(),
       set: jest.fn(),
-      sadd: jest.fn(),
+      zaddIncr: jest.fn(),
+      zrangePaginate: jest.fn(),
+      zcard: jest.fn(),
       close: jest.fn(),
     };
     const redis = {
@@ -24,10 +26,10 @@ describe('AnchorStorageService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(AnchorModuleConfig).compile();
+    module = await Test.createTestingModule(StorageModuleConfig).compile();
     await module.init();
 
-    storageService = module.get<AnchorStorageService>(AnchorStorageService);
+    storageService = module.get<StorageService>(StorageService);
     redisService = module.get<RedisService>(RedisService);
   });
 
@@ -48,44 +50,70 @@ describe('AnchorStorageService', () => {
 
       expect(spies.redisConnection.set.mock.calls.length).toBe(1);
       expect(spies.redisConnection.set.mock.calls[0][0])
-        .toBe(`lto-anchor:anchor:${hash}`);
+        .toBe(`lto-anchor:anchor:${hash.toLowerCase()}`);
       expect(spies.redisConnection.set.mock.calls[0][1]).toBe(transaction);
     });
   });
 
-  describe('indexAnchorTx()', () => {
-    test('should index anchor transaction for address', async () => {
+  describe('indexTx()', () => {
+    test('should index transaction type for address', async () => {
       const spies = spy();
 
+      const type = 'anchor';
       const address = 'fake_address';
       const transaction = 'fake_transaction';
-      await storageService.indexAnchorTx(address, transaction);
+      await storageService.indexTx(type, address, transaction);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.sadd.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.sadd.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:anchor:${address}`);
-      expect(spies.redisConnection.sadd.mock.calls[0][1]).toEqual([transaction]);
+      expect(spies.redisConnection.zaddIncr.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zaddIncr.mock.calls[0][0])
+        .toBe(`lto-anchor:tx:${type}:${address}`);
+      expect(spies.redisConnection.zaddIncr.mock.calls[0][1]).toEqual([transaction]);
     });
   });
 
-  describe('indexTransferTx()', () => {
-    test('should index transfer transaction for address', async () => {
+  describe('getTx()', () => {
+    test('should get transaction type for address', async () => {
       const spies = spy();
 
+      const transactions = ['fake_transaction'];
+      spies.redisConnection.zrangePaginate.mockImplementation(() => transactions);
+
+      const type = 'anchor';
       const address = 'fake_address';
-      const transaction = 'fake_transaction';
-      await storageService.indexTransferTx(address, transaction);
+      const limit = 25;
+      const offset = 0;
+      expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.sadd.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.sadd.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:transfer:${address}`);
-      expect(spies.redisConnection.sadd.mock.calls[0][1]).toEqual([transaction]);
+      expect(spies.redisConnection.zrangePaginate.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zrangePaginate.mock.calls[0][0])
+        .toBe(`lto-anchor:tx:${type}:${address}`);
+      expect(spies.redisConnection.zrangePaginate.mock.calls[0][1]).toBe(limit);
+      expect(spies.redisConnection.zrangePaginate.mock.calls[0][2]).toBe(offset);
+    });
+  });
+
+  describe('countTx()', () => {
+    test('should count transaction type for address', async () => {
+      const spies = spy();
+
+      spies.redisConnection.zcard.mockImplementation(() => 3);
+
+      const type = 'anchor';
+      const address = 'fake_address';
+      expect(await storageService.countTx(type, address)).toEqual(3);
+
+      expect(spies.redis.connect.mock.calls.length).toBe(1);
+      expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
+
+      expect(spies.redisConnection.zcard.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zcard.mock.calls[0][0])
+        .toBe(`lto-anchor:tx:${type}:${address}`);
     });
   });
 

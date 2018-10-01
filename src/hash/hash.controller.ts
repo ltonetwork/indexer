@@ -2,15 +2,17 @@ import { Controller, Post, Req, Res, Get } from '@nestjs/common';
 import { ApiImplicitParam, ApiImplicitBody, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { LoggerService } from '../logger/logger.service';
-import { HashService } from './hash.service';
 import { HashDto } from './dto/hash.dto';
+import { NodeService } from '../node/node.service';
+import { EncoderService } from '../encoder/encoder.service';
 
 @Controller('hash')
 @ApiUseTags('hash')
 export class HashController {
   constructor(
     private readonly logger: LoggerService,
-    private readonly hash: HashService,
+    private readonly node: NodeService,
+    private readonly encoder: EncoderService,
   ) { }
 
   @Post()
@@ -37,12 +39,12 @@ export class HashController {
       return res.status(400).send('invalid encoding given');
     }
 
-    if (!this.hash.encoder.validateSHA256(hash, encoding)) {
+    if (!this.encoder.validateSHA256(hash, encoding)) {
       return res.status(400).send('invalid hash given');
     }
 
     try {
-      const chainpoint = await this.hash.anchor(hash, encoding);
+      const chainpoint = await this.node.anchor(hash, encoding);
       res.status(200).json({ chainpoint });
     } catch (e) {
       this.logger.error(`hash-controller: failed to anchor '${e}'`, { stack: e.stack });
@@ -64,7 +66,7 @@ export class HashController {
     }
 
     try {
-      const chainpoint = await this.hash.getTransactionByHash(hash);
+      const chainpoint = await this.node.getTransactionByHash(hash);
 
       if (!chainpoint) {
         return res.status(404).send({ chainpoint: null });
@@ -98,7 +100,7 @@ export class HashController {
     }
 
     try {
-      const chainpoint = await this.hash.getTransactionByHash(hash, encoding);
+      const chainpoint = await this.node.getTransactionByHash(hash, encoding);
 
       if (!chainpoint) {
         return res.status(404).send({ chainpoint: null });

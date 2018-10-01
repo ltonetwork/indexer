@@ -5,9 +5,11 @@ import { NodeApiService } from './node-api.service';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
 import { RequestModule } from '../request/request.module';
+import { EncoderModule } from '../encoder/encoder.module';
+import { StorageModule } from '../storage/storage.module';
 
 export const NodeModuleConfig = {
-  imports: [LoggerModule, ConfigModule, RequestModule],
+  imports: [LoggerModule, ConfigModule, RequestModule, EncoderModule, StorageModule],
   controllers: [],
   providers: [
     ...nodeProviders,

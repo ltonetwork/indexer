@@ -1,19 +1,19 @@
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { HashModuleConfig } from './hash.module';
-import { HashService } from './hash.service';
-import { INestApplication } from '@nestjs/common';
+import { NodeService } from '../node/node.service';
 
 describe('HashController', () => {
   let module: TestingModule;
-  let hashService: HashService;
+  let nodeService: NodeService;
   let app: INestApplication;
 
   function spy() {
     const hash = {
-      anchor: jest.spyOn(hashService, 'anchor')
+      anchor: jest.spyOn(nodeService, 'anchor')
         .mockImplementation(() => ({ type: 'ChainpointSHA256v2' })),
-      getTransactionByHash: jest.spyOn(hashService, 'getTransactionByHash')
+      getTransactionByHash: jest.spyOn(nodeService, 'getTransactionByHash')
         .mockImplementation(() => ({ type: 'ChainpointSHA256v2' })),
     };
 
@@ -25,7 +25,7 @@ describe('HashController', () => {
     app = module.createNestApplication();
     await app.init();
 
-    hashService = module.get<HashService>(HashService);
+    nodeService = module.get<NodeService>(NodeService);
   });
 
   afterEach(async () => {
