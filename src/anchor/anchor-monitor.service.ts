@@ -13,7 +13,7 @@ import delay from 'delay';
 export class AnchorMonitorService {
   public processing: boolean;
   public lastBlock: number;
-  public dataTransactionType: number;
+  public transactionTypes: Array<number>;
   public anchorToken: string;
 
   constructor(
@@ -24,7 +24,7 @@ export class AnchorMonitorService {
     private readonly storage: StorageService,
     private readonly indexer: AnchorIndexerService,
   ) {
-    this.dataTransactionType = 12;
+    this.transactionTypes = [12, 15];
     this.anchorToken = '\u2693';
   }
 
@@ -77,20 +77,28 @@ export class AnchorMonitorService {
     await this.indexer.index(transaction);
 
     const skip = !transaction ||
-      transaction.type !== this.dataTransactionType ||
-      typeof transaction.data === 'undefined';
+      this.transactionTypes.indexOf(transaction.type) === -1;
 
     if (skip) {
       return;
     }
 
-    for (const item of transaction.data) {
-      if (item.key === this.anchorToken) {
-        const value = item.value.replace('base64:', '');
-        const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
+    // Process old data transactions
+    if (transaction.type == 12 && !!transaction.data) {
+      for (const item of transaction.data) {
+        if (item.key === this.anchorToken) {
+          const value = item.value.replace('base64:', '');
+          const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
+          this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
+          await this.storage.saveAnchor(hexHash, transaction.id);
+        }
+      }
+    } else if(transaction.type == 15 && !!transaction.anchors) {
+      transaction.anchors.forEach(async (anchor) => {
+        const hexHash = this.encoder.hexEncode(this.encoder.base58Decode(anchor));
         this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
         await this.storage.saveAnchor(hexHash, transaction.id);
-      }
+      });
     }
   }
 }

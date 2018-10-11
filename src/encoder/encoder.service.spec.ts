@@ -50,20 +50,20 @@ describe('EncoderService', () => {
     });
   });
 
-  describe('validateSHA256', () => {
-    it('should correctly validateSHA256 hex sha256', async () => {
+  describe('validateHash', () => {
+    it('should correctly validateHash hex sha256', async () => {
       const hash = '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08';
-      expect(encoderService.validateSHA256(hash, 'hex')).toBe(true);
+      expect(encoderService.validateHash(hash, 'hex')).toBe(true);
     });
 
-    it('should correctly validateSHA256 base58 sha256', async () => {
+    it('should correctly validateHash base58 sha256', async () => {
       const hash = '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu';
-      expect(encoderService.validateSHA256(hash, 'base58')).toBe(true);
+      expect(encoderService.validateHash(hash, 'base58')).toBe(true);
     });
 
-    it('should correctly validateSHA256 base64 sha256', async () => {
+    it('should correctly validateHash base64 sha256', async () => {
       const hash = 'LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywg=';
-      expect(encoderService.validateSHA256(hash, 'base64')).toBe(true);
+      expect(encoderService.validateHash(hash, 'base64')).toBe(true);
     });
   });
 });

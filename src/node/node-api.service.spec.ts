@@ -91,7 +91,7 @@ describe('NodeApiService', () => {
 
       expect(await nodeApiService.sendTransaction(transaction)).toBe(response);
       expect(spies.request.post.mock.calls.length).toBe(1);
-      expect(spies.request.post.mock.calls[0][0]).toBe('http://localhost:6869/addresses/data');
+      expect(spies.request.post.mock.calls[0][0]).toBe('http://localhost:6869/addresses/anchor');
       expect(spies.request.post.mock.calls[0][1]).toBe(transaction);
       expect(spies.request.post.mock.calls[0][2]).toEqual({
         headers: {
