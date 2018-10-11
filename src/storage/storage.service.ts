@@ -68,4 +68,9 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     await this.init();
     await this.connection.set(`lto-anchor:processing-height`, String(height));
   }
+
+  async clearProcessHeight(): Promise<void> {
+    await this.init();
+    return this.connection.del(`lto-anchor:processing-height`);
+  }
 }

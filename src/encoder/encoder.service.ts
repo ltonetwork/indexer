@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class EncoderService {
   private alphabet: string;
   private alphabetMap: object;
+  private allowsHashLengths: Array<number>;
 
   constructor() {
     this.alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -11,6 +12,7 @@ export class EncoderService {
       map[c] = i;
       return map;
     }, {});
+    this.allowsHashLengths = [16, 20, 32, 48, 64];
   }
 
   base64Encode(buffer) {
@@ -19,6 +21,41 @@ export class EncoderService {
 
   hexEncode(buffer) {
     return Buffer.from(String.fromCharCode.apply(null, buffer), 'binary').toString('hex');
+  }
+
+  base58Encode (buffer) {
+    if (!buffer.length) return '';
+
+    const digits = [0];
+    for (let i = 0; i < buffer.length; i++) {
+
+      for (let j = 0; j < digits.length; j++) {
+        digits[j] <<= 8;
+      }
+
+      digits[0] += buffer[i];
+      let carry = 0;
+
+      for (let k = 0; k < digits.length; k++) {
+        digits[k] += carry;
+        carry = (digits[k] / 58) | 0;
+        digits[k] %= 58;
+      }
+
+      while (carry) {
+        digits.push(carry % 58);
+        carry = (carry / 58) | 0;
+      }
+
+    }
+
+    for (let i = 0; buffer[i] === 0 && i < buffer.length - 1; i++) {
+      digits.push(0);
+    }
+
+    return digits.reverse().map((digit) => {
+      return this.alphabet[digit];
+    }).join('');
   }
 
   decode(hash, encoding) {
@@ -40,9 +77,9 @@ export class EncoderService {
     return hashBytes;
   }
 
-  validateSHA256(hash, encoding) {
+  validateHash(hash, encoding) {
     const hashBytes = this.decode(hash, encoding);
-    return (hashBytes.length === 32);
+    return (this.allowsHashLengths.indexOf(hashBytes.length) !== -1);
   }
 
   base64Decode(hash) {

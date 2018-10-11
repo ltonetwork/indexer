@@ -39,7 +39,7 @@ export class HashController {
       return res.status(400).send('invalid encoding given');
     }
 
-    if (!this.encoder.validateSHA256(hash, encoding)) {
+    if (!this.encoder.validateHash(hash, encoding)) {
       return res.status(400).send('invalid hash given');
     }
 

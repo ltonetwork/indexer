@@ -8,11 +8,12 @@ export interface Transaction {
   readonly timestamp: number;
   readonly proofs: string[];
   readonly version: number;
-  readonly data: Array<{
+  readonly data?: Array<{
     key: string;
     type: string;
     value: string;
   }>;
+  readonly anchors?: Array<string>;
   readonly transfers: Array<{
     recipient: string;
     amount: number;

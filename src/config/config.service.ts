@@ -25,6 +25,10 @@ export class ConfigService {
     return this.config.get('anchor.node.starting_block');
   }
 
+  getNodeRestartSync(): boolean {
+    return this.config.get('anchor.node.restart_sync');
+  }
+
   getApiSecret(): string {
     const config = this.getLtoApiKey();
 

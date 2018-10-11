@@ -106,7 +106,7 @@ describe('AnchorService', () => {
   });
 
   describe('processTransaction()', () => {
-    test('should process the transaction', async () => {
+    test('should process the data transaction', async () => {
       const spies = spy();
 
       const transaction = {
@@ -115,11 +115,11 @@ describe('AnchorService', () => {
         data: [
           {
             key: monitorService.anchorToken,
-            value: '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE',
+            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywg',
           },
           {
             key: 'invalid key',
-            value: '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AEs',
+            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywga',
           },
         ],
       };
@@ -130,7 +130,28 @@ describe('AnchorService', () => {
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
-        .toBe('d82dba078e81ebc1450baf0517df41e39dc2d43df4e35df8d77e36d83ef4eb8f3704503417df00e44f3ceb6eba13b004');
+        .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
+      expect(spies.storage.saveAnchor.mock.calls[0][1]).toBe('fake_transaction');
+    });
+
+    test('should process the anchor transaction', async () => {
+      const spies = spy();
+
+      const transaction = {
+        id: 'fake_transaction',
+        type: 15,
+        anchors: [
+          '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
+        ],
+      };
+      await monitorService.processTransaction(transaction as any);
+
+      expect(spies.indexer.index.mock.calls.length).toBe(1);
+      expect(spies.indexer.index.mock.calls[0][0]).toEqual(transaction);
+
+      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.saveAnchor.mock.calls[0][0])
+        .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
       expect(spies.storage.saveAnchor.mock.calls[0][1]).toBe('fake_transaction');
     });
   });

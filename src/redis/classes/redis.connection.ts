@@ -14,6 +14,10 @@ export class RedisConnection {
     return this.connection.get(key);
   }
 
+  async del(key: redis.KeyType): Promise<void> {
+    return this.connection.del(key);
+  }
+
   async zadd(key: redis.KeyType, args: string[]): Promise<string> {
     return this.connection.zadd(key, ...args);
   }

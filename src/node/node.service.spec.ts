@@ -132,7 +132,7 @@ describe('NodeService', () => {
       expect(spies.node.getNodeWallet.mock.calls.length).toBe(1);
       expect(spies.node.createAnchorTransaction.mock.calls.length).toBe(1);
       expect(spies.node.createAnchorTransaction.mock.calls[0][0]).toBe('fake_wallet');
-      expect(spies.node.createAnchorTransaction.mock.calls[0][1]).toBe('LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=');
+      expect(spies.node.createAnchorTransaction.mock.calls[0][1]).toBe('3yMApqCuCjXDWPrbjfR5mjCPTHqFG8Pux1TxQrEM35jj');
     });
   });
 

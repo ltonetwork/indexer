@@ -92,10 +92,10 @@ export class NodeService {
   async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
     const response = await this.api.sendTransaction({
       version: 1,
-      type: 12,
+      type: 15,
       sender: senderAddress,
-      data: [
-        { key: '\u2693', type: 'binary', value: `base64:${hash}` },
+      anchors: [
+        hash
       ],
       fee: 100000,
       timestamp: Date.now(),
@@ -115,8 +115,8 @@ export class NodeService {
 
     try {
       const senderAddress = await this.getNodeWallet();
-      const base64Hash = this.encoder.base64Encode(this.encoder.decode(hash, encoding));
-      const transactionId = await this.createAnchorTransaction(senderAddress, base64Hash);
+      const base58Hash = this.encoder.base58Encode(this.encoder.decode(hash, encoding));
+      const transactionId = await this.createAnchorTransaction(senderAddress, base58Hash);
 
       if (!transactionId) {
         this.logger.warn(`hash: anchoring '${hash}' as '${encoding}' resulted in no transaction id`);
