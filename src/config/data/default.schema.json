@@ -35,7 +35,8 @@
     },
     "node": {
       "url": "http://localhost:6869",
-      "starting_block": 1
+      "starting_block": 1,
+      "restart_sync": false
     },
     "monitor": {
       "interval": {

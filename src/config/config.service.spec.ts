@@ -34,6 +34,10 @@ describe('ConfigService', () => {
       expect(configService.getNodeStartingBlock()).toBe(1);
     });
 
+    test('getNodeRestartSync()', () => {
+      expect(configService.getNodeRestartSync()).toBeFalsy();
+    });
+
     test('getApiSecret()', async () => {
       expect(configService.getApiSecret()).toBe('lt1secretapikey!');
 
