@@ -12,6 +12,7 @@ describe('StorageService', () => {
     const redisConnection = {
       get: jest.fn(),
       set: jest.fn(),
+      hset: jest.fn(),
       zaddIncr: jest.fn(),
       zrangePaginate: jest.fn(),
       zcard: jest.fn(),
@@ -42,16 +43,32 @@ describe('StorageService', () => {
       const spies = spy();
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const transaction = 'fake_transaction';
+      // const transaction = 'fake_transaction';
+      const transaction = {
+        id: 'fake_transaction',
+        block: '1',
+        position: '10'
+      };
       await storageService.saveAnchor(hash, transaction);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.set.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.set.mock.calls[0][0])
+      expect(spies.redisConnection.hset.mock.calls.length).toBe(3);
+      expect(spies.redisConnection.hset.mock.calls[0][0])
         .toBe(`lto-anchor:anchor:${hash.toLowerCase()}`);
-      expect(spies.redisConnection.set.mock.calls[0][1]).toBe(transaction);
+      expect(spies.redisConnection.hset.mock.calls[0][1]).toBe('id');
+      expect(spies.redisConnection.hset.mock.calls[0][2]).toBe(transaction.id);
+
+      expect(spies.redisConnection.hset.mock.calls[1][0])
+        .toBe(`lto-anchor:anchor:${hash.toLowerCase()}`);
+      expect(spies.redisConnection.hset.mock.calls[1][1]).toBe('block');
+      expect(spies.redisConnection.hset.mock.calls[1][2]).toBe(transaction.block);
+
+      expect(spies.redisConnection.hset.mock.calls[2][0])
+        .toBe(`lto-anchor:anchor:${hash.toLowerCase()}`);
+      expect(spies.redisConnection.hset.mock.calls[2][1]).toBe('position');
+      expect(spies.redisConnection.hset.mock.calls[2][2]).toBe(transaction.position);
     });
   });
 

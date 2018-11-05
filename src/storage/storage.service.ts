@@ -33,14 +33,35 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async getAnchor(hash: string): Promise<string> {
+  private async getValue(key: string): Promise<string> {
     await this.init();
-    return await this.connection.get(`lto-anchor:anchor:${hash.toLowerCase()}`);
+    return this.connection.get(key);
   }
 
-  async saveAnchor(hash: string, transactionId: string): Promise<void> {
+
+  private async setValue(key: string, value: string): Promise<string> {
     await this.init();
-    await this.connection.set(`lto-anchor:anchor:${hash.toLowerCase()}`, transactionId);
+    return this.connection.set(key, value);
+  }
+
+  private async setObject(key: string, value: object): Promise<void> {
+    await this.init();
+    Object.keys(value).forEach(async (field) => {
+      await this.connection.hset(key, field, value[field]);
+    });
+  }
+
+  private async getObject(key: string): Promise<object> {
+    await this.init();
+    return this.connection.hgetall(key);
+  }
+
+  async getAnchor(hash: string): Promise<any> {
+    return this.getObject(`lto-anchor:anchor:${hash.toLowerCase()}`);
+  }
+
+  async saveAnchor(hash: string, transaction: any) {
+    return this.setObject(`lto-anchor:anchor:${hash.toLowerCase()}`, transaction);
   }
 
   async countTx(type: string, address: string): Promise<number> {
@@ -59,14 +80,12 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getProcessingHeight(): Promise<number | null> {
-    await this.init();
-    const height = await this.connection.get(`lto-anchor:processing-height`);
+    const height = await this.getValue(`lto-anchor:processing-height`);
     return height ? Number(height) : null;
   }
 
   async saveProcessingHeight(height: string | number): Promise<void> {
-    await this.init();
-    await this.connection.set(`lto-anchor:processing-height`, String(height));
+    await this.setValue(`lto-anchor:processing-height`, String(height));
   }
 
   async clearProcessHeight(): Promise<void> {

@@ -135,9 +135,13 @@ export class NodeService {
     '@context', type, targetHash, anchors,
   } | null> {
     const hashEncoded = encoding ? this.encoder.hexEncode(this.encoder.decode(hash, encoding)) : hash;
-    let transactionId = await this.storage.getAnchor(hashEncoded);
+    let transaction = await this.storage.getAnchor(hashEncoded);
+    let transactionId: string;
 
-    if (!transactionId) {
+
+    if (transaction) {
+      return this.asChainPoint(hash, transaction.id, transaction.blockHeight, transaction.position);
+    } else {
       const encoded = this.encoder.base64Encode(this.encoder.decode(hash, 'hex'));
       transactionId = await this.getUnconfirmedAnchor(encoded);
     }
@@ -165,8 +169,8 @@ export class NodeService {
     return await this.storage.countTx(type, address);
   }
 
-  asChainPoint(hash: string, transactionId: string) {
-    return {
+  asChainPoint(hash: string, transactionId: string, blockHeight?: number, position?: number) {
+    const result = {
       '@context': 'https://w3id.org/chainpoint/v2',
       'type': 'ChainpointSHA256v2',
       'targetHash': hash,
@@ -174,6 +178,19 @@ export class NodeService {
         type: 'LTODataTransaction',
         sourceId: transactionId,
       }],
-    };
+    } as any;
+
+    if (blockHeight) {
+      result.block = {
+        height: blockHeight
+      }
+    }
+
+    if (position) {
+      result.transaction = {
+        position: position
+      }
+    }
+    return result;
   }
 }

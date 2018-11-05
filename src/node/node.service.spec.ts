@@ -11,6 +11,12 @@ describe('NodeService', () => {
   let storageService: StorageService;
 
   function spy() {
+    const fakeTransaction = {
+      id: 'fake_transaction',
+      blockHeight: '1',
+      position: '0'
+    };
+
     const node = {
       getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet'),
       createAnchorTransaction: jest.spyOn(nodeService, 'createAnchorTransaction'),
@@ -19,7 +25,7 @@ describe('NodeService', () => {
 
     const storage = {
       getAnchor: jest.spyOn(storageService, 'getAnchor')
-        .mockImplementation(() => 'fake_transaction'),
+        .mockImplementation(() => fakeTransaction),
     };
 
     const api = {
@@ -152,6 +158,12 @@ describe('NodeService', () => {
             type: 'LTODataTransaction',
           },
         ],
+        block: {
+          height: '1'
+        },
+        transaction: {
+          position: '0'
+        },
         'targetHash': hash,
         'type': 'ChainpointSHA256v2',
       };

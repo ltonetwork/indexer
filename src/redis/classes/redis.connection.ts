@@ -10,6 +10,14 @@ export class RedisConnection {
     return this.connection.set(key, value);
   }
 
+  async hset(key: redis.KeyType, field: string, value: any): Promise<0 | 1> {
+    return this.connection.hset(key, field, value);
+  }
+
+  async hgetall(key: redis.KeyType): Promise<object> {
+    return this.connection.hgetall(key);
+  }
+
   async get(key: redis.KeyType): Promise<string> {
     return this.connection.get(key);
   }
