@@ -123,7 +123,7 @@ describe('AnchorService', () => {
           },
         ],
       };
-      await monitorService.processTransaction(transaction as any);
+      await monitorService.processTransaction(transaction as any, 1, 0);
 
       expect(spies.indexer.index.mock.calls.length).toBe(1);
       expect(spies.indexer.index.mock.calls[0][0]).toEqual(transaction);
@@ -131,7 +131,7 @@ describe('AnchorService', () => {
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
         .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
-      expect(spies.storage.saveAnchor.mock.calls[0][1]).toBe('fake_transaction');
+      expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({id: 'fake_transaction', blockHeight: 1, position: 0});
     });
 
     test('should process the anchor transaction', async () => {
@@ -144,7 +144,7 @@ describe('AnchorService', () => {
           '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
         ],
       };
-      await monitorService.processTransaction(transaction as any);
+      await monitorService.processTransaction(transaction as any, 1, 0);
 
       expect(spies.indexer.index.mock.calls.length).toBe(1);
       expect(spies.indexer.index.mock.calls[0][0]).toEqual(transaction);
@@ -152,7 +152,7 @@ describe('AnchorService', () => {
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
         .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
-      expect(spies.storage.saveAnchor.mock.calls[0][1]).toBe('fake_transaction');
+      expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({id: 'fake_transaction', blockHeight: 1, position: 0});
     });
   });
 });

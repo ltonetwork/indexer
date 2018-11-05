@@ -72,12 +72,12 @@ export class AnchorMonitorService {
   async processBlock(block: Block) {
     this.logger.debug(`anchor: processing block ${block.height}`);
 
-    for (const transaction of block.transactions) {
-      await this.processTransaction(transaction);
-    }
+    block.transactions.forEach(async (transaction, index) => {
+      await this.processTransaction(transaction, block.height, index);
+    });
   }
 
-  async processTransaction(transaction: Transaction) {
+  async processTransaction(transaction: Transaction, blockHeight: number, position: number) {
     await this.indexer.index(transaction);
 
     const skip = !transaction ||
@@ -94,14 +94,14 @@ export class AnchorMonitorService {
           const value = item.value.replace('base64:', '');
           const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
           this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
-          await this.storage.saveAnchor(hexHash, transaction.id);
+          await this.storage.saveAnchor(hexHash, {id: transaction.id, blockHeight, position});
         }
       }
     } else if(transaction.type == 15 && !!transaction.anchors) {
       transaction.anchors.forEach(async (anchor) => {
         const hexHash = this.encoder.hexEncode(this.encoder.base58Decode(anchor));
         this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
-        await this.storage.saveAnchor(hexHash, transaction.id);
+        await this.storage.saveAnchor(hexHash, {id: transaction.id, blockHeight, position});
       });
     }
   }
