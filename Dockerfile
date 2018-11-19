@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package*.json ./
 
+RUN apk add --no-cache curl
+
 RUN npm i
 
 RUN npm i pm2 -g
