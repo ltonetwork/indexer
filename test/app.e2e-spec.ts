@@ -20,7 +20,7 @@ describe('Application e2e test', () => {
     test('should redirect to swagger api', async () => {
       const res = await request(app.getHttpServer()).get('/');
       expect(res.status).toBe(302);
-      expect(res.header.location).toBe('/api-docs');
+      expect(res.header.location).toBe('api-docs/');
     });
   });
 });
