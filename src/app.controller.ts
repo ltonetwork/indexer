@@ -9,6 +9,6 @@ export class AppController {
   @Get()
   @ApiExcludeEndpoint()
   async root(@Res() res: Response): Promise<void> {
-    return res.redirect('/api-docs');
+    return res.redirect('api-docs/');
   }
 }
