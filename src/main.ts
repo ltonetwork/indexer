@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { AnchorService } from './anchor/anchor.service';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
+import cors from 'cors';
+import helmet from 'helmet';
 
 async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
@@ -17,6 +19,9 @@ async function swagger(app: INestApplication) {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await swagger(app);
+
+  app.use(cors());
+  app.use(helmet());
 
   const configService = app.get<ConfigService>(ConfigService);
   await app.listen(configService.getPort());
