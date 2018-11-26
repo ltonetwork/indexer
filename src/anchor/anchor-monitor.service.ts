@@ -34,9 +34,9 @@ export class AnchorMonitorService {
         await this.node.getLastBlockHeight() :
         this.config.getNodeStartingBlock() as number;
 
-        if (this.config.getNodeRestartSync()) {
-          await this.storage.clearProcessHeight();
-        }
+      if (this.config.getNodeRestartSync()) {
+        await this.storage.clearProcessHeight();
+      }
 
       await this.process();
     } catch (e) {
@@ -47,23 +47,29 @@ export class AnchorMonitorService {
 
   async process() {
     if (!this.processing) {
-      await this.checkNewBlock();
+      await this.checkNewBlocks();
     }
 
     await delay(this.config.getMonitorInterval());
     return this.process();
   }
 
-  async checkNewBlock() {
+  async checkNewBlocks() {
     this.processing = true;
 
-    const currentHeight = await this.node.getLastBlockHeight();
-    let lastHeight = (await this.storage.getProcessingHeight() || this.lastBlock) + 1;
+    const blockHeight = await this.node.getLastBlockHeight();
+    const processingHeight = (await this.storage.getProcessingHeight() || this.lastBlock) + 1;
+    const ranges = this.node.getBlockRanges(processingHeight, blockHeight);
 
-    for (; lastHeight <= currentHeight; lastHeight++) {
-      const block = await this.node.getBlock(lastHeight);
-      await this.processBlock(block);
-      await this.storage.saveProcessingHeight(lastHeight);
+    for (const range of ranges) {
+      this.logger.info(`anchor: processing blocks ${range.from} to ${range.to}`);
+      const blocks = await this.node.getBlocks(range.from, range.to);
+
+      for (const block of blocks) {
+        await this.processBlock(block);
+      }
+
+      await this.storage.saveProcessingHeight(range.to);
     }
 
     this.processing = false;
@@ -88,20 +94,20 @@ export class AnchorMonitorService {
     }
 
     // Process old data transactions
-    if (transaction.type == 12 && !!transaction.data) {
+    if (transaction.type === 12 && !!transaction.data) {
       for (const item of transaction.data) {
         if (item.key === this.anchorToken) {
           const value = item.value.replace('base64:', '');
           const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
           this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
-          await this.storage.saveAnchor(hexHash, {id: transaction.id, blockHeight, position});
+          await this.storage.saveAnchor(hexHash, { id: transaction.id, blockHeight, position });
         }
       }
-    } else if(transaction.type == 15 && !!transaction.anchors) {
+    } else if (transaction.type === 15 && !!transaction.anchors) {
       transaction.anchors.forEach(async (anchor) => {
         const hexHash = this.encoder.hexEncode(this.encoder.base58Decode(anchor));
         this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
-        await this.storage.saveAnchor(hexHash, {id: transaction.id, blockHeight, position});
+        await this.storage.saveAnchor(hexHash, { id: transaction.id, blockHeight, position });
       });
     }
   }

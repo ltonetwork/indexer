@@ -15,7 +15,7 @@ describe('AnchorService', () => {
   function spy() {
     const monitor = {
       process: jest.spyOn(monitorService, 'process'),
-      checkNewBlock: jest.spyOn(monitorService, 'checkNewBlock'),
+      checkNewBlocks: jest.spyOn(monitorService, 'checkNewBlocks'),
       processBlock: jest.spyOn(monitorService, 'processBlock'),
       processTransaction: jest.spyOn(monitorService, 'processTransaction'),
     };
@@ -24,6 +24,8 @@ describe('AnchorService', () => {
         .mockImplementation(() => 100),
       getBlock: jest.spyOn(nodeService, 'getBlock')
         .mockImplementation(() => ({ height: 100 })),
+      getBlocks: jest.spyOn(nodeService, 'getBlocks')
+        .mockImplementation(() => ([{ height: 100 }])),
     };
     const storage = {
       getProcessingHeight: jest.spyOn(storageService, 'getProcessingHeight')
@@ -66,19 +68,21 @@ describe('AnchorService', () => {
     });
   });
 
-  describe('checkNewBlock()', () => {
+  describe('checkNewBlocks()', () => {
     test('should check the new blocks', async () => {
       const spies = spy();
       spies.monitor.processBlock.mockImplementation();
 
-      await monitorService.checkNewBlock();
+      await monitorService.checkNewBlocks();
 
       expect(spies.monitor.processBlock.mock.calls.length).toBe(1);
       expect(spies.monitor.processBlock.mock.calls[0][0]).toEqual({ height: 100 });
 
       expect(spies.node.getLastBlockHeight.mock.calls.length).toBe(1);
-      expect(spies.node.getBlock.mock.calls.length).toBe(1);
-      expect(spies.node.getBlock.mock.calls[0][0]).toBe(100);
+      expect(spies.node.getBlock.mock.calls.length).toBe(0);
+      expect(spies.node.getBlocks.mock.calls.length).toBe(1);
+      expect(spies.node.getBlocks.mock.calls[0][0]).toEqual(100);
+      expect(spies.node.getBlocks.mock.calls[0][1]).toEqual(100);
 
       expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
       expect(spies.storage.saveProcessingHeight.mock.calls.length).toBe(1);
@@ -131,7 +135,8 @@ describe('AnchorService', () => {
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
         .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
-      expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({id: 'fake_transaction', blockHeight: 1, position: 0});
+      expect(spies.storage.saveAnchor.mock.calls[0][1])
+        .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
     });
 
     test('should process the anchor transaction', async () => {
@@ -152,7 +157,8 @@ describe('AnchorService', () => {
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
         .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
-      expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({id: 'fake_transaction', blockHeight: 1, position: 0});
+      expect(spies.storage.saveAnchor.mock.calls[0][1])
+        .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
     });
   });
 });
