@@ -30,6 +30,12 @@ export class NodeApiService {
     return await this.request.get(`${url}/blocks/at/${id}`);
   }
 
+  async getBlocks(from: number, to: number): Promise<AxiosResponse | Error> {
+    // note: max range of 100 is supported
+    const url = this.config.getNodeUrl();
+    return await this.request.get(`${url}/blocks/seq/${from}/${to}`);
+  }
+
   async getTransaction(id: string): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/transactions/info/${id}`);

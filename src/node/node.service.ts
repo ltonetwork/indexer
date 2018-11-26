@@ -4,6 +4,7 @@ import { LoggerService } from '../logger/logger.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class NodeService {
@@ -74,6 +75,38 @@ export class NodeService {
     return response.data;
   }
 
+  async getBlocks(from: number, to: number): Promise<Array<{ height, transactions }>> {
+    const ranges = this.getBlockRanges(from, to);
+    const promises = ranges.map((range) => this.api.getBlocks(range.from, range.to));
+    const responses = await Promise.all(promises);
+
+    for (const response of responses) {
+      if (response instanceof Error) {
+        throw response;
+      }
+    }
+
+    const data = responses.map((response: AxiosResponse) => response.data);
+    return [].concat(...data);
+  }
+
+  getBlockRanges(from: number, to: number): Array<{ from, to }> {
+    const ranges = [];
+
+    if (from === to) {
+      ranges.push({ from, to });
+    }
+
+    // public node doesn't allow getting more than 100 blocks at a time
+    for (let start = from; start < to; start += 100) {
+      const range = start + 99;
+      const max = range > to ? to : range;
+      ranges.push({ from: start, to: max });
+    }
+
+    return ranges;
+  }
+
   async getTransaction(id: string): Promise<Transaction | null> {
     const response = await this.api.getTransaction(id);
 
@@ -95,7 +128,7 @@ export class NodeService {
       type: 15,
       sender: senderAddress,
       anchors: [
-        hash
+        hash,
       ],
       fee: 100000,
       timestamp: Date.now(),
@@ -135,9 +168,8 @@ export class NodeService {
     '@context', type, targetHash, anchors,
   } | null> {
     const hashEncoded = encoding ? this.encoder.hexEncode(this.encoder.decode(hash, encoding)) : hash;
-    let transaction = await this.storage.getAnchor(hashEncoded);
+    const transaction = await this.storage.getAnchor(hashEncoded);
     let transactionId: string;
-
 
     if (transaction) {
       return this.asChainPoint(hash, transaction.id, transaction.blockHeight, transaction.position);
@@ -182,14 +214,14 @@ export class NodeService {
 
     if (blockHeight) {
       result.block = {
-        height: blockHeight
-      }
+        height: blockHeight,
+      };
     }
 
     if (position) {
       result.transaction = {
-        position: position
-      }
+        position,
+      };
     }
     return result;
   }

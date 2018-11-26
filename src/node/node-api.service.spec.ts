@@ -81,6 +81,19 @@ describe('NodeApiService', () => {
     });
   });
 
+  describe('getBlocks()', () => {
+    test('should get blocks by range', async () => {
+      const spies = spy();
+
+      const response = { status: 200, data: [{ height: 1 }] };
+      spies.request.get.mockImplementation(() => Promise.resolve(response));
+
+      expect(await nodeApiService.getBlocks(1, 2)).toBe(response);
+      expect(spies.request.get.mock.calls.length).toBe(1);
+      expect(spies.request.get.mock.calls[0][0]).toBe('http://localhost:6869/blocks/seq/1/2');
+    });
+  });
+
   describe('sendTransaction()', () => {
     test('should send transaction', async () => {
       const spies = spy();

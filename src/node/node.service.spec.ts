@@ -14,7 +14,7 @@ describe('NodeService', () => {
     const fakeTransaction = {
       id: 'fake_transaction',
       blockHeight: '1',
-      position: '0'
+      position: '0',
     };
 
     const node = {
@@ -33,6 +33,7 @@ describe('NodeService', () => {
       getUnconfirmedTransactions: jest.spyOn(nodeApiService, 'getUnconfirmedTransactions'),
       getLastBlock: jest.spyOn(nodeApiService, 'getLastBlock'),
       getBlock: jest.spyOn(nodeApiService, 'getBlock'),
+      getBlocks: jest.spyOn(nodeApiService, 'getBlocks'),
       sendTransaction: jest.spyOn(nodeApiService, 'sendTransaction'),
     };
 
@@ -100,6 +101,41 @@ describe('NodeService', () => {
     });
   });
 
+  describe('getBlocks()', () => {
+    test('should get blocks by range', async () => {
+      const spies = spy();
+
+      const responses = [
+        { status: 200, data: [{ height: 1 }, { height: 100 }] },
+        { status: 200, data: [{ height: 101 }, { height: 200 }] },
+        { status: 200, data: [{ height: 201 }, { height: 300 }] },
+        { status: 200, data: [{ height: 301 }, { height: 400 }] },
+        { status: 200, data: [{ height: 401 }, { height: 500 }] },
+        { status: 200, data: [{ height: 501 }, { height: 555 }] },
+      ];
+
+      spies.api.getBlocks
+        .mockImplementationOnce(() => responses[0])
+        .mockImplementationOnce(() => responses[1])
+        .mockImplementationOnce(() => responses[2])
+        .mockImplementationOnce(() => responses[3])
+        .mockImplementationOnce(() => responses[4])
+        .mockImplementationOnce(() => responses[5]);
+
+      expect(await nodeService.getBlocks(1, 555)).toEqual([
+        { height: 1 }, { height: 100 },
+        { height: 101 }, { height: 200 },
+        { height: 201 }, { height: 300 },
+        { height: 301 }, { height: 400 },
+        { height: 401 }, { height: 500 },
+        { height: 501 }, { height: 555 },
+      ]);
+      expect(spies.api.getBlocks.mock.calls.length).toBe(6);
+      expect(spies.api.getBlocks.mock.calls)
+        .toEqual([[1, 100], [101, 200], [201, 300], [301, 400], [401, 500], [501, 555]]);
+    });
+  });
+
   describe('createAnchorTransaction()', () => {
     test('should create anchor transaction', async () => {
       const spies = spy();
@@ -158,11 +194,11 @@ describe('NodeService', () => {
             type: 'LTODataTransaction',
           },
         ],
-        block: {
-          height: '1'
+        'block': {
+          height: '1',
         },
-        transaction: {
-          position: '0'
+        'transaction': {
+          position: '0',
         },
         'targetHash': hash,
         'type': 'ChainpointSHA256v2',
