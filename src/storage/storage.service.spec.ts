@@ -77,7 +77,7 @@ describe('StorageService', () => {
       const spies = spy();
 
       const type = 'anchor';
-      const address = 'fake_address';
+      const address = 'fake_address_WITH_CAPS';
       const transaction = 'fake_transaction';
       await storageService.indexTx(type, address, transaction);
 

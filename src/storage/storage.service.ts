@@ -66,17 +66,17 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async countTx(type: string, address: string): Promise<number> {
     await this.init();
-    return await this.connection.zcard(`lto-anchor:tx:${type}:${address.toLowerCase()}`);
+    return await this.connection.zcard(`lto-anchor:tx:${type}:${address}`);
   }
 
   async indexTx(type: string, address: string, transactionId: string): Promise<void> {
     await this.init();
-    await this.connection.zaddIncr(`lto-anchor:tx:${type}:${address.toLowerCase()}`, [transactionId]);
+    await this.connection.zaddIncr(`lto-anchor:tx:${type}:${address}`, [transactionId]);
   }
 
   async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     await this.init();
-    return await this.connection.zrangePaginate(`lto-anchor:tx:${type}:${address.toLowerCase()}`, limit, offset);
+    return await this.connection.zrangePaginate(`lto-anchor:tx:${type}:${address}`, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {
