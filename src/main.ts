@@ -20,7 +20,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await swagger(app);
 
-  app.use(cors());
+  app.use(cors({ exposedHeaders: ['X-Total'] }));
   app.use(helmet());
 
   const configService = app.get<ConfigService>(ConfigService);
