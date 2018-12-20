@@ -38,7 +38,7 @@ describe('AnchorService', () => {
 
       const type = 'anchor';
       const transaction = { id: 'fake_transaction', type: 12, sender: 'fake_sender' };
-      await indexerService.index(transaction as any);
+      await indexerService.index(transaction as any, 1);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(1);
       expect(spies.storage.indexTx.mock.calls[0][0]).toBe(type);
@@ -60,7 +60,7 @@ describe('AnchorService', () => {
           { recipient: 'fake_transfer_2' },
         ],
       };
-      await indexerService.index(transaction as any);
+      await indexerService.index(transaction as any, 1);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(4);
       expect(spies.storage.indexTx.mock.calls[0][0]).toBe(type);

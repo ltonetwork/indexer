@@ -37,7 +37,7 @@ describe('AnchorService', () => {
     };
     const indexer = {
       index: jest.spyOn(indexerService, 'index')
-        .mockImplementation(),
+        .mockImplementation(() => true),
     };
 
     return { monitor, node, storage, indexer };
@@ -81,7 +81,7 @@ describe('AnchorService', () => {
       expect(spies.node.getLastBlockHeight.mock.calls.length).toBe(1);
       expect(spies.node.getBlock.mock.calls.length).toBe(0);
       expect(spies.node.getBlocks.mock.calls.length).toBe(1);
-      expect(spies.node.getBlocks.mock.calls[0][0]).toEqual(100);
+      expect(spies.node.getBlocks.mock.calls[0][0]).toEqual(99);
       expect(spies.node.getBlocks.mock.calls[0][1]).toEqual(100);
 
       expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);

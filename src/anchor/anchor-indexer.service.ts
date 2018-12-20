@@ -6,6 +6,9 @@ import { TransactionService } from '../transaction/transaction.service';
 
 @Injectable()
 export class AnchorIndexerService {
+  public lastBlock: number;
+  public txCache: string[];
+
   constructor(
     private readonly logger: LoggerService,
     private readonly storage: StorageService,
@@ -13,11 +16,31 @@ export class AnchorIndexerService {
   ) {
   }
 
-  async index(transaction: Transaction): Promise<void> {
+  /**
+   * Index transaction, returns boolean based on whether or not transaction was successful
+   * Transaction may be skipped if its already processed
+   *
+   * @param transaction
+   * @param blockHeight
+   */
+  async index(transaction: Transaction, blockHeight: number): Promise<boolean> {
+    if (this.lastBlock !== blockHeight) {
+      this.txCache = [];
+    }
+
+    this.lastBlock = blockHeight;
+
+    if (this.txCache.indexOf(transaction.id) > -1) {
+      // transaction is already processed
+      return false;
+    }
+
+    this.txCache.push(transaction.id);
+
     const identifier = this.tx.getIdentifierByType(transaction.type);
 
     if (!identifier) {
-      return;
+      return false;
     }
 
     if (transaction.sender) {
@@ -36,5 +59,7 @@ export class AnchorIndexerService {
         await this.storage.indexTx(identifier, transfer.recipient, transaction.id);
       }
     }
+
+    return true;
   }
 }

@@ -84,7 +84,7 @@ describe('NodeService', () => {
       const response = { status: 200, data: { height: 1 } };
       spies.api.getLastBlock.mockImplementation(() => Promise.resolve(response));
 
-      expect(await nodeService.getLastBlockHeight()).toBe(response.data.height - 1);
+      expect(await nodeService.getLastBlockHeight()).toBe(response.data.height);
       expect(spies.api.getLastBlock.mock.calls.length).toBe(1);
     });
   });

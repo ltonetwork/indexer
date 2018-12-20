@@ -58,7 +58,7 @@ export class AnchorMonitorService {
     this.processing = true;
 
     const blockHeight = await this.node.getLastBlockHeight();
-    const processingHeight = (await this.storage.getProcessingHeight() || this.lastBlock) + 1;
+    const processingHeight = (await this.storage.getProcessingHeight() || this.lastBlock);
     const ranges = this.node.getBlockRanges(processingHeight, blockHeight);
 
     for (const range of ranges) {
@@ -84,7 +84,12 @@ export class AnchorMonitorService {
   }
 
   async processTransaction(transaction: Transaction, blockHeight: number, position: number) {
-    await this.indexer.index(transaction);
+    const success = await this.indexer.index(transaction, blockHeight);
+
+    if (!success) {
+      // transaction may be already processed
+      return;
+    }
 
     const skip = !transaction ||
       this.transactionTypes.indexOf(transaction.type) === -1;
