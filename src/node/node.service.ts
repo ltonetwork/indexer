@@ -62,7 +62,7 @@ export class NodeService {
       throw response;
     }
 
-    return response.data.height - 1;
+    return response.data.height;
   }
 
   async getBlock(id: string | number): Promise<{ height, transactions }> {
