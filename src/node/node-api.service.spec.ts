@@ -2,11 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RequestService } from '../request/request.service';
 import { NodeModuleConfig } from './node.module';
 import { NodeApiService } from './node-api.service';
+import { ConfigService } from "../config/config.service";
 
 describe('NodeApiService', () => {
   let module: TestingModule;
   let nodeApiService: NodeApiService;
   let requestService: RequestService;
+  let configService: ConfigService;
 
   function spy() {
     const request = {
@@ -23,6 +25,7 @@ describe('NodeApiService', () => {
 
     nodeApiService = module.get<NodeApiService>(NodeApiService);
     requestService = module.get<RequestService>(RequestService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(async () => {
