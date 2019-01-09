@@ -17,7 +17,17 @@ export class ConfigService {
     return this.config.get('lto.api.key');
   }
 
+  getLtoNodeUrl(): string {
+    return this.config.get('lto.node.url');
+  }
+
   getNodeUrl(): string {
+    const config = this.getLtoNodeUrl();
+
+    if (config) {
+      return config;
+    }
+
     return this.config.get('anchor.node.url');
   }
 
