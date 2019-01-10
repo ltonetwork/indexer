@@ -49,6 +49,10 @@ export class ConfigService {
     return this.config.get('anchor.api.secret');
   }
 
+  getAnchorFee(): number {
+    return Number(this.config.get('anchor.node.anchor_fee'));
+  }
+
   getRedisClient(): string | string[] {
     return this.getRedisUrl() || this.getRedisCluster().split(';');
   }

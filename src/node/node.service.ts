@@ -3,6 +3,7 @@ import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../logger/logger.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
+import { ConfigService } from "../config/config.service";
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
 
@@ -13,6 +14,7 @@ export class NodeService {
     private readonly logger: LoggerService,
     private readonly encoder: EncoderService,
     private readonly storage: StorageService,
+    private readonly config: ConfigService,
   ) { }
 
   async getNodeWallet(): Promise<string> {
@@ -130,7 +132,7 @@ export class NodeService {
       anchors: [
         hash,
       ],
-      fee: 100000,
+      fee: this.config.getAnchorFee(),
       timestamp: Date.now(),
     });
 

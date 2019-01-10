@@ -39,7 +39,8 @@
         "env": "ANCHOR_NODE_URL"
       },
       "starting_block": 1,
-      "restart_sync": false
+      "restart_sync": false,
+      "anchor_fee": 2500000
     },
     "monitor": {
       "interval": {
