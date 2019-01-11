@@ -3,7 +3,7 @@ import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../logger/logger.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from "../config/config.service";
+import { ConfigService } from '../config/config.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
 
@@ -226,5 +226,25 @@ export class NodeService {
       };
     }
     return result;
+  }
+
+  async getNodeStatus(): Promise<{ blockchainHeight, stateHeight, updatedTimestamp, updatedDate }> {
+    const response = await this.api.getNodeStatus();
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
+  }
+
+  async isNodeHealthy(): Promise<boolean> {
+    try {
+      const response = await this.getNodeStatus();
+      return response && response.blockchainHeight;
+    } catch (e) {
+      // swallow error
+      return false;
+    }
   }
 }

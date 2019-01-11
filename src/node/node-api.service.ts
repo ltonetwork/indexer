@@ -49,4 +49,9 @@ export class NodeApiService {
       },
     });
   }
+
+  async getNodeStatus(): Promise<AxiosResponse | Error> {
+    const url = this.config.getLtoNodeUrl();
+    return await this.request.get(`${url}/node/status`);
+  }
 }
