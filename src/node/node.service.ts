@@ -173,7 +173,7 @@ export class NodeService {
     const transaction = await this.storage.getAnchor(hashEncoded);
     let transactionId: string;
 
-    if (transaction.id) {
+    if (transaction && transaction.id) {
       return this.asChainPoint(hash, transaction.id, transaction.blockHeight, transaction.position);
     } else {
       const encoded = this.encoder.base64Encode(this.encoder.decode(hash, 'hex'));

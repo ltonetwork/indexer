@@ -218,7 +218,7 @@ describe('NodeService', () => {
       spies.node.createAnchorTransaction.mockImplementation(() => 'fake_transaction');
       spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
 
-      spies.storage.getAnchor.mockImplementation(() => undefined);
+      spies.storage.getAnchor.mockImplementation(() => { return {}; });
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const chainpoint = {
