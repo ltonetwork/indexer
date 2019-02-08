@@ -173,7 +173,7 @@ export class NodeService {
     const transaction = await this.storage.getAnchor(hashEncoded);
     let transactionId: string;
 
-    if (transaction) {
+    if (transaction.id) {
       return this.asChainPoint(hash, transaction.id, transaction.blockHeight, transaction.position);
     } else {
       const encoded = this.encoder.base64Encode(this.encoder.decode(hash, 'hex'));
@@ -238,6 +238,16 @@ export class NodeService {
     return response.data;
   }
 
+  async getNodeAddres(): Promise<{ address }> {
+    const response = await this.api.getNodeStatus();
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
+  }
+
   async isNodeHealthy(): Promise<boolean> {
     try {
       const response = await this.getNodeStatus();
@@ -246,5 +256,12 @@ export class NodeService {
       // swallow error
       return false;
     }
+  }
+
+  async getNodeInfo(): Promise<{status, address}> {
+    const status = await this.getNodeStatus();
+    const address = await this.getNodeWallet();
+
+    return { status, address };
   }
 }
