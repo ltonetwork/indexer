@@ -1,5 +1,11 @@
 {
   "log": {
     "level": "debug"
+  },
+  "port": 8080,
+  "lto": {
+    "node": {
+      "url": "https://testnet.lto.network"
+    }
   }
 }

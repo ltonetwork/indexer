@@ -1,0 +1,7 @@
+<div fxLayout="column" fxLayoutAlign="center center">
+  <h3 class="mat-h3" *ngIf="fileName">{{fileName}}</h3>
+  <label for="file">
+    <a mat-flat-button color="primary">Choose file</a>
+  </label>
+  <input type="file" id="file" (change)="onFileSelected($event)">
+</div>

@@ -29,20 +29,18 @@ export class AnchorMonitorService {
   }
 
   async start() {
-    try {
-      this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
-        await this.node.getLastBlockHeight() :
-        this.config.getNodeStartingBlock() as number;
-
-      if (this.config.getNodeRestartSync()) {
-        await this.storage.clearProcessHeight();
-      }
-
-      await this.process();
-    } catch (e) {
-      this.processing = false;
-      throw e;
-    }
+    // try {
+    //   this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
+    //     await this.node.getLastBlockHeight() :
+    //     this.config.getNodeStartingBlock() as number;
+    //   if (this.config.getNodeRestartSync()) {
+    //     await this.storage.clearProcessHeight();
+    //   }
+    //   await this.process();
+    // } catch (e) {
+    //   this.processing = false;
+    //   throw e;
+    // }
   }
 
   async process() {
@@ -58,11 +56,14 @@ export class AnchorMonitorService {
     this.processing = true;
 
     const blockHeight = await this.node.getLastBlockHeight();
-    const processingHeight = (await this.storage.getProcessingHeight() || this.lastBlock);
+    const processingHeight =
+      (await this.storage.getProcessingHeight()) || this.lastBlock;
     const ranges = this.node.getBlockRanges(processingHeight, blockHeight);
 
     for (const range of ranges) {
-      this.logger.info(`anchor: processing blocks ${range.from} to ${range.to}`);
+      this.logger.info(
+        `anchor: processing blocks ${range.from} to ${range.to}`,
+      );
       const blocks = await this.node.getBlocks(range.from, range.to);
 
       for (const block of blocks) {
@@ -83,7 +84,11 @@ export class AnchorMonitorService {
     });
   }
 
-  async processTransaction(transaction: Transaction, blockHeight: number, position: number) {
+  async processTransaction(
+    transaction: Transaction,
+    blockHeight: number,
+    position: number,
+  ) {
     const success = await this.indexer.index(transaction, blockHeight);
 
     if (!success) {
@@ -91,8 +96,8 @@ export class AnchorMonitorService {
       return;
     }
 
-    const skip = !transaction ||
-      this.transactionTypes.indexOf(transaction.type) === -1;
+    const skip =
+      !transaction || this.transactionTypes.indexOf(transaction.type) === -1;
 
     if (skip) {
       return;
@@ -103,16 +108,32 @@ export class AnchorMonitorService {
       for (const item of transaction.data) {
         if (item.key === this.anchorToken) {
           const value = item.value.replace('base64:', '');
-          const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
-          this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
-          await this.storage.saveAnchor(hexHash, { id: transaction.id, blockHeight, position });
+          const hexHash = this.encoder.hexEncode(
+            this.encoder.base64Decode(value),
+          );
+          this.logger.info(
+            `anchor: save hash ${hexHash} with transaction ${transaction.id}`,
+          );
+          await this.storage.saveAnchor(hexHash, {
+            id: transaction.id,
+            blockHeight,
+            position,
+          });
         }
       }
     } else if (transaction.type === 15 && !!transaction.anchors) {
-      transaction.anchors.forEach(async (anchor) => {
-        const hexHash = this.encoder.hexEncode(this.encoder.base58Decode(anchor));
-        this.logger.info(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
-        await this.storage.saveAnchor(hexHash, { id: transaction.id, blockHeight, position });
+      transaction.anchors.forEach(async anchor => {
+        const hexHash = this.encoder.hexEncode(
+          this.encoder.base58Decode(anchor),
+        );
+        this.logger.info(
+          `anchor: save hash ${hexHash} with transaction ${transaction.id}`,
+        );
+        await this.storage.saveAnchor(hexHash, {
+          id: transaction.id,
+          blockHeight,
+          position,
+        });
       });
     }
   }
