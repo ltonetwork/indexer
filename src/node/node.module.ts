@@ -7,10 +7,11 @@ import { ConfigModule } from '../config/config.module';
 import { RequestModule } from '../request/request.module';
 import { EncoderModule } from '../encoder/encoder.module';
 import { StorageModule } from '../storage/storage.module';
+import { NodeController } from './node.controller';
 
 export const NodeModuleConfig = {
   imports: [LoggerModule, ConfigModule, RequestModule, EncoderModule, StorageModule],
-  controllers: [],
+  controllers: [NodeController],
   providers: [
     ...nodeProviders,
     NodeService,

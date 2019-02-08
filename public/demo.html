@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Anchor Service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css" />
+    <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+<div class="container">
+    <h1>Demo Anchor Service</h1>
+    <div class="col-sm-5">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#text-data" aria-controls="text-data" role="tab" data-toggle="tab">Text</a></li>
+            <li role="presentation"><a href="#file-data" aria-controls="file-data" role="tab" data-toggle="tab">File</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="text-data">
+                <textarea class="text"></textarea>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="file-data">
+                <div class="fileinput fileinput-new input-group" data-provides="fileinput">
+                    <div class="form-control" data-trigger="fileinput">
+                        <i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span>
+                    </div>
+                    <span class="input-group-addon btn btn-default btn-file">
+                            <span class="fileinput-new">Select file</span>
+                            <span class="fileinput-exists">Change</span>
+                            <input type="file" name="file">
+                        </span>
+                    <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="verify btn btn-lg btn-success btn-block">Verify</button>
+            <button class="save btn btn-lg btn-primary btn-block">Anchor</button>
+        </div>
+    </div>
+
+    <div class="col-sm-7">
+        <pre class="response"></pre>
+    </div>
+</div>
+
+<div class="container">
+    <div id="hashAlert" class="alert alert-success alert-dismissible" role="alert" style="display: none;">
+        Your hash has been anchored on the blockchain. Check it in the <a href="#" class="alert-link" target="_blank">explorer</a>.
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+<script src="https://cdn.rawgit.com/emn178/js-sha256/189bb9b0/src/sha256.js"></script>
+<script src="/main.js"></script>
+</body>
+</html>

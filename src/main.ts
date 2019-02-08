@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { AnchorService } from './anchor/anchor.service';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
+import { join } from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 
@@ -22,6 +23,8 @@ async function bootstrap() {
 
   app.use(cors({ exposedHeaders: ['X-Total'] }));
   app.use(helmet());
+
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   const configService = app.get<ConfigService>(ConfigService);
   await app.listen(configService.getPort());

@@ -58,7 +58,7 @@ describe('ConfigService', () => {
     });
 
     test('getMonitorInterval()', async () => {
-      expect(configService.getMonitorInterval()).toBe(10000);
+      expect(configService.getMonitorInterval()).toBe(5000);
     });
 
     test('getLoggerGlobal()', async () => {

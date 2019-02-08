@@ -44,7 +44,7 @@
     },
     "monitor": {
       "interval": {
-        "default": 10000,
+        "default": 5000,
         "env": "ANCHOR_MONITOR_INTERVAL"
       }
     },

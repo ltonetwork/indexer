@@ -1,0 +1,83 @@
+body {
+    font-size: 16px;
+}
+
+.container {
+    max-width: 1000px;
+    padding-top: 30px;
+    padding-bottom: 15px
+}
+
+h1 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.nav.nav-tabs > li {
+    width: 50%;
+    text-align: center;
+}
+
+.nav.nav-tabs > li a {
+    outline: none;
+}
+
+.nav.nav-tabs > li:not(.active) a {
+    color: #bbb !important;
+}
+
+.tab-content {
+    height: 200px;
+    padding: 15px 0;
+}
+
+.tab-content .tab-pane {
+    height: 100%;
+}
+
+.tab-content textarea {
+    height: 100%;
+    width: 100%;
+    background: rgb(255, 255, 255);
+    border: 1px solid #ddd;
+    padding: 15px;
+    font-size: 14px;
+}
+
+.buttons {
+    text-align: center;
+}
+
+.buttons .btn {
+    margin-top: 0;
+}
+
+.buttons .save {
+    display: none;
+}
+
+.response {
+    display: block;
+    padding: 15px;
+    min-height: 290px;
+    border: 1px solid #ddd;
+    background: #fcfcfc;
+    overflow-y: auto;
+    color: #666;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 767px) {
+    .response {
+        margin-top: 15px;
+    }
+}
+
+.fileinput {
+    margin-top: 62px;
+}
+
+.fileinput > .form-control {
+    height: 46px;
+    line-height: 29px;
+}

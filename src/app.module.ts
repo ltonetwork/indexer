@@ -11,11 +11,13 @@ import { RequestModule } from './request/request.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './health/health.module';
+import {DemoModule} from "./demo/demo.module";
 
 export const AppModuleConfig = {
   imports: [
     LoggerModule,
     ConfigModule,
+    DemoModule,
     RequestModule,
     InfoModule,
     HealthModule,
