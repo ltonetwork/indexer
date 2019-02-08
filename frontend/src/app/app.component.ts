@@ -36,7 +36,7 @@ export class AppComponent {
     return '';
   }
 
-  private _host = 'http://anchor-demo.lto.network';
+  private _host = '';
 
   constructor(private _http: HttpClient, private _snackbar: MatSnackBar) {}
 
