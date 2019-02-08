@@ -238,16 +238,6 @@ export class NodeService {
     return response.data;
   }
 
-  async getNodeAddres(): Promise<{ address }> {
-    const response = await this.api.getNodeStatus();
-
-    if (response instanceof Error) {
-      throw response;
-    }
-
-    return response.data;
-  }
-
   async isNodeHealthy(): Promise<boolean> {
     try {
       const response = await this.getNodeStatus();

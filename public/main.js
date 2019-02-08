@@ -51,7 +51,7 @@
       }
 
       showMessage(result.chainpoint);
-      $('.alert-link').attr('href', explorerUrl + '/transaction/' + result.chainpoint.anchors[0].sourceId);
+      $('.alert-link').attr('href', getLinkFromChainpoint(result.chainpoint));
       $('#hashAlert').show();
     });
   });
@@ -76,12 +76,16 @@
         return;
       }
 
-      $('.alert-link').attr('href', explorerUrl + '/transaction/' + result.chainpoint.anchors[0].sourceId);
+      $('.alert-link').attr('href', getLinkFromChainpoint(result.chainpoint));
       $('#hashAlert').show();
       reset();
       showMessage(result.chainpoint);
     });
   });
+
+  function getLinkFromChainpoint(chainpoint) {
+    return explorerUrl + '/transaction/' + chainpoint.anchors[0].sourceId + '?hash=' + chainpoint.targetHash
+  }
 
   //Reset app state
   function reset() {
