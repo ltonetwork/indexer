@@ -14,7 +14,7 @@
     "start:dev": "nodemon",
     "build": "rm -rf dist && tsc && npm run postbuild",
     "postbuild": "cp -r src/config/data dist/config",
-    "prestart:prod": "rm -rf dist && tsc",
+    "prestart:prod": "npm run build",
     "start:prod": "node dist/main.js",
     "start:hmr": "node dist/server",
     "test": "jest",
