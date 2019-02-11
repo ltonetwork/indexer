@@ -1,15 +1,14 @@
 <mat-toolbar class="mat-elevation-z2">
   <img src="assets/LTO-LOGO.png" alt="">
-  <h3 class="mat-h3">LTO Network | Anchors demo</h3>
+  <h3 class="mat-h3">LTO Network | Anchor Service Demo</h3>
 </mat-toolbar>
 <div class="background"></div>
 <div class="content" fxLayout="row" fxLayoutGap="16px">
   <mat-card fxFlex="50" fxLayout="column">
     <mat-card-title fxLayout="row" fxLayoutAlign="space-between">
-      <span>Input something</span>
+      <span>Create anchor</span>
     </mat-card-title>
     <mat-card-content fxFlex="1 1 auto">
-      <p>Some description what is anchoring and so on</p>
       <div class="input-container" fxLayout="column">
         <ng-container [ngSwitch]="inputType">
           <mat-form-field appearance="outline" *ngSwitchCase="'Text'">
@@ -58,6 +57,6 @@
     <pre>{{data | json}}</pre>
   </mat-card-content>
   <mat-card-actions fxLayout="row" fxLayoutAlign="end center">
-    <a mat-button [href]="buildExplorerUrl(data)" target="_balnk" color="primary">Chech in explorer <mat-icon>chevron_right</mat-icon></a>
+    <a mat-button [href]="buildExplorerUrl(data)" target="_balnk" color="primary">Check in explorer <mat-icon>chevron_right</mat-icon></a>
   </mat-card-actions>
 </ng-template>
