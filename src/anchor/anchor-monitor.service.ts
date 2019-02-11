@@ -29,18 +29,18 @@ export class AnchorMonitorService {
   }
 
   async start() {
-    // try {
-    //   this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
-    //     await this.node.getLastBlockHeight() :
-    //     this.config.getNodeStartingBlock() as number;
-    //   if (this.config.getNodeRestartSync()) {
-    //     await this.storage.clearProcessHeight();
-    //   }
-    //   await this.process();
-    // } catch (e) {
-    //   this.processing = false;
-    //   throw e;
-    // }
+    try {
+      this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
+        await this.node.getLastBlockHeight() :
+        this.config.getNodeStartingBlock() as number;
+      if (this.config.getNodeRestartSync()) {
+        await this.storage.clearProcessHeight();
+      }
+      await this.process();
+    } catch (e) {
+      this.processing = false;
+      throw e;
+    }
   }
 
   async process() {

@@ -34,6 +34,8 @@ Thumbs.db
 # Ignore built ts files
 dist/**/*
 
+public/demo/
+
 # Coverage
 coverage
 
