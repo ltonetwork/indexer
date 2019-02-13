@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { FileDropModule } from 'ngx-file-drop';
 import { NgSuspenseModule } from 'ng-suspense';
 import {
   MatToolbarModule,
@@ -25,6 +26,7 @@ import { VerificationErrorComponent } from './components/verification-error/veri
   declarations: [AppComponent, FileInputComponent, VerificationErrorComponent],
   imports: [
     BrowserModule,
+    FileDropModule,
     BrowserAnimationsModule,
     MatToolbarModule,
     MatButtonModule,

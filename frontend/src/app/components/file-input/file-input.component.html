@@ -1,7 +1,26 @@
-<div fxLayout="column" fxLayoutAlign="center center">
+<div class="container" fxLayout="row" fxLayoutAlign="center center">
+  <label for="file-input" class="box">
+    <file-drop customstyle="box--" (onFileDrop)="dropped($event)">
+      <div>
+        <img src="assets/file-alt.png" alt="" />
+        <h2>Drag & drop</h2>
+        <div class="subtitle">your file, or <span class="underline">browse</span> files</div>
+        <div class="alert" fxLayout="column" fxLayoutAlign="center center">
+          <mat-icon>warning</mat-icon>
+          <span>file will only be used for hashing<br />
+            and will not be stored locally</span>
+        </div>
+      </div>
+    </file-drop>
+
+    <input type="file" #fileInput (click)="fileInput.value = null" id="file-input" (change)="fileSelected($event)" />
+  </label>
+</div>
+
+<!-- <div fxLayout="column" fxLayoutAlign="center center">
   <h3 class="mat-h3" *ngIf="fileName">{{fileName}}</h3>
   <label for="file">
     <a mat-flat-button color="primary">Choose file</a>
   </label>
   <input type="file" id="file" (change)="onFileSelected($event)">
-</div>
+</div> -->
