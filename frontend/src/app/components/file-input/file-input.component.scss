@@ -1,3 +1,64 @@
-input {
-  display: none;
+// input {
+//   display: none;
+// }
+
+
+img {
+  width: 50px;
+}
+
+.container {
+  padding: 24px;
+  box-sizing: border-box;
+
+}
+
+:host::ng-deep {
+  .content {
+    padding: 16px;
+  }
+}
+
+.box {
+  border: 1px dashed #e4e4e4;
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 8px;
+  cursor: pointer;
+
+  input {
+    display: none;
+  }
+
+  h2 {
+    font-size: 28px;
+    color: #3d5170;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: #818ea3;
+    font-size: 16px;
+  }
+}
+
+.alert {
+  color: rgba(196, 24, 60, 0.7);
+  margin-top: 16px;
+}
+
+file-drop {
+  display: block;
+  height: 290px;
+  width: 400px;
+}
+
+:host::ng-deep {
+  file-drop {
+
+    .content,
+    #dropZone {
+      height: 100% !important;
+    }
+  }
 }
