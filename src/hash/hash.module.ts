@@ -6,9 +6,10 @@ import { ConfigModule } from '../config/config.module';
 import { NodeModule } from '../node/node.module';
 import { StorageModule } from '../storage/storage.module';
 import { EncoderModule } from '../encoder/encoder.module';
+import { AuthModule } from '../auth/auth.module';
 
 export const HashModuleConfig = {
-  imports: [LoggerModule, ConfigModule, NodeModule, StorageModule, EncoderModule],
+  imports: [LoggerModule, ConfigModule, NodeModule, StorageModule, EncoderModule, AuthModule],
   controllers: [HashController],
   providers: [
     ...hashProviders,

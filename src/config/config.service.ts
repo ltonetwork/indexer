@@ -39,6 +39,10 @@ export class ConfigService {
     return this.config.get('anchor.node.restart_sync');
   }
 
+  getAuthToken(): string {
+    return this.config.get('anchor.auth.token');
+  }
+
   getApiSecret(): string {
     const config = this.getLtoApiKey();
 

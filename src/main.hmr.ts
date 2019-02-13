@@ -13,6 +13,7 @@ async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
     .setTitle('Anchoring service')
     .setDescription('Anchor data in the blockchain')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api-docs', app, document);
