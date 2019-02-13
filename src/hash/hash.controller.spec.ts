@@ -3,10 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { HashModuleConfig } from './hash.module';
 import { NodeService } from '../node/node.service';
+import { ConfigService } from '../config/config.service';
 
 describe('HashController', () => {
   let module: TestingModule;
   let nodeService: NodeService;
+  let configService: ConfigService;
   let app: INestApplication;
 
   function spy() {
@@ -26,6 +28,7 @@ describe('HashController', () => {
     await app.init();
 
     nodeService = module.get<NodeService>(NodeService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(async () => {
@@ -48,6 +51,37 @@ describe('HashController', () => {
       expect(spies.hash.anchor.mock.calls.length).toBe(1);
       expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
       expect(spies.hash.anchor.mock.calls[0][1]).toBe('hex');
+    });
+
+    test('should anchor hash to the blockchain when auth is enabled and given', async () => {
+      const spies = spy();
+      const token = '8DeKltC3dOjTNlv1EbXjCYIsOhypz4u245LypJeSdu5lES33VnqI3sy5OznLuA4x';
+      jest.spyOn(configService, 'getAuthToken').mockImplementation(() => token);
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const res = await request(app.getHttpServer())
+        .post('/hash')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ hash });
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
+      expect(res.body).toEqual({ chainpoint: { type: 'ChainpointSHA256v2' } });
+
+      expect(spies.hash.anchor.mock.calls.length).toBe(1);
+      expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
+      expect(spies.hash.anchor.mock.calls[0][1]).toBe('hex');
+    });
+
+    test('should return an unauthorized when auth is enabled and not given', async () => {
+      jest.spyOn(configService, 'getAuthToken').mockImplementation(() => '8DeKltC3dOjTNlv1EbXjCYIsOhypz4u245LypJeSdu5lES33VnqI3sy5OznLuA4x');
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const res = await request(app.getHttpServer())
+        .post('/hash')
+        .send({ hash });
+
+      expect(res.status).toBe(401);
     });
   });
 
