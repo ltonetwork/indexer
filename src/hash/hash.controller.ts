@@ -1,10 +1,11 @@
-import { Controller, Post, Req, Res, Get } from '@nestjs/common';
-import { ApiImplicitParam, ApiImplicitBody, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
+import {Controller, Post, Req, Res, Get, UseGuards} from '@nestjs/common';
+import { ApiImplicitParam, ApiImplicitBody, ApiOperation, ApiResponse, ApiUseTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { LoggerService } from '../logger/logger.service';
 import { HashDto } from './dto/hash.dto';
 import { NodeService } from '../node/node.service';
 import { EncoderService } from '../encoder/encoder.service';
+import { BearerAuthGuard } from '../auth/auth.guard';
 
 @Controller('hash')
 @ApiUseTags('hash')
@@ -16,8 +17,10 @@ export class HashController {
   ) { }
 
   @Post()
+  @UseGuards(BearerAuthGuard)
   @ApiOperation({ title: 'Anchor hash to the blockchain' })
   @ApiImplicitBody({ name: 'hash', type: HashDto })
+  @ApiBearerAuth()
   @ApiResponse({ status: 200 })
   @ApiResponse({
     status: 400,

@@ -23,6 +23,12 @@
         "env": "ANCHOR_API_SECRET"
       }
     },
+    "auth": {
+      "token": {
+        "default": "",
+        "env": "ANCHOR_AUTH_TOKEN"
+      }
+    },
     "redis": {
       "url": {
         "default": "redis://localhost",
