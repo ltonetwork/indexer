@@ -23,7 +23,7 @@ export class TransactionController {
     name: 'type',
     required: false,
     description: 'Filter by type',
-    enum: ['anchor', 'transfer', 'mass_transfer', 'start_lease', 'cancel_lease'],
+    enum: ['all_transfers', 'anchor', 'transfer', 'mass_transfer', 'start_lease', 'cancel_lease'],
   })
   @ApiResponse({ status: 200, headers: { 'X-Total': { description: 'Total amount of transactions' } } })
   @ApiResponse({

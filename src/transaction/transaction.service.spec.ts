@@ -25,6 +25,7 @@ describe('TransactionService', () => {
         { id: 'mass_transfer', types: [11] },
         { id: 'start_lease', types: [8] },
         { id: 'cancel_lease', types: [9] },
+        { id: 'all_transfers', types: [4, 11] },
       ]);
     });
   });
@@ -32,7 +33,7 @@ describe('TransactionService', () => {
   describe('getIdentifiers()', () => {
     test('get identifiers of all transaction types', async () => {
       expect(transactionService.getIdentifiers())
-        .toEqual(['anchor', 'transfer', 'mass_transfer', 'start_lease', 'cancel_lease']);
+        .toEqual(['anchor', 'transfer', 'mass_transfer', 'start_lease', 'cancel_lease', 'all_transfers']);
     });
   });
 
@@ -55,6 +56,7 @@ describe('TransactionService', () => {
       expect(transactionService.hasIdentifier('mass_transfer')).toBe(true);
       expect(transactionService.hasIdentifier('start_lease')).toBe(true);
       expect(transactionService.hasIdentifier('cancel_lease')).toBe(true);
+      expect(transactionService.hasIdentifier('all_transfers')).toBe(true);
       expect(transactionService.hasIdentifier('foo')).toBe(false);
     });
   });
