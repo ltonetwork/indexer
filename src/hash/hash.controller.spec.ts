@@ -83,6 +83,18 @@ describe('HashController', () => {
 
       expect(res.status).toBe(401);
     });
+
+    test('should return an unauthorized when auth is enabled and a wrong one given', async () => {
+      jest.spyOn(configService, 'getAuthToken').mockImplementation(() => '8DeKltC3dOjTNlv1EbXjCYIsOhypz4u245LypJeSdu5lES33VnqI3sy5OznLuA4x');
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const res = await request(app.getHttpServer())
+        .post('/hash')
+        .set('Authorization', `Bearer test`)
+        .send({ hash });
+
+      expect(res.status).toBe(401);
+    });
   });
 
   describe('GET /hash/:hash', () => {

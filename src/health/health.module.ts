@@ -4,10 +4,10 @@ import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
-import { NodeModule } from '../node/node.module';
+import { AnchorModule } from '../anchor/anchor.module';
 
 export const HealthModuleConfig = {
-  imports: [LoggerModule, ConfigModule, NodeModule],
+  imports: [LoggerModule, ConfigModule, AnchorModule],
   controllers: [HealthController],
   providers: [
     HealthService,

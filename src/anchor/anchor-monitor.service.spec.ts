@@ -26,6 +26,7 @@ describe('AnchorService', () => {
         .mockImplementation(() => ({ height: 100 })),
       getBlocks: jest.spyOn(nodeService, 'getBlocks')
         .mockImplementation(() => ([{ height: 100 }])),
+      getNodeStatus: jest.spyOn(nodeService, 'getNodeStatus'),
     };
     const storage = {
       getProcessingHeight: jest.spyOn(storageService, 'getProcessingHeight')
@@ -65,6 +66,39 @@ describe('AnchorService', () => {
       await monitorService.start();
 
       expect(spies.monitor.process.mock.calls.length).toBe(1);
+    });
+  });
+
+  describe('isSynced()', () => {
+    test('should return false if the node is down', async () => {
+      const spies = spy();
+      spies.node.getNodeStatus.mockImplementation(() => { throw new Error(); });
+
+      expect(await monitorService.isSynced()).toBeFalsy();
+    });
+
+    test('should return false if processing height is lower then the node height', async () => {
+      const spies = spy();
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve({blockchainHeight: 101}));
+
+      expect(await monitorService.isSynced()).toBeFalsy();
+      expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
+    });
+
+    test('should return true if processing height is equal to the node height', async () => {
+      const spies = spy();
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve({blockchainHeight: 99}));
+
+      expect(await monitorService.isSynced()).toBeTruthy();
+      expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
+    });
+
+    test('should return true if processing height is higher then the node height', async () => {
+      const spies = spy();
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve({blockchainHeight: 98}));
+
+      expect(await monitorService.isSynced()).toBeTruthy();
+      expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
     });
   });
 
