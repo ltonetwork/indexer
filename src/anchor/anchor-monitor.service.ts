@@ -52,6 +52,20 @@ export class AnchorMonitorService {
     return this.process();
   }
 
+  async isSynced(): Promise<boolean> {
+    try {
+      const resp = await this.node.getNodeStatus();
+      if (resp && resp.blockchainHeight) {
+        const processingHeight = await this.storage.getProcessingHeight();
+        return (resp.blockchainHeight - 1) <= processingHeight;
+      }
+    } catch(e) {
+      return false;
+    }
+
+    return false;
+  }
+
   async checkNewBlocks() {
     this.processing = true;
 
