@@ -19,7 +19,12 @@ export class TransactionController {
   @ApiImplicitParam({ name: 'address', description: 'Filter by address' })
   @ApiImplicitQuery({ name: 'limit', required: false, description: 'Limit amount of transactions returned' })
   @ApiImplicitQuery({ name: 'offset', required: false, description: 'Start search at given offset' })
-  @ApiImplicitQuery({ name: 'type', required: false, description: 'Filter by type', enum: ['anchor', 'transfer'] })
+  @ApiImplicitQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by type',
+    enum: ['anchor', 'transfer', 'mass_transfer', 'start_lease', 'cancel_lease'],
+  })
   @ApiResponse({ status: 200, headers: { 'X-Total': { description: 'Total amount of transactions' } } })
   @ApiResponse({
     status: 400,

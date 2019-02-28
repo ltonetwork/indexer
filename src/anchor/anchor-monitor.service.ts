@@ -106,6 +106,7 @@ export class AnchorMonitorService {
       return;
     }
 
+    // @todo: move this to anchor-indexer service
     // Process old data transactions
     if (transaction.type === 12 && !!transaction.data) {
       for (const item of transaction.data) {
