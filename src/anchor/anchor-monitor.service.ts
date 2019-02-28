@@ -79,9 +79,12 @@ export class AnchorMonitorService {
   async processBlock(block: Block) {
     this.logger.debug(`anchor: processing block ${block.height}`);
 
-    block.transactions.forEach(async (transaction, index) => {
-      await this.processTransaction(transaction, block.height, index);
-    });
+    let position = 0;
+
+    for (const transaction of block.transactions) {
+      await this.processTransaction(transaction, block.height, position);
+      position++;
+    }
   }
 
   async processTransaction(

@@ -89,7 +89,10 @@ export class NodeService {
     }
 
     const data = responses.map((response: AxiosResponse) => response.data);
-    return [].concat(...data);
+
+    return []
+      .concat(...data)
+      .sort((a, b) => a.height - b.height);
   }
 
   getBlockRanges(from: number, to: number): Array<{ from, to }> {
@@ -248,7 +251,7 @@ export class NodeService {
     }
   }
 
-  async getNodeInfo(): Promise<{status, address}> {
+  async getNodeInfo(): Promise<{ status, address }> {
     const status = await this.getNodeStatus();
     const address = await this.getNodeWallet();
 
