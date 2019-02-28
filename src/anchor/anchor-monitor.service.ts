@@ -79,9 +79,12 @@ export class AnchorMonitorService {
   async processBlock(block: Block) {
     this.logger.debug(`anchor: processing block ${block.height}`);
 
-    block.transactions.forEach(async (transaction, index) => {
-      await this.processTransaction(transaction, block.height, index);
-    });
+    let position = 0;
+
+    for (const transaction of block.transactions) {
+      await this.processTransaction(transaction, block.height, position);
+      position++;
+    }
   }
 
   async processTransaction(
@@ -103,6 +106,7 @@ export class AnchorMonitorService {
       return;
     }
 
+    // @todo: move this to anchor-indexer service
     // Process old data transactions
     if (transaction.type === 12 && !!transaction.data) {
       for (const item of transaction.data) {
