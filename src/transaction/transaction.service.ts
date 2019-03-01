@@ -24,6 +24,12 @@ export class TransactionService {
     return match ? match.id : null;
   }
 
+  getIdentifiersByType(type: number): string[] {
+    const types = this.getAllTypes();
+    const matches = types.filter((tx) => tx.types.indexOf(type) > -1).map((match) => match.id);
+    return matches;
+  }
+
   hasIdentifier(identifier): boolean {
     const identifiers = this.getIdentifiers();
     return identifiers.indexOf(identifier) > -1;
