@@ -38,7 +38,6 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.connection.get(key);
   }
 
-
   private async setValue(key: string, value: string): Promise<string> {
     await this.init();
     return this.connection.set(key, value);
@@ -76,7 +75,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     await this.init();
-    return await this.connection.zrangePaginate(`lto-anchor:tx:${type}:${address}`, limit, offset);
+    return await this.connection.zrevrangePaginate(`lto-anchor:tx:${type}:${address}`, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {

@@ -39,6 +39,16 @@ export class RedisConnection {
     return this.connection.zrange(key, start, stop);
   }
 
+  async zrevrange(key: redis.KeyType, start: number, stop: number): Promise<any> {
+    return this.connection.zrevrange(key, start, stop);
+  }
+
+  async zrevrangePaginate(key: redis.KeyType, limit: number, offset: number): Promise<any> {
+    const start = Number(offset);
+    const stop = (Number(limit) - 1) + start;
+    return this.connection.zrevrange(key, start, stop);
+  }
+
   async zrangePaginate(key: redis.KeyType, limit: number, offset: number): Promise<any> {
     const start = Number(offset);
     const stop = (Number(limit) - 1) + start;
