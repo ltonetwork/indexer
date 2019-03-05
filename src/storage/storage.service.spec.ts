@@ -14,7 +14,7 @@ describe('StorageService', () => {
       set: jest.fn(),
       hset: jest.fn(),
       zaddIncr: jest.fn(),
-      zrangePaginate: jest.fn(),
+      zrevrangePaginate: jest.fn(),
       zcard: jest.fn(),
       close: jest.fn(),
     };
@@ -47,7 +47,7 @@ describe('StorageService', () => {
       const transaction = {
         id: 'fake_transaction',
         block: '1',
-        position: '10'
+        position: '10',
       };
       await storageService.saveAnchor(hash, transaction);
 
@@ -96,7 +96,7 @@ describe('StorageService', () => {
       const spies = spy();
 
       const transactions = ['fake_transaction'];
-      spies.redisConnection.zrangePaginate.mockImplementation(() => transactions);
+      spies.redisConnection.zrevrangePaginate.mockImplementation(() => transactions);
 
       const type = 'anchor';
       const address = 'fake_address';
@@ -107,11 +107,11 @@ describe('StorageService', () => {
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.zrangePaginate.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zrangePaginate.mock.calls[0][0])
+      expect(spies.redisConnection.zrevrangePaginate.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][0])
         .toBe(`lto-anchor:tx:${type}:${address}`);
-      expect(spies.redisConnection.zrangePaginate.mock.calls[0][1]).toBe(limit);
-      expect(spies.redisConnection.zrangePaginate.mock.calls[0][2]).toBe(offset);
+      expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][1]).toBe(limit);
+      expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][2]).toBe(offset);
     });
   });
 
