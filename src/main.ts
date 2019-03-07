@@ -15,6 +15,9 @@ async function swagger(app: INestApplication) {
     .setDescription('Anchor data in the blockchain')
     .addBearerAuth()
     .build();
+
+  options.schemes = ['http', 'https'];
+
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api-docs', app, document);
 }
