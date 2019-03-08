@@ -14,6 +14,7 @@ import {
   MatFormFieldModule,
   MatProgressSpinnerModule,
   MatSnackBarModule,
+  MatCheckboxModule
 } from '@angular/material';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
@@ -41,6 +42,7 @@ import { VerificationErrorComponent } from './components/verification-error/veri
     NgSuspenseModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatCheckboxModule
   ],
   providers: [],
   bootstrap: [AppComponent],
