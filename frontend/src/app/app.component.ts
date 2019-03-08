@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { take, tap, finalize, shareReplay } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { MatSnackBar } from '@angular/material';
+import { HmacSHA256 } from 'crypto-js';
 
 type InputType = 'Text' | 'File';
 
@@ -24,6 +25,9 @@ export class AppComponent {
   inputType: InputType = 'File';
   verifying = false;
   verification$: Observable<any> | null = null;
+
+  useEncription = false;
+  password = '';
 
   get hash(): string {
     const data =
@@ -64,21 +68,21 @@ export class AppComponent {
 
   verify() {
     this.verifying = true;
+    const hash = this.useEncription ? this._encrypt(this.hash) : this.hash;
     this.verification$ = this._http
-      .get<any>(`${this._host}/hash/${this.hash}`)
+      .get<any>(`${this._host}/hash/${hash}`)
       .pipe(finalize(() => (this.verifying = false)));
   }
 
-  anchor(hash: string) {
-    this.verification$ = this._http
-      .post(`${this._host}/hash`, { hash: this.hash })
-      .pipe(
-        tap(() => {
-          this._showNotification(
-            'Your hash has been anchored on the blockchain.',
-          );
-        }),
-      );
+  anchor() {
+    const hash = this.useEncription ? this._encrypt(this.hash) : this.hash;
+    this.verification$ = this._http.post(`${this._host}/hash`, { hash }).pipe(
+      tap(() => {
+        this._showNotification(
+          'Your hash has been anchored on the blockchain.',
+        );
+      }),
+    );
   }
 
   buildExplorerUrl(verification: any) {
@@ -89,5 +93,9 @@ export class AppComponent {
 
   private _showNotification(message: string) {
     this._snackbar.open(message, 'DISMISS');
+  }
+
+  private _encrypt(hash: string): string {
+    return HmacSHA256(hash, this.password).toString();
   }
 }

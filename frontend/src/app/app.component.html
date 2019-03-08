@@ -1,5 +1,5 @@
 <mat-toolbar class="mat-elevation-z2">
-  <img src="assets/LTO-LOGO.png" alt="">
+  <img src="assets/LTO-LOGO.png" alt="" />
   <h3 class="mat-h3">LTO Network | Anchor Service Demo</h3>
 </mat-toolbar>
 <div class="background"></div>
@@ -14,18 +14,42 @@
           <mat-form-field appearance="outline" *ngSwitchCase="'Text'">
             <textarea matInput [(ngModel)]="textInput"></textarea>
           </mat-form-field>
-          <app-file-input *ngSwitchCase="'File'" (fileData)="fileSelected($event)"></app-file-input>
+          <app-file-input
+            *ngSwitchCase="'File'"
+            (fileData)="fileSelected($event)"
+          ></app-file-input>
         </ng-container>
+      </div>
+      <div class="encription" fxLayout="column" fxLayoutGap="8px">
+        <mat-checkbox [(ngModel)]="useEncription">Use encription</mat-checkbox>
+        <mat-form-field *ngIf="useEncription" [appearance]="'outline'">
+          <mat-label>Password</mat-label>
+          <input
+            type="text"
+            [(ngModel)]="password"
+            matInput
+            placeholder="Password"
+          />
+        </mat-form-field>
       </div>
     </mat-card-content>
     <mat-card-actions fxLayout="row" fxLayoutAlign="start center">
-      <button mat-button color="primary" [matMenuTriggerFor]="appMenu">{{inputType}} <mat-icon>arrow_drop_down</mat-icon></button>
+      <button mat-button color="primary" [matMenuTriggerFor]="appMenu">
+        {{ inputType }} <mat-icon>arrow_drop_down</mat-icon>
+      </button>
       <mat-menu #appMenu="matMenu">
         <button mat-menu-item (click)="setInputType('Text')">Text</button>
         <button mat-menu-item (click)="setInputType('File')">File</button>
       </mat-menu>
       <span fxFlex></span>
-      <button mat-button color="primary" [disabled]="cantVerify" (click)="verify()">Verify</button>
+      <button
+        mat-button
+        color="primary"
+        [disabled]="cantVerify"
+        (click)="verify()"
+      >
+        Verify
+      </button>
     </mat-card-actions>
   </mat-card>
 
@@ -34,29 +58,41 @@
     <ng-container *ngIf="verification$" [ngSuspense]="verification$">
       <ng-container *ngSuspenseError="errorTpl"></ng-container>
       <ng-container *ngSuspenseSuccess="successTpl"></ng-container>
-      <div class="loader" *ngSuspensePlaceholder="300" fxLayout="row" fxLayoutAlign="center center">
-        <mat-progress-spinner [diameter]="40" mode="indeterminate"></mat-progress-spinner>
+      <div
+        class="loader"
+        *ngSuspensePlaceholder="300"
+        fxLayout="row"
+        fxLayoutAlign="center center"
+      >
+        <mat-progress-spinner
+          [diameter]="40"
+          mode="indeterminate"
+        ></mat-progress-spinner>
       </div>
     </ng-container>
   </mat-card>
 </div>
-
 
 <ng-template #errorTpl let-error>
   <mat-card-content fxFlex="1 1 auto">
     <app-verification-error [error]="error"></app-verification-error>
   </mat-card-content>
   <mat-card-actions fxLayout="row" fxLayoutAlign="end">
-    <button mat-button color="accent" (click)="anchor(hash)">Anchor</button>
+    <button mat-button color="accent" (click)="anchor()">Anchor</button>
   </mat-card-actions>
 </ng-template>
 
-
 <ng-template #successTpl let-data>
   <mat-card-content>
-    <pre>{{data | json}}</pre>
+    <pre>{{ data | json }}</pre>
   </mat-card-content>
   <mat-card-actions fxLayout="row" fxLayoutAlign="end center">
-    <a mat-button [href]="buildExplorerUrl(data)" target="_balnk" color="primary">Check in explorer <mat-icon>chevron_right</mat-icon></a>
+    <a
+      mat-button
+      [href]="buildExplorerUrl(data)"
+      target="_balnk"
+      color="primary"
+      >Check in explorer <mat-icon>chevron_right</mat-icon></a
+    >
   </mat-card-actions>
 </ng-template>
