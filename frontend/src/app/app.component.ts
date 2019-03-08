@@ -34,14 +34,14 @@ export class AppComponent {
       this.inputType === 'Text' ? this.textInput : this.selectedFileData;
     if (data && data !== '') {
       const hash = sha256(data);
-      return hash;
+      return this.useEncription ? this._encrypt(hash) : hash;
     }
 
     return '';
   }
 
-  // private _host = 'http://anchor-demo.lto.network';
-  private _host = '';
+  private _host = 'http://anchor-demo.lto.network';
+  // private _host = '';
 
   constructor(private _http: HttpClient, private _snackbar: MatSnackBar) {}
 
@@ -68,14 +68,14 @@ export class AppComponent {
 
   verify() {
     this.verifying = true;
-    const hash = this.useEncription ? this._encrypt(this.hash) : this.hash;
+    const hash = this.hash;
     this.verification$ = this._http
       .get<any>(`${this._host}/hash/${hash}`)
       .pipe(finalize(() => (this.verifying = false)));
   }
 
   anchor() {
-    const hash = this.useEncription ? this._encrypt(this.hash) : this.hash;
+    const hash = this.hash;
     this.verification$ = this._http.post(`${this._host}/hash`, { hash }).pipe(
       tap(() => {
         this._showNotification(
