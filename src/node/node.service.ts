@@ -124,7 +124,8 @@ export class NodeService {
 
   async getTransactions(id: string[]): Promise<Transaction[] | null> {
     const promises = id.map((tx) => this.getTransaction(tx));
-    return await Promise.all(promises);
+    const results = await Promise.all(promises.map(p => p.catch(e => e)));
+    return results.filter(result => !(result instanceof Error));
   }
 
   async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
