@@ -51,7 +51,12 @@ export class HashController {
       res.status(200).json({ chainpoint });
     } catch (e) {
       this.logger.error(`hash-controller: failed to anchor '${e}'`, { stack: e.stack });
-      return res.status(500).send(`failed to anchor '${e}'`);
+
+      if (e.response) {
+        return res.status(500).send(`failed to anchor '${JSON.stringify(e.response.data, null, 1)}'`);
+      } else {
+        return res.status(500).send(`failed to anchor '${e}'`);
+      }
     }
   }
 
