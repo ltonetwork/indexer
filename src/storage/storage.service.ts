@@ -1,94 +1,62 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
-import { RedisService } from '../redis/redis.service';
-import { RedisConnection } from '../redis/classes/redis.connection';
+import { StorageInterface } from './interfaces/storage.interface';
+import { StorageTypeEnum } from '../config/enums/storage.type.enum';
+import storageServices from './types';
+import PascalCase from 'pascal-case';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
-  private connection: RedisConnection;
+  private storage: StorageInterface;
 
   constructor(
     private readonly config: ConfigService,
-    private readonly redis: RedisService,
-  ) { }
-
-  async onModuleInit() { }
-
-  async onModuleDestroy() {
-    await this.close();
-  }
-
-  private async init() {
-    if (this.connection) {
-      return this.connection;
-    }
-
-    this.connection = await this.redis.connect(this.config.getRedisClient());
-  }
-
-  private async close() {
-    if (this.connection) {
-      await this.connection.close();
-      delete this.connection;
+    private readonly moduleRef: ModuleRef,
+  ) {
+    if (this.config.getStorageType() === StorageTypeEnum.Redis) {
+      const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
+      this.storage = this.moduleRef.get(storageServices[name]);
+    } else {
+      const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
+      this.storage = this.moduleRef.get(storageServices[name]);
     }
   }
 
-  private async getValue(key: string): Promise<string> {
-    await this.init();
-    return this.connection.get(key);
+  async onModuleInit() {}
+
+  async onModuleDestroy() {}
+
+  getAnchor(hash: string): Promise<any> {
+    return this.storage.getObject(`lto-anchor:anchor:${hash.toLowerCase()}`);
   }
 
-  private async setValue(key: string, value: string): Promise<string> {
-    await this.init();
-    return this.connection.set(key, value);
+  saveAnchor(hash: string, transaction: any) {
+    return this.storage.setObject(`lto-anchor:anchor:${hash.toLowerCase()}`, transaction);
   }
 
-  private async setObject(key: string, value: object): Promise<void> {
-    await this.init();
-    Object.keys(value).forEach(async (field) => {
-      await this.connection.hset(key, field, value[field]);
-    });
+  countTx(type: string, address: string): Promise<number> {
+    return this.storage.countTx(type, address);
   }
 
-  private async getObject(key: string): Promise<object> {
-    await this.init();
-    return this.connection.hgetall(key);
+  indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
+    return this.storage.indexTx(type, address, transactionId, timestamp);
   }
 
-  async getAnchor(hash: string): Promise<any> {
-    return this.getObject(`lto-anchor:anchor:${hash.toLowerCase()}`);
-  }
-
-  async saveAnchor(hash: string, transaction: any) {
-    return this.setObject(`lto-anchor:anchor:${hash.toLowerCase()}`, transaction);
-  }
-
-  async countTx(type: string, address: string): Promise<number> {
-    await this.init();
-    return await this.connection.zcard(`lto-anchor:tx:${type}:${address}`);
-  }
-
-  async indexTx(type: string, address: string, transactionId: string): Promise<void> {
-    await this.init();
-    await this.connection.zaddIncr(`lto-anchor:tx:${type}:${address}`, [transactionId]);
-  }
-
-  async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
-    await this.init();
-    return await this.connection.zrevrangePaginate(`lto-anchor:tx:${type}:${address}`, limit, offset);
+  getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
+    return this.storage.getTx(type, address, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {
-    const height = await this.getValue(`lto-anchor:processing-height`);
+    const height = await this.storage.getValue(`lto-anchor:processing-height`);
     return height ? Number(height) : null;
   }
 
-  async saveProcessingHeight(height: string | number): Promise<void> {
-    await this.setValue(`lto-anchor:processing-height`, String(height));
+  saveProcessingHeight(height: string | number): Promise<string> {
+    return this.storage.setValue(`lto-anchor:processing-height`, String(height));
   }
 
-  async clearProcessHeight(): Promise<void> {
-    await this.init();
-    return this.connection.del(`lto-anchor:processing-height`);
+  clearProcessHeight(): Promise<void> {
+    return this.storage.delValue(`lto-anchor:processing-height`);
   }
 }

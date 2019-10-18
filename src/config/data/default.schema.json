@@ -89,5 +89,15 @@
       "default": "",
       "env": "LOG_LEVEL"
     }
+  },
+  "storage": {
+    "type": {
+      "default": "leveldb",
+      "format": [
+        "leveldb",
+        "redis"
+      ],
+      "env": "STORAGE_TYPE"
+    }
   }
 }

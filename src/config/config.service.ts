@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
+import { StorageTypeEnum } from './enums/storage.type.enum';
 
 @Injectable()
 export class ConfigService {
@@ -95,5 +96,9 @@ export class ConfigService {
     }
 
     return this.config.get('anchor.logger.combined');
+  }
+
+  getStorageType(): StorageTypeEnum {
+    return this.config.get('storage.type');
   }
 }
