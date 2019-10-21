@@ -46,18 +46,18 @@ export class AnchorIndexerService {
     for (const identifier of identifiers) {
       if (transaction.sender) {
         this.logger.debug(`anchor: index ${identifier} transaction ${transaction.id} for ${transaction.sender}`);
-        await this.storage.indexTx(identifier, transaction.sender, transaction.id);
+        await this.storage.indexTx(identifier, transaction.sender, transaction.id, transaction.timestamp);
       }
 
       if (transaction.recipient) {
         this.logger.debug(`anchor: index ${identifier} transaction ${transaction.id} for ${transaction.recipient}`);
-        await this.storage.indexTx(identifier, transaction.recipient, transaction.id);
+        await this.storage.indexTx(identifier, transaction.recipient, transaction.id, transaction.timestamp);
       }
 
       if (transaction.transfers) {
         for (const transfer of transaction.transfers) {
           this.logger.debug(`anchor: index ${identifier} transaction ${transaction.id} for ${transfer.recipient}`);
-          await this.storage.indexTx(identifier, transfer.recipient, transaction.id);
+          await this.storage.indexTx(identifier, transfer.recipient, transaction.id, transaction.timestamp);
         }
       }
     }

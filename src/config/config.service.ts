@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
+import { StorageTypeEnum } from './enums/storage.type.enum';
 
 @Injectable()
 export class ConfigService {
@@ -69,6 +70,10 @@ export class ConfigService {
     return this.config.get('anchor.redis.cluster');
   }
 
+  getLevelDb(): string {
+    return this.config.get('anchor.leveldb');
+  }
+
   getMonitorInterval(): number {
     return Number(this.config.get('anchor.monitor.interval'));
   }
@@ -95,5 +100,9 @@ export class ConfigService {
     }
 
     return this.config.get('anchor.logger.combined');
+  }
+
+  getStorageType(): StorageTypeEnum {
+    return this.config.get('storage.type');
   }
 }

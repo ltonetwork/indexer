@@ -35,6 +35,10 @@ export class RedisConnection {
     return this.connection.zadd(key, String(number), ...members);
   }
 
+  async zaddWithScore(key: redis.KeyType, score: string, value: string): Promise<string> {
+    return this.connection.zadd(key, score, value);
+  }
+
   async zrange(key: redis.KeyType, start: number, stop: number): Promise<any> {
     return this.connection.zrange(key, start, stop);
   }
