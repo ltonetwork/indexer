@@ -19,11 +19,6 @@ export class LeveldbConnection {
     return this.connection.del(key);
   }
 
-  async zaddIncr(key: level.KeyType, value: string): Promise<any> {
-    const number = await this.countTx(key);
-    return this.zaddWithScore(key, String(number), value);
-  }
-
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
     const newKey = `${key}!${score}`;
     await this.incrCount(key);
