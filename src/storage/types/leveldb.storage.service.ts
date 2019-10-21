@@ -51,15 +51,21 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async setObject(key: string, value: object): Promise<void> {
     await this.init();
-    this.setValue(key, JSON.stringify(value));
+    await this.setValue(key, JSON.stringify(value));
   }
 
   async getObject(key: string): Promise<object> {
     await this.init();
-    return JSON.parse(await this.getValue(key));
+    const res = await this.getValue(key);
+    if (res) {
+      return JSON.parse(res);
+    }
+
+    return {};
   }
 
-  countTx(type: string, address: string): Promise<number> {
+  async countTx(type: string, address: string): Promise<number> {
+    await this.init();
     return this.connection.countTx(`lto-anchor:tx:${type}:${address}`);
   }
 
@@ -70,7 +76,6 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     await this.init();
-    // return this.connection.zaddIncr(`lto-anchor:tx:${type}:${address}`, transactionId);
     return this.connection.zaddWithScore(`lto-anchor:tx:${type}:${address}`, String(timestamp), transactionId);
   }
 }
