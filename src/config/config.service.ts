@@ -70,6 +70,10 @@ export class ConfigService {
     return this.config.get('anchor.redis.cluster');
   }
 
+  getLevelDb(): string {
+    return this.config.get('anchor.leveldb');
+  }
+
   getMonitorInterval(): number {
     return Number(this.config.get('anchor.monitor.interval'));
   }

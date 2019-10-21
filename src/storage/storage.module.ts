@@ -4,10 +4,11 @@ import { StorageService } from './storage.service';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
 import { RedisModule } from '../redis/redis.module';
+import { LeveldbModule } from '../leveldb/leveldb.module';
 import { tokens } from './types';
 
 export const StorageModuleConfig = {
-  imports: [RedisModule, LoggerModule, ConfigModule],
+  imports: [LeveldbModule, RedisModule, LoggerModule, ConfigModule],
   controllers: [],
   providers: [
     ...tokens,

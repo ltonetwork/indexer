@@ -39,6 +39,10 @@
         "env": "ANCHOR_REDIS_CLUSTER"
       }
     },
+    "leveldb": {
+      "default": "anchor-db",
+      "env": "ANCHOR_LEVELDB"
+    },
     "node": {
       "url": {
         "default": "",

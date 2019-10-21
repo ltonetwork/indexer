@@ -18,7 +18,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     } else {
-      const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
+      const name = PascalCase(`${StorageTypeEnum.LevelDB}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     }
   }
@@ -48,7 +48,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getProcessingHeight(): Promise<number | null> {
-    const height = await this.storage.getValue(`lto-anchor:processing-height`);
+    let height;
+    try {
+      height = await this.storage.getValue(`lto-anchor:processing-height`);
+    } catch (e) {}
     return height ? Number(height) : null;
   }
 
