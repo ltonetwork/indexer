@@ -13,7 +13,9 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly config: ConfigService,
     private readonly moduleRef: ModuleRef,
-  ) {
+  ) { }
+
+  async onModuleInit() {
     if (this.config.getStorageType() === StorageTypeEnum.Redis) {
       const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
@@ -22,8 +24,6 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       this.storage = this.moduleRef.get(storageServices[name]);
     }
   }
-
-  async onModuleInit() {}
 
   async onModuleDestroy() {}
 

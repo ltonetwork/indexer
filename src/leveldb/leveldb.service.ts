@@ -34,6 +34,8 @@ export class LeveldbService implements OnModuleInit, OnModuleDestroy {
   }
 
   async close() {
-    await this.connection.close();
+    if (this.connection) {
+      await this.connection.close();
+    }
   }
 }

@@ -2,18 +2,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RedisService } from '../redis/redis.service';
 import { StorageModuleConfig } from './storage.module';
 import { StorageService } from './storage.service';
+import { ConfigService } from '../config/config.service';
 
 describe('StorageService', () => {
   let module: TestingModule;
   let storageService: StorageService;
   let redisService: RedisService;
+  let configService: ConfigService;
 
   function spy() {
     const redisConnection = {
       get: jest.fn(),
       set: jest.fn(),
       hset: jest.fn(),
-      zaddIncr: jest.fn(),
+      zaddWithScore: jest.fn(),
       zrevrangePaginate: jest.fn(),
       zcard: jest.fn(),
       close: jest.fn(),
@@ -28,10 +30,13 @@ describe('StorageService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule(StorageModuleConfig).compile();
-    await module.init();
-
     storageService = module.get<StorageService>(StorageService);
     redisService = module.get<RedisService>(RedisService);
+    configService = module.get<ConfigService>(ConfigService);
+
+    jest.spyOn(configService, 'getStorageType').mockImplementation(() => 'redis');
+
+    await module.init();
   });
 
   afterEach(async () => {
@@ -79,15 +84,17 @@ describe('StorageService', () => {
       const type = 'anchor';
       const address = 'fake_address_WITH_CAPS';
       const transaction = 'fake_transaction';
-      await storageService.indexTx(type, address, transaction);
+      const timestamp = 1;
+      await storageService.indexTx(type, address, transaction, timestamp);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.zaddIncr.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zaddIncr.mock.calls[0][0])
+      expect(spies.redisConnection.zaddWithScore.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zaddWithScore.mock.calls[0][0])
         .toBe(`lto-anchor:tx:${type}:${address}`);
-      expect(spies.redisConnection.zaddIncr.mock.calls[0][1]).toEqual([transaction]);
+      expect(spies.redisConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(timestamp));
+      expect(spies.redisConnection.zaddWithScore.mock.calls[0][2]).toEqual(transaction);
     });
   });
 
