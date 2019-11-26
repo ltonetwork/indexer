@@ -44,20 +44,7 @@ export class LoggerService {
             ...[winston.format.colorize()],
             ...formats,
           ),
-        }),
-        new winstonRotateFile({
-          level: 'error',
-          format: winston.format.combine(...formats),
-          filename: 'error-%DATE%.log',
-          dirname: 'logs',
-        }),
-        new winstonRotateFile({
-          level: (this.config.getLoggerCombined()).level,
-          format: winston.format.combine(...formats),
-          filename: 'combined-%DATE%.log',
-          dirname: 'logs',
-          handleExceptions: true,
-        }),
+        })
       ],
     });
   }
