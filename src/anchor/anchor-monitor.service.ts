@@ -59,7 +59,7 @@ export class AnchorMonitorService {
         const processingHeight = await this.storage.getProcessingHeight();
         return (resp.blockchainHeight - 1) <= processingHeight;
       }
-    } catch(e) {
+    } catch (e) {
       return false;
     }
 
