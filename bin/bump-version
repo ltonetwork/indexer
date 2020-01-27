@@ -9,4 +9,4 @@ RES=$(mversion $VERSION)
 git add package.json
 git commit -m "Bump version to v${VERSION}"
 git tag "v${VERSION}"
-git push origin "v${VERSION}"
+git push github "v${VERSION}"

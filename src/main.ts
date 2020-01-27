@@ -8,6 +8,7 @@ import { join } from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import {LoggerService} from './logger/logger.service';
+import { IndexMonitorService } from './index/index-monitor.service';
 
 async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
@@ -37,8 +38,11 @@ async function bootstrap() {
   const logger = app.get<LoggerService>(LoggerService);
   logger.info(`server: running on http://localhost:${configService.getPort()}`);
 
-  const anchorService = app.get<AnchorService>(AnchorService);
-  await anchorService.start();
+  // const anchorService = app.get<AnchorService>(AnchorService);
+  // await anchorService.start();
+
+  const indexService = app.get<IndexMonitorService>(IndexMonitorService);
+  await indexService.start();
 }
 
 bootstrap();

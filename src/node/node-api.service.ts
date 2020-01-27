@@ -50,6 +50,24 @@ export class NodeApiService {
     });
   }
 
+  async sendAssociation(data: any): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return await this.request.post(`${url}/addresses/association`, data, {
+      headers: {
+        'X-Api-Key': this.config.getApiSecret(),
+      },
+    });
+  }
+
+  async getAssociation(address: string): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return await this.request.get(`${url}/addresses/association/${address}`, {
+      headers: {
+        'X-Api-Key': this.config.getApiSecret(),
+      },
+    });
+  }
+
   async getNodeStatus(): Promise<AxiosResponse | Error> {
     const url = this.config.getLtoNodeUrl();
     return await this.request.get(`${url}/node/status`);

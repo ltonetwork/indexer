@@ -12,11 +12,16 @@ branches:
 
 before_install:
 # Configure Git
-- git config --global user.email "travis-ci@legalthings.net"
+- openssl aes-256-cbc -K $encrypted_09bcffa25be0_key -iv $encrypted_09bcffa25be0_iv -in github_deploy_key.enc -out github_deploy_key -d
+- chmod 600 github_deploy_key
+- eval $(ssh-agent -s)
+- ssh-add github_deploy_key
+- git config --global user.email "travis-ci@ltonetwork.com"
 - git config --global user.name "Travis CI"
+- git remote add github git@github.com:ltonetwork/anchor.git
 
 # Get all tags of git repo
-- git fetch origin 'refs/tags/*:refs/tags/*'
+- git fetch github 'refs/tags/*:refs/tags/*'
 
 script:
   npm run test:all
