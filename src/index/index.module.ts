@@ -10,6 +10,7 @@ import { EncoderModule } from '../encoder/encoder.module';
 export const IndexModuleConfig = {
   imports: [EmitterModule, ConfigModule, EncoderModule, NodeModule, StorageModule],
   providers: [IndexMonitorService, IndexService],
+  exports: [IndexMonitorService],
 };
 
 @Module(IndexModuleConfig)

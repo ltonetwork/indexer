@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from './../config/config.service';
 import { LoggerService } from './../logger/logger.service';
-import { AnchorMonitorService } from '../anchor/anchor-monitor.service';
+import { IndexMonitorService } from '../index/index-monitor.service';
+
 
 @Injectable()
 export class HealthService {
   constructor(
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-    private readonly monitor: AnchorMonitorService,
+    private readonly monitor: IndexMonitorService,
   ) {
   }
 
