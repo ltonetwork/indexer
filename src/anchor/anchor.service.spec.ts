@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnchorModuleConfig } from './anchor.module';
 import { AnchorService } from './anchor.service';
-import { AnchorMonitorService } from './anchor-monitor.service';
+import { StorageService } from '../storage/storage.service';
 
 describe('AnchorService', () => {
   let module: TestingModule;
   let anchorService: AnchorService;
-  let monitorService: AnchorMonitorService;
+  let storageService: StorageService;
 
   function spy() {
-    const monitor = {
-      start: jest.spyOn(monitorService, 'start').mockImplementation(() => { }),
+    const storage = {
+      saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(() => { }),
     };
 
-    return { monitor };
+    return { storage };
   }
 
   beforeEach(async () => {
@@ -21,21 +21,62 @@ describe('AnchorService', () => {
     await module.init();
 
     anchorService = module.get<AnchorService>(AnchorService);
-    monitorService = module.get<AnchorMonitorService>(AnchorMonitorService);
+    storageService = module.get<StorageService>(StorageService);
   });
 
   afterEach(async () => {
     await module.close();
   });
 
-  describe('start()', () => {
-    test('should start the anchor', async () => {
+  describe('index', () => {
+
+    test('should process the data transaction', async () => {
       const spies = spy();
 
-      await anchorService.start();
+      const transaction = {
+        id: 'fake_transaction',
+        type: 12,
+        data: [
+          {
+            key: anchorService.anchorToken,
+            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywg',
+          },
+          {
+            key: 'invalid key',
+            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywga',
+          },
+        ],
+      };
+      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
-      expect(anchorService.started).toBe(true);
-      expect(spies.monitor.start.mock.calls.length).toBe(1);
+      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.saveAnchor.mock.calls[0][0])
+        .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
+      expect(spies.storage.saveAnchor.mock.calls[0][1])
+        .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
+    });
+
+    test('should process the anchor transaction', async () => {
+      const spies = spy();
+
+      const transaction = {
+        id: 'fake_transaction',
+        type: 15,
+        anchors: [
+          '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
+        ],
+      };
+      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.saveAnchor.mock.calls[0][0])
+        .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
+      expect(spies.storage.saveAnchor.mock.calls[0][1])
+        .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
+    });
+
+    test.skip('should not process a non anchor transaction', async () => {
+
     });
   });
 });

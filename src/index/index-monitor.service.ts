@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { AnchorIndexerService } from './anchor-indexer.service';
-import { EncoderService } from '../encoder/encoder.service';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
+import { EncoderService } from '../encoder/encoder.service';
 import { NodeService } from '../node/node.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
-import { Block } from '../transaction/interfaces/block.interface';
 import delay from 'delay';
+import { Block } from '../transaction/interfaces/block.interface';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { IndexService } from './index.service';
 
 @Injectable()
-export class AnchorMonitorService {
+export class IndexMonitorService {
+
   public processing: boolean;
   public lastBlock: number;
-  public transactionTypes: Array<number>;
-  public anchorToken: string;
+  public started: boolean;
 
   constructor(
     private readonly logger: LoggerService,
@@ -22,14 +22,17 @@ export class AnchorMonitorService {
     private readonly encoder: EncoderService,
     private readonly node: NodeService,
     private readonly storage: StorageService,
-    private readonly indexer: AnchorIndexerService,
-  ) {
-    this.transactionTypes = [12, 15];
-    this.anchorToken = '\u2693';
-  }
+    private readonly indexer: IndexService,
+  ) {}
 
   async start() {
     try {
+      this.logger.info(`index-monitor: starting monitor`);
+
+      if (this.started) {
+        return this.logger.warn('index-monitor: monitor already running');
+      }
+
       this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
         await this.node.getLastBlockHeight() :
         this.config.getNodeStartingBlock() as number;
@@ -37,8 +40,13 @@ export class AnchorMonitorService {
         await this.storage.clearProcessHeight();
       }
       await this.process();
+      this.started = true;
     } catch (e) {
       this.processing = false;
+      this.logger.error(`index-monitor: failed to start monitor: ${e}`);
+      this.started = false;
+      await delay(2000);
+      return this.start();
       throw e;
     }
   }
@@ -76,7 +84,7 @@ export class AnchorMonitorService {
 
     for (const range of ranges) {
       this.logger.info(
-        `anchor: processing blocks ${range.from} to ${range.to}`,
+        `index-monitor: processing blocks ${range.from} to ${range.to}`,
       );
       const blocks = await this.node.getBlocks(range.from, range.to);
 
@@ -91,7 +99,7 @@ export class AnchorMonitorService {
   }
 
   async processBlock(block: Block) {
-    this.logger.debug(`anchor: processing block ${block.height}`);
+    this.logger.debug(`index-monitor: processing block ${block.height}`);
 
     let position = 0;
 
@@ -101,58 +109,11 @@ export class AnchorMonitorService {
     }
   }
 
-  async processTransaction(
+  processTransaction(
     transaction: Transaction,
     blockHeight: number,
     position: number,
   ) {
-    const success = await this.indexer.index(transaction, blockHeight);
-
-    if (!success) {
-      // transaction may be already processed
-      return;
-    }
-
-    const skip =
-      !transaction || this.transactionTypes.indexOf(transaction.type) === -1;
-
-    if (skip) {
-      return;
-    }
-
-    // @todo: move this to anchor-indexer service
-    // Process old data transactions
-    if (transaction.type === 12 && !!transaction.data) {
-      for (const item of transaction.data) {
-        if (item.key === this.anchorToken) {
-          const value = item.value.replace('base64:', '');
-          const hexHash = this.encoder.hexEncode(
-            this.encoder.base64Decode(value),
-          );
-          this.logger.info(
-            `anchor: save hash ${hexHash} with transaction ${transaction.id}`,
-          );
-          await this.storage.saveAnchor(hexHash, {
-            id: transaction.id,
-            blockHeight,
-            position,
-          });
-        }
-      }
-    } else if (transaction.type === 15 && !!transaction.anchors) {
-      transaction.anchors.forEach(async anchor => {
-        const hexHash = this.encoder.hexEncode(
-          this.encoder.base58Decode(anchor),
-        );
-        this.logger.info(
-          `anchor: save hash ${hexHash} with transaction ${transaction.id}`,
-        );
-        await this.storage.saveAnchor(hexHash, {
-          id: transaction.id,
-          blockHeight,
-          position,
-        });
-      });
-    }
+    return this.indexer.index({transaction, blockHeight, position });
   }
 }

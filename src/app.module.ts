@@ -13,8 +13,13 @@ import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './health/health.module';
 import { DemoModule } from './demo/demo.module';
 import { AuthModule } from './auth/auth.module';
+import { AssociationsModule } from './associations/associations.module';
+import { IndexModule } from './index/index.module';
+import { EmitterModule } from './emitter/emitter.module';
 
-export const AppModuleConfig = {
+// export const AppModuleConfig = ;
+
+@Module({
   imports: [
     LoggerModule,
     ConfigModule,
@@ -29,10 +34,11 @@ export const AppModuleConfig = {
     TransactionModule,
     StorageModule,
     AuthModule,
+    AssociationsModule,
+    IndexModule,
+    EmitterModule,
   ],
   controllers: [AppController],
   providers: [],
-};
-
-@Module(AppModuleConfig)
+})
 export class AppModule { }

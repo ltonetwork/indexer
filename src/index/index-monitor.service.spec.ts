@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AnchorModuleConfig } from './anchor.module';
-import { AnchorMonitorService } from './anchor-monitor.service';
-import { AnchorIndexerService } from './anchor-indexer.service';
 import { NodeService } from '../node/node.service';
 import { StorageService } from '../storage/storage.service';
+import { IndexMonitorService } from './index-monitor.service';
+import { IndexService } from './index.service';
+import { IndexModuleConfig } from './index.module';
 
-describe('AnchorService', () => {
+describe('IndexMonitorService', () => {
   let module: TestingModule;
-  let monitorService: AnchorMonitorService;
+  let monitorService: IndexMonitorService;
   let storageService: StorageService;
-  let indexerService: AnchorIndexerService;
+  let indexerService: IndexService;
   let nodeService: NodeService;
 
   function spy() {
@@ -45,12 +45,12 @@ describe('AnchorService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(AnchorModuleConfig).compile();
+    module = await Test.createTestingModule(IndexModuleConfig).compile();
     await module.init();
 
-    monitorService = module.get<AnchorMonitorService>(AnchorMonitorService);
+    monitorService = module.get<IndexMonitorService>(IndexMonitorService);
     storageService = module.get<StorageService>(StorageService);
-    indexerService = module.get<AnchorIndexerService>(AnchorIndexerService);
+    indexerService = module.get<IndexService>(IndexService);
     nodeService = module.get<NodeService>(NodeService);
   });
 
@@ -144,35 +144,6 @@ describe('AnchorService', () => {
   });
 
   describe('processTransaction()', () => {
-    test('should process the data transaction', async () => {
-      const spies = spy();
-
-      const transaction = {
-        id: 'fake_transaction',
-        type: 12,
-        data: [
-          {
-            key: monitorService.anchorToken,
-            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywg',
-          },
-          {
-            key: 'invalid key',
-            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywga',
-          },
-        ],
-      };
-      await monitorService.processTransaction(transaction as any, 1, 0);
-
-      expect(spies.indexer.index.mock.calls.length).toBe(1);
-      expect(spies.indexer.index.mock.calls[0][0]).toEqual(transaction);
-
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
-      expect(spies.storage.saveAnchor.mock.calls[0][0])
-        .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
-      expect(spies.storage.saveAnchor.mock.calls[0][1])
-        .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
-    });
-
     test('should process the anchor transaction', async () => {
       const spies = spy();
 
@@ -186,13 +157,7 @@ describe('AnchorService', () => {
       await monitorService.processTransaction(transaction as any, 1, 0);
 
       expect(spies.indexer.index.mock.calls.length).toBe(1);
-      expect(spies.indexer.index.mock.calls[0][0]).toEqual(transaction);
-
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
-      expect(spies.storage.saveAnchor.mock.calls[0][0])
-        .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
-      expect(spies.storage.saveAnchor.mock.calls[0][1])
-        .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
+      expect(spies.indexer.index.mock.calls[0][0]).toEqual({transaction, blockHeight: 1, position: 0});
     });
   });
 });
