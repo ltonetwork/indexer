@@ -64,6 +64,23 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     return {};
   }
 
+  setArray(key: string, value: object[]): Promise<string> {
+    return this.setValue(key, JSON.stringify(value));
+  }
+
+  async sadd(key: string, value: string): Promise<void> {
+    // TODO: implement
+  }
+
+  async srem(key: string, value: string): Promise<void> {
+    // TODO: implement
+  }
+
+  async getArray<T>(key: string): Promise<T[]> {
+    // TODO: implement
+    return [];
+  }
+
   async countTx(type: string, address: string): Promise<number> {
     await this.init();
     return this.connection.countTx(`lto-anchor:tx:${type}:${address}`);

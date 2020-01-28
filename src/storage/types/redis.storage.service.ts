@@ -56,6 +56,24 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     });
   }
 
+  async sadd(key: string, value: string): Promise<void> {
+    await this.init();
+    await this.connection.sadd(key, value);
+  }
+
+  async srem(key: string, value: string): Promise<void> {
+    await this.init();
+    await this.connection.srem(key, value);
+  }
+
+  async getArray(key: string): Promise<string[]> {
+    const res = await this.connection.smembers(key);
+    if (!res) {
+      return [];
+    }
+    return res;
+  }
+
   async getObject(key: string): Promise<object> {
     await this.init();
     return this.connection.hgetall(key);

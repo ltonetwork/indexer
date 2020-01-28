@@ -26,6 +26,18 @@ export class RedisConnection {
     return this.connection.del(key);
   }
 
+  async sadd(key: redis.KeyType, value: string): Promise<0 | 1> {
+    return this.connection.sadd(key, [value]);
+  }
+
+  async srem(key: redis.KeyType, value: string): Promise<0 | 1> {
+    return this.connection.srem(key, [value]);
+  }
+
+  async smembers(key: redis.KeyType): Promise<string[]> {
+    return this.connection.smembers(key);
+  }
+
   async zadd(key: redis.KeyType, args: string[]): Promise<string> {
     return this.connection.zadd(key, ...args);
   }

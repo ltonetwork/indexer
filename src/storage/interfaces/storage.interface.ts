@@ -6,6 +6,10 @@ export interface StorageInterface {
   setObject(key: string, value: object): Promise<void>;
   getObject(key: string): Promise<object>;
 
+  sadd(key: string, value: string): Promise<void>;
+  srem(key: string, value: string): Promise<void>;
+  getArray(key: string): Promise<string[]>;
+
   countTx(type: string, address: string): Promise<number>;
   indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void>;
   getTx(type: string, address: string, limit: number, offset: number): Promise<string[]>;

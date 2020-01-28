@@ -20,4 +20,5 @@ export interface Transaction {
   }>;
   readonly party?: string;
   readonly associationType?: number;
+  readonly hash?: string;
 }

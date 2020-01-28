@@ -15,6 +15,7 @@ import { DemoModule } from './demo/demo.module';
 import { AuthModule } from './auth/auth.module';
 import { IndexModule } from './index/index.module';
 import { EmitterModule } from './emitter/emitter.module';
+import { AssociationsModule } from './associations/associations.module';
 
 export const AppModuleConfig = {
   imports: [
@@ -33,6 +34,7 @@ export const AppModuleConfig = {
     AuthModule,
     IndexModule,
     EmitterModule,
+    AssociationsModule,
   ],
   controllers: [AppController],
   providers: [],
@@ -55,6 +57,7 @@ export const AppModuleConfig = {
     AuthModule,
     IndexModule,
     EmitterModule,
+    AssociationsModule,
   ],
   controllers: [AppController],
   providers: [],

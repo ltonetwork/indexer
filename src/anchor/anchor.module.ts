@@ -8,7 +8,7 @@ import { NodeModule } from '../node/node.module';
 import { StorageModule } from '../storage/storage.module';
 import { EncoderModule } from '../encoder/encoder.module';
 import { TransactionModule } from '../transaction/transaction.module';
-import { AnchorListenerSerivce } from './anchor-listener.service';
+import { AnchorListenerService } from './anchor-listener.service';
 import { EmitterModule } from '../emitter/emitter.module';
 
 export const AnchorModuleConfig = {
@@ -26,7 +26,7 @@ export const AnchorModuleConfig = {
   providers: [
     ...anchorProviders,
     AnchorService,
-    AnchorListenerSerivce,
+    AnchorListenerService,
   ],
   exports: [
     ...anchorProviders,
