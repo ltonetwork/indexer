@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { AnchorService } from './anchor/anchor.service';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
 import { join } from 'path';
@@ -37,9 +36,6 @@ async function bootstrap() {
 
   const logger = app.get<LoggerService>(LoggerService);
   logger.info(`server: running on http://localhost:${configService.getPort()}`);
-
-  // const anchorService = app.get<AnchorService>(AnchorService);
-  // await anchorService.start();
 
   const indexService = app.get<IndexMonitorService>(IndexMonitorService);
   await indexService.start();

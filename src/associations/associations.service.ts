@@ -31,7 +31,6 @@ export class AssociationsService implements OnModuleInit {
     }
 
     this.logger.debug(`association-service: Indexing association`);
-    // TODO: On invoke only store issuers or providers or domains (with the correct relation)
 
     if (transaction.type === 16) {
       return this.createAssocIndex(transaction);
