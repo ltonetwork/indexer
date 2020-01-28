@@ -5,6 +5,9 @@ import { StorageInterface } from './interfaces/storage.interface';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import storageServices from './types';
 import PascalCase from 'pascal-case';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Association } from '../associations/dto/association.dto';
+import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -12,6 +15,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly config: ConfigService,
+    private readonly logger: LoggerService,
     private readonly moduleRef: ModuleRef,
   ) { }
 
@@ -33,6 +37,46 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   saveAnchor(hash: string, transaction: any) {
     return this.storage.setObject(`lto-anchor:anchor:${hash.toLowerCase()}`, transaction);
+  }
+
+  async saveAssociation(transaction: Transaction) {
+
+    await this.storage.sadd(`lto-anchor:assoc:${transaction.sender}:childs`, transaction.party);
+    await this.storage.sadd(`lto-anchor:assoc:${transaction.party}:parents`, transaction.sender);
+
+    this.logger.debug(`storage-service: Add assoc for ${transaction.sender} child ${transaction.party}`);
+  }
+
+  async removeAssociation(transaction: Transaction) {
+    await this.storage.srem(`lto-anchor:assoc:${transaction.sender}:childs`, transaction.party);
+    await this.storage.srem(`lto-anchor:assoc:${transaction.party}:parents`, transaction.sender);
+
+    await this.recurRemoveAssociation(transaction.party);
+    this.logger.debug(`storage-service: removed assoc for ${transaction.sender} child ${transaction.party}`);
+
+  }
+
+  async recurRemoveAssociation(address: string) {
+    const childAssocs = await this.storage.getArray(`lto-anchor:assoc:${address}:childs`);
+    for (const child of childAssocs) {
+      await this.storage.srem(`lto-anchor:assoc:${address}:childs`, child);
+      await this.storage.srem(`lto-anchor:assoc:${child}:parents`, address);
+      await this.recurRemoveAssociation(child);
+      this.logger.debug(`storage-service: Remove assoc for ${address} child ${child}`);
+    }
+  }
+
+  async getAssociations(address: string): Promise<any> {
+    const associations = {
+      children: await this.storage.getArray(`lto-anchor:assoc:${address}:childs`),
+      parents: await this.storage.getArray(`lto-anchor:assoc:${address}:parents`),
+    };
+
+    return associations;
+  }
+
+  setArray(key: string, value: object[]): Promise<string> {
+    return this.storage.setValue(key, JSON.stringify(value));
   }
 
   countTx(type: string, address: string): Promise<number> {

@@ -80,5 +80,9 @@ describe('ConfigService', () => {
       configService.getLoggerGlobal = jest.fn(() => ({ level: 'debug' }));
       expect(configService.getLoggerCombined()).toEqual({ level: 'debug' });
     });
+
+    test('getAssociationTypes()', async () => {
+      expect(configService.getAssociationTypes()).toEqual([10, 100, 200]);
+    });
   });
 });

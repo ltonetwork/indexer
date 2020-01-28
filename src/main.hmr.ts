@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { AnchorService } from './anchor/anchor.service';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
 import { join } from 'path';
 import { renderFile } from 'ejs'
+import { IndexMonitorService } from './index/index-monitor.service';
 
 declare const module: any;
 
@@ -28,8 +28,8 @@ async function bootstrap() {
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
-  const anchorService = app.get<AnchorService>(AnchorService);
-  await anchorService.start();
+  const indexService = app.get<IndexMonitorService>(IndexMonitorService);
+  await indexService.start();
 
   if (module.hot) {
     module.hot.accept();
