@@ -33,6 +33,7 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private async load(): Promise<void> {
     const dir = path.resolve(__dirname, './data');
 
+    // @ts-ignore
     this.config = convict(`${dir}/default.schema.json`);
     this.config.loadFile(`${dir}/default.config.json`);
 

@@ -22,9 +22,9 @@ describe('Application e2e test', () => {
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toMatch(/json/);
       expect(res.body).toMatchObject({
-        name: 'anchor',
+        name: 'identity',
         version: '1.0.0',
-        description: 'Anchor data in the blockchain',
+        description: 'LTO Network identity service',
         env: 'test',
       });
     });

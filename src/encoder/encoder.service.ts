@@ -23,7 +23,8 @@ export class EncoderService {
     return Buffer.from(String.fromCharCode.apply(null, buffer), 'binary').toString('hex');
   }
 
-  base58Encode (buffer) {
+  /* @todo Use LTO crypt library for base58 */
+  base58Encode(buffer) {
     if (!buffer.length) return '';
 
     const digits = [0];
@@ -91,6 +92,7 @@ export class EncoderService {
     }
   }
 
+  /* @todo Use LTO crypt library for base58 */
   base58Decode(hash) {
     if (!hash.length) return new Uint8Array(0);
 
@@ -112,16 +114,12 @@ export class EncoderService {
 
       for (let j = 0; j < bytes.length; j++) {
         bytes[j] += carry;
-        // tslint:disable-next-line:no-bitwise
         carry = bytes[j] >> 8;
-        // tslint:disable-next-line:no-bitwise
         bytes[j] &= 0xff;
       }
 
       while (carry) {
-        // tslint:disable-next-line:no-bitwise
         bytes.push(carry & 0xff);
-        // tslint:disable-next-line:no-bitwise
         carry >>= 8;
       }
 
