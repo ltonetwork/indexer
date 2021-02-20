@@ -160,7 +160,7 @@ describe('RedisStorageService', () => {
 
       expect(spies.redisConnection.zaddWithScore.mock.calls.length).toBe(1);
       expect(spies.redisConnection.zaddWithScore.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:${type}:${address}`);
+        .toBe(`lto:tx:${type}:${address}`);
       expect(spies.redisConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(timestamp));
       expect(spies.redisConnection.zaddWithScore.mock.calls[0][2]).toEqual(transaction);
     });
@@ -184,7 +184,7 @@ describe('RedisStorageService', () => {
 
       expect(spies.redisConnection.zrevrangePaginate.mock.calls.length).toBe(1);
       expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:${type}:${address}`);
+        .toBe(`lto:tx:${type}:${address}`);
       expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][1]).toBe(limit);
       expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][2]).toBe(offset);
     });
@@ -205,7 +205,7 @@ describe('RedisStorageService', () => {
 
       expect(spies.redisConnection.zcard.mock.calls.length).toBe(1);
       expect(spies.redisConnection.zcard.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:${type}:${address}`);
+        .toBe(`lto:tx:${type}:${address}`);
     });
   });
 });

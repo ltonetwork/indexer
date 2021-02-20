@@ -141,7 +141,7 @@ describe('LevelDbStorageService', () => {
 
       expect(spies.leveldbConnection.zaddWithScore.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:${type}:${address}`);
+        .toBe(`lto:tx:${type}:${address}`);
       expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(timestamp));
       expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][2]).toEqual(transaction);
     });
@@ -165,7 +165,7 @@ describe('LevelDbStorageService', () => {
 
       expect(spies.leveldbConnection.paginate.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.paginate.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:${type}:${address}`);
+        .toBe(`lto:tx:${type}:${address}`);
       expect(spies.leveldbConnection.paginate.mock.calls[0][1]).toBe(limit);
       expect(spies.leveldbConnection.paginate.mock.calls[0][2]).toBe(offset);
     });
@@ -186,7 +186,7 @@ describe('LevelDbStorageService', () => {
 
       expect(spies.leveldbConnection.countTx.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.countTx.mock.calls[0][0])
-        .toBe(`lto-anchor:tx:${type}:${address}`);
+        .toBe(`lto:tx:${type}:${address}`);
     });
   });
 });

@@ -81,16 +81,16 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
   async countTx(type: string, address: string): Promise<number> {
     await this.init();
-    return await this.connection.zcard(`lto-anchor:tx:${type}:${address}`);
+    return await this.connection.zcard(`lto:tx:${type}:${address}`);
   }
 
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     await this.init();
-    await this.connection.zaddWithScore(`lto-anchor:tx:${type}:${address}`, String(timestamp), transactionId);
+    await this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
   }
 
   async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     await this.init();
-    return await this.connection.zrevrangePaginate(`lto-anchor:tx:${type}:${address}`, limit, offset);
+    return await this.connection.zrevrangePaginate(`lto:tx:${type}:${address}`, limit, offset);
   }
 }

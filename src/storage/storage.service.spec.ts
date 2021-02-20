@@ -55,7 +55,7 @@ describe('StorageService', () => {
       await storageService.saveAnchor(hash, transaction);
 
       expect(setObject.mock.calls.length).toBe(1);
-      expect(setObject.mock.calls[0][0]).toBe(`lto-anchor:anchor:${hash.toLowerCase()}`);
+      expect(setObject.mock.calls[0][0]).toBe(`lto:anchor:${hash.toLowerCase()}`);
       expect(setObject.mock.calls[0][1]).toEqual(transaction);
     });
   });
@@ -120,7 +120,7 @@ describe('StorageService', () => {
 
       expect(getValue.mock.calls.length).toBe(1);
       expect(getValue.mock.calls[0][0])
-        .toBe(`lto-anchor:processing-height`);
+        .toBe(`lto:processing-height`);
     });
   });
 
@@ -133,7 +133,7 @@ describe('StorageService', () => {
 
       expect(setValue.mock.calls.length).toBe(1);
       expect(setValue.mock.calls[0][0])
-        .toBe(`lto-anchor:processing-height`);
+        .toBe(`lto:processing-height`);
       expect(setValue.mock.calls[0][1]).toBe(String(height));
     });
   });

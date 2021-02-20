@@ -32,35 +32,37 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {}
 
   getAnchor(hash: string): Promise<any> {
-    return this.storage.getObject(`lto-anchor:anchor:${hash.toLowerCase()}`);
+    return this.storage.getObject(`lto:anchor:${hash.toLowerCase()}`);
   }
 
-  saveAnchor(hash: string, transaction: any) {
-    return this.storage.setObject(`lto-anchor:anchor:${hash.toLowerCase()}`, transaction);
+  saveAnchor(hash: string, transaction: object) {
+    return this.storage.setObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
+  }
+
+  savePublicKey(address: string, publicKey: string) {
+    return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
   }
 
   async saveAssociation(transaction: Transaction) {
-
-    await this.storage.sadd(`lto-anchor:assoc:${transaction.sender}:childs`, transaction.party);
-    await this.storage.sadd(`lto-anchor:assoc:${transaction.party}:parents`, transaction.sender);
+    await this.storage.sadd(`lto:assoc:${transaction.sender}:childs`, transaction.party);
+    await this.storage.sadd(`lto:assoc:${transaction.party}:parents`, transaction.sender);
 
     this.logger.debug(`storage-service: Add assoc for ${transaction.sender} child ${transaction.party}`);
   }
 
   async removeAssociation(transaction: Transaction) {
-    await this.storage.srem(`lto-anchor:assoc:${transaction.sender}:childs`, transaction.party);
-    await this.storage.srem(`lto-anchor:assoc:${transaction.party}:parents`, transaction.sender);
+    await this.storage.srem(`lto:assoc:${transaction.sender}:childs`, transaction.party);
+    await this.storage.srem(`lto:assoc:${transaction.party}:parents`, transaction.sender);
 
     await this.recurRemoveAssociation(transaction.party);
     this.logger.debug(`storage-service: removed assoc for ${transaction.sender} child ${transaction.party}`);
-
   }
 
   async recurRemoveAssociation(address: string) {
-    const childAssocs = await this.storage.getArray(`lto-anchor:assoc:${address}:childs`);
+    const childAssocs = await this.storage.getArray(`lto:assoc:${address}:childs`);
     for (const child of childAssocs) {
-      await this.storage.srem(`lto-anchor:assoc:${address}:childs`, child);
-      await this.storage.srem(`lto-anchor:assoc:${child}:parents`, address);
+      await this.storage.srem(`lto:assoc:${address}:childs`, child);
+      await this.storage.srem(`lto:assoc:${child}:parents`, address);
       await this.recurRemoveAssociation(child);
       this.logger.debug(`storage-service: Remove assoc for ${address} child ${child}`);
     }
@@ -68,8 +70,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async getAssociations(address: string): Promise<any> {
     const associations = {
-      children: await this.storage.getArray(`lto-anchor:assoc:${address}:childs`),
-      parents: await this.storage.getArray(`lto-anchor:assoc:${address}:parents`),
+      children: await this.storage.getArray(`lto:assoc:${address}:childs`),
+      parents: await this.storage.getArray(`lto:assoc:${address}:parents`),
     };
 
     return associations;
@@ -94,16 +96,16 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   async getProcessingHeight(): Promise<number | null> {
     let height;
     try {
-      height = await this.storage.getValue(`lto-anchor:processing-height`);
+      height = await this.storage.getValue(`lto:processing-height`);
     } catch (e) {}
     return height ? Number(height) : null;
   }
 
   saveProcessingHeight(height: string | number): Promise<string> {
-    return this.storage.setValue(`lto-anchor:processing-height`, String(height));
+    return this.storage.setValue(`lto:processing-height`, String(height));
   }
 
   clearProcessHeight(): Promise<void> {
-    return this.storage.delValue(`lto-anchor:processing-height`);
+    return this.storage.delValue(`lto:processing-height`);
   }
 }

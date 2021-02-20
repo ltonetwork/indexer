@@ -19,8 +19,7 @@ export class IndexService {
    * Index transaction, returns boolean based on whether or not transaction was successful
    * Transaction may be skipped if its already processed
    *
-   * @param transaction
-   * @param blockHeight
+   * @param index
    */
   async index(index: IndexDocumentType): Promise<boolean> {
     if (this.lastBlock !== index.blockHeight) {

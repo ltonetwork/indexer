@@ -11,8 +11,8 @@ import { IndexMonitorService } from './index/index-monitor.service';
 
 async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
-    .setTitle('Anchoring service')
-    .setDescription('Anchor data in the blockchain')
+    .setTitle('LTO Network identity service')
+    .setDescription('Service for DIDs and verifiable credentials')
     .addBearerAuth()
     .build();
 

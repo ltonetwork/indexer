@@ -83,16 +83,16 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async countTx(type: string, address: string): Promise<number> {
     await this.init();
-    return this.connection.countTx(`lto-anchor:tx:${type}:${address}`);
+    return this.connection.countTx(`lto:tx:${type}:${address}`);
   }
 
   async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     await this.init();
-    return this.connection.paginate(`lto-anchor:tx:${type}:${address}`, limit, offset);
+    return this.connection.paginate(`lto:tx:${type}:${address}`, limit, offset);
   }
 
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     await this.init();
-    return this.connection.zaddWithScore(`lto-anchor:tx:${type}:${address}`, String(timestamp), transactionId);
+    return this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
   }
 }
