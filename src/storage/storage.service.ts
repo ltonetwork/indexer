@@ -39,6 +39,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
   }
 
+  getPublicKey(address: string) {
+    return this.storage.getValue(`lto:pubkey:${address}`);
+  }
+
   savePublicKey(address: string, publicKey: string) {
     return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
   }

@@ -5,6 +5,7 @@ import { LoggerModule } from './logger/logger.module';
 import { InfoModule } from './info/info.module';
 import { AnchorModule } from './anchor/anchor.module';
 import { HashModule } from './hash/hash.module';
+import { DidModule } from './did/did.module';
 import { NodeModule } from './node/node.module';
 import { RedisModule } from './redis/redis.module';
 import { RequestModule } from './request/request.module';
@@ -28,6 +29,7 @@ export const AppModuleConfig = {
     HealthModule,
     AnchorModule,
     HashModule,
+    DidModule,
     NodeModule,
     RedisModule,
     TransactionModule,
@@ -52,6 +54,7 @@ export const AppModuleConfig = {
     HealthModule,
     AnchorModule,
     HashModule,
+    DidModule,
     NodeModule,
     RedisModule,
     TransactionModule,
