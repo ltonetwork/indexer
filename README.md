@@ -26,10 +26,10 @@ Through API these operations can be executed, using the following queries corres
 - `POST /hash`
 
 With the body contain the hash and optionally the encoding of the hash:
-```json
+```$json
 { 
-    hash: {hash},
-    encoding: {hex} // Defaults to 'hex'
+    "hash": {hash},
+    "encoding": {hex} // Defaults to 'hex'
 }
 ```
 
@@ -91,7 +91,7 @@ _TODO: query associations as DID URLs_
 By default the service will index the public keys of all addresses that have done a transaction on LTO Network. These addresses are available
 as [DID document](https://www.w3.org/TR/did-core/).
 
-- `GET /did/:url`
+- `GET /did/:url` 
 
 The `url` parameter is either the LTO Network DID url (eg `lto:did:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL`) or just the wallet address
 (eg `3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL`).
@@ -101,12 +101,14 @@ The response is a DID document with an `authentication` section.
 {
   "@context": "https://www.w3.org/ns/did/v1",
   "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
-  "authentication": [{
-    "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key",
-    "type": "Ed25519VerificationKey2018",
-    "controller": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
-    "publicKeyBase58": "AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG"
-  }
+  "authentication": [
+    {
+      "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
+      "publicKeyBase58": "AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG"
+    }
+  ]
 }
 ```
 
