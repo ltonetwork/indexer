@@ -1,12 +1,16 @@
-# Itentity service
+![github-banner](https://user-images.githubusercontent.com/100821/108692834-6a115200-74fd-11eb-92df-ee07bf62b386.png)
 
-This is a web service that to retrieve DID documents for LTO Network addresses.
+# Indexer
+
+Index and query data from the LTO Network public chain.
 
 ## Application
 
 It can be launched via `nmp start`. It will run the index service, that will accept and process requests either through UI or using API calls. Server listens to port `80` or change the port number through the `PORT` env variable.
 
-### Anchoring
+Expolore all API endpoint using the swagger interface.
+
+## Anchoring
 
 Data, that can be anchored through UI, is either a text data, or a file.
 
@@ -22,7 +26,7 @@ Through API these operations can be executed, using the following queries corres
 - `POST /hash`
 
 With the body contain the hash and optionally the encoding of the hash:
-```$json
+```json
 { 
     hash: {hash},
     encoding: {hex} // Defaults to 'hex'
@@ -56,19 +60,66 @@ where:
 
 If hash is not found in database on verification, the following response is returned:
 
-    {
-        "chainpoint": null
-    }
+```json
+{
+  "chainpoint": null
+}
+```
 
-### Errors
+## Associations
+
+It's possibible to index and query associations.
+
+- `GET /associations/:address`
+
+```json
+{
+  "children": [
+    "did:lto:3Jmh1EcLL2GieVAYeyF42D4cBxjAFVUJMpR",
+    "did:lto:3JsYP8QYvkiC5x2nPzUkVYEfQVwXnogXaGP"
+  ],
+  "parents": [
+    "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL"
+  ]
+}
+```
+
+_TODO: query associations as DID URLs_
+
+## DID documents
+
+By default the service will index the public keys of all addresses that have done a transaction on LTO Network. These addresses are available
+as [DID document](https://www.w3.org/TR/did-core/).
+
+- `GET /did/:url`
+
+The `url` parameter is either the LTO Network DID url (eg `lto:did:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL`) or just the wallet address
+(eg `3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL`).
+
+The response is a DID document with an `authentication` section.
+```json
+{
+  "@context": "https://www.w3.org/ns/did/v1",
+  "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
+  "authentication": [{
+    "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key",
+    "type": "Ed25519VerificationKey2018",
+    "controller": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
+    "publicKeyBase58": "AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG"
+  }
+}
+```
+
+## Errors
 
 In case if an error occured during processing, the object with a single `error` property is returned, that can be either a string or an object.
 
 Example:
-
-    {
-        "error": "State check failed. Reason: negative balance: 3Mr6yz6hp7cDKBaNzKuMFU6Nh2UjfpdvtHa, old: 3, new: -99997"
-    }
+```json
+{
+  "error": "State check failed. Reason: negative balance: 3Mr6yz6hp7cDKBaNzKuMFU6Nh2UjfpdvtHa, old: 3, new: -99997"
+}
+```
 
 When using API and performing `save` operation call, it does not auto-perform `verify` operation, so you should perform it manually.
 
