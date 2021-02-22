@@ -48,9 +48,9 @@ export class DidController {
       '@context': 'https://www.w3.org/ns/did/v1',
       'id': `did:lto:${address}`,
       'authentication': [{
-        id: `did:example:${address}#key`,
+        id: `did:lto:${address}#key`,
         type: 'Ed25519VerificationKey2018',
-        controller: `did:example:${address}`,
+        controller: `did:lto:${address}`,
         publicKeyBase58: publicKey,
       }],
     };
