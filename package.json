@@ -1,9 +1,10 @@
 {
-  "name": "identity",
+  "name": "indexer",
   "version": "1.0.0",
-  "description": "LTO Network identity service",
+  "description": "LTO Network indezer service",
   "keywords": [
     "blockchain",
+    "anchor",
     "DID",
     "verifiable-credentials"
   ],
@@ -26,6 +27,10 @@
     {
       "name": "Arnold Daniels",
       "email": "arnold@jasny.net"
+    },
+    {
+      "name": "Sergey Boltonosov",
+      "email": "minstriely@gmail.com"
     }
   ],
   "license": "ISC",
