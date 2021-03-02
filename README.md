@@ -101,13 +101,19 @@ The response is a DID document with an `authentication` section.
 {
   "@context": "https://www.w3.org/ns/did/v1",
   "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
-  "authentication": [
+  "verificationMethod": [
     {
       "id": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key",
       "type": "Ed25519VerificationKey2018",
       "controller": "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL",
       "publicKeyBase58": "AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG"
     }
+  ],
+  "authentication": [
+    "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+  ],
+  "assertionMethod": [
+    "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
   ]
 }
 ```
