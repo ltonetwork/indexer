@@ -48,12 +48,18 @@ describe('DidController', () => {
       expect(res.body).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
         'id': `did:lto:${address}`,
-        'authentication': [{
+        'verificationMethod': [{
           id: `did:lto:${address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${address}`,
           publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
         }],
+        'authentication': [
+          `did:lto:${address}#key`,
+        ],
+        'assertionMethod': [
+          `did:lto:${address}#key`,
+        ],
       });
 
       expect(spies.did.getTransactionByDid.mock.calls.length).toBe(1);
