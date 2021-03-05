@@ -4,6 +4,7 @@ import { Response, Request } from 'express';
 import { TransactionService } from './transaction.service';
 import { LoggerService } from '../logger/logger.service';
 import { NodeService } from '../node/node.service';
+export type txType = 'transfer' | 'anchor';
 
 @Controller('transactions')
 @ApiUseTags('transaction')
@@ -37,7 +38,7 @@ export class TransactionController {
       return res.status(400).send('no address given');
     }
 
-    const type = req.query.type || 'transfer';
+    const type = (req.query.type || 'transfer') as txType;
     if (!this.tx.hasIdentifier(type)) {
       return res.status(400).send('invalid type given');
     }
@@ -48,7 +49,12 @@ export class TransactionController {
     }
 
     try {
-      const transactions = await this.node.getTransactionsByAddress(address, type, limit, offset);
+      const transactions = await this.node.getTransactionsByAddress(
+        address,
+        type,
+        limit !== undefined ? Number(limit) : undefined,
+        offset !== undefined ? Number(offset) : undefined,
+      );
       const count = await this.node.countTransactionsByAddress(address, type);
       const expanded = await this.node.getTransactions(transactions);
 

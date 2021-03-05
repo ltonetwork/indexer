@@ -44,7 +44,7 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     return this.connection.set(key, value);
   }
 
-  async delValue(key: string): Promise<void> {
+  async delValue(key: string): Promise<any> {
     await this.init();
     return this.connection.del(key);
   }

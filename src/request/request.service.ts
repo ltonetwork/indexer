@@ -11,13 +11,12 @@ export class RequestService {
     private readonly logger: LoggerService,
   ) { }
 
-  async send(config: AxiosRequestConfig): Promise<AxiosResponse | Error> {
+  send(config: AxiosRequestConfig): Promise<AxiosResponse | Error> {
     const url = config.url;
     const method = config.method;
 
     try {
-      const response = await this.http.request(config as any).toPromise();
-      return response;
+      return this.http.request(config as any).toPromise();
     } catch (e) {
       this.log(e, method, url);
       return e;

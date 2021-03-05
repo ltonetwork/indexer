@@ -79,8 +79,8 @@ describe('TransactionController', () => {
       expect(spies.node.getTransactionsByAddress.mock.calls.length).toBe(1);
       expect(spies.node.getTransactionsByAddress.mock.calls[0][0]).toBe(address);
       expect(spies.node.getTransactionsByAddress.mock.calls[0][1]).toBe('anchor');
-      expect(spies.node.getTransactionsByAddress.mock.calls[0][2]).toBe('10');
-      expect(spies.node.getTransactionsByAddress.mock.calls[0][3]).toBe('5');
+      expect(spies.node.getTransactionsByAddress.mock.calls[0][2]).toBe(10);
+      expect(spies.node.getTransactionsByAddress.mock.calls[0][3]).toBe(5);
       expect(spies.node.getTransactionsByAddress.mock.calls.length).toBe(1);
 
       expect(spies.node.countTransactionsByAddress.mock.calls.length).toBe(1);

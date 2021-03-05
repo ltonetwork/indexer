@@ -2,7 +2,7 @@ import redis from 'ioredis';
 
 export class RedisConnection {
   constructor(
-    private connection: redis.Redis,
+    private connection: redis.Redis|redis.Cluster,
   ) {
   }
 
@@ -10,7 +10,7 @@ export class RedisConnection {
     return this.connection.set(key, value);
   }
 
-  async hset(key: redis.KeyType, field: string, value: any): Promise<0 | 1> {
+  async hset(key: redis.KeyType, field: string, value: any): Promise<number> {
     return this.connection.hset(key, field, value);
   }
 
@@ -22,15 +22,15 @@ export class RedisConnection {
     return this.connection.get(key);
   }
 
-  async del(key: redis.KeyType): Promise<void> {
+  async del(key: redis.KeyType): Promise<number|void> {
     return this.connection.del(key);
   }
 
-  async sadd(key: redis.KeyType, value: string): Promise<0 | 1> {
+  async sadd(key: redis.KeyType, value: string): Promise<number> {
     return this.connection.sadd(key, [value]);
   }
 
-  async srem(key: redis.KeyType, value: string): Promise<0 | 1> {
+  async srem(key: redis.KeyType, value: string): Promise<number> {
     return this.connection.srem(key, [value]);
   }
 
@@ -38,16 +38,16 @@ export class RedisConnection {
     return this.connection.smembers(key);
   }
 
-  async zadd(key: redis.KeyType, args: string[]): Promise<string> {
+  async zadd(key: redis.KeyType, args: string[]): Promise<string|number> {
     return this.connection.zadd(key, ...args);
   }
 
-  async zaddIncr(key: redis.KeyType, members: string[]): Promise<string> {
+  async zaddIncr(key: redis.KeyType, members: string[]): Promise<string|number> {
     const number = await this.zcard(key);
     return this.connection.zadd(key, String(number), ...members);
   }
 
-  async zaddWithScore(key: redis.KeyType, score: string, value: string): Promise<string> {
+  async zaddWithScore(key: redis.KeyType, score: string, value: string): Promise<string|number> {
     return this.connection.zadd(key, score, value);
   }
 
