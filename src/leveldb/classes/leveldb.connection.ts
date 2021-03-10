@@ -15,8 +15,8 @@ export class LeveldbConnection {
   }
 
   mget(keys: level.KeyType[]): Promise<string[]> {
-    const opts = keys.map((key: string) => ({type: 'get', key}));
-    return this.connection.batch(opts);
+    const promises = keys.map((key: string) => this.connection.get(key).catch(() => null));
+    return Promise.all(promises);
   }
 
   set(key: level.KeyType, value: string): Promise<string> {

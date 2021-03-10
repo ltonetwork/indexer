@@ -62,7 +62,7 @@
       }
     },
     "leveldb": {
-      "default": "anchor-db",
+      "default": "lto-index",
       "env": "ANCHOR_LEVELDB"
     },
     "node": {

@@ -46,16 +46,16 @@ describe('LeveldbConnection', () => {
   describe('mget()', () => {
     test('should get multiple values from leveldb', async () => {
       const spies = spy();
+      const values = ['fake_value1', 'fake_value2'];
 
-      spies.connection.batch.mockImplementation(() => ['fake_value1', 'fake_value2']);
+      spies.connection.get.mockImplementation(async () => values.shift());
       const levelDBConnection = new LeveldbConnection(spies.connection as any);
 
-      expect(await levelDBConnection.mget(['fake_key1', 'fake_key2'])).toEqual(['fake_value1', 'fake_value2']);
-      expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0][0]).toEqual([
-        {type: 'get', key: 'fake_key1'},
-        {type: 'get', key: 'fake_key2'},
-      ]);
+      expect(await levelDBConnection.mget(['fake_key1', 'fake_key2']))
+        .toEqual(['fake_value1', 'fake_value2']);
+      expect(spies.connection.get.mock.calls.length).toBe(2);
+      expect(spies.connection.get.mock.calls[0][0]).toBe('fake_key1');
+      expect(spies.connection.get.mock.calls[1][0]).toBe('fake_key2');
     });
   });
 

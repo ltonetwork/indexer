@@ -46,4 +46,4 @@ logs
 # Front end
 .cache
 
-anchor-db
+lto-index
