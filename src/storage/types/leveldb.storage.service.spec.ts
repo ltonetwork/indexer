@@ -52,7 +52,7 @@ describe('LevelDbStorageService', () => {
       expect(await storageService.getValue(hash)).toBe('fake_value');
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.get.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.get.mock.calls[0][0]).toBe(hash);
@@ -67,7 +67,7 @@ describe('LevelDbStorageService', () => {
       expect(await storageService.getMultipleValues(['key1', 'key2'])).toEqual(['fake_value1', 'fake_value2']);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.mget.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.mget.mock.calls[0][0]).toEqual(['key1', 'key2']);
@@ -84,7 +84,7 @@ describe('LevelDbStorageService', () => {
       await storageService.setValue(hash, transaction);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.set.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.set.mock.calls[0][0]).toBe(hash);
@@ -101,7 +101,7 @@ describe('LevelDbStorageService', () => {
       await storageService.delValue(hash);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.del.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.del.mock.calls[0][0]).toBe(hash);
@@ -117,7 +117,7 @@ describe('LevelDbStorageService', () => {
       await storageService.incrValue(hash);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.incr.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.incr.mock.calls[0][0]).toBe(hash);
@@ -133,7 +133,7 @@ describe('LevelDbStorageService', () => {
       await storageService.getObject(hash);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.get.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.get.mock.calls[0][0]).toBe(hash);
@@ -154,7 +154,7 @@ describe('LevelDbStorageService', () => {
       await storageService.setObject(hash, transaction);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.set.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.set.mock.calls[0][0]).toBe(hash);
@@ -173,7 +173,7 @@ describe('LevelDbStorageService', () => {
       await storageService.indexTx(type, address, transaction, timestamp);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.zaddWithScore.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][0])
@@ -197,7 +197,7 @@ describe('LevelDbStorageService', () => {
       expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.paginate.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.paginate.mock.calls[0][0])
@@ -218,7 +218,7 @@ describe('LevelDbStorageService', () => {
       expect(await storageService.countTx(type, address)).toEqual(3);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
-      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.countTx.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.countTx.mock.calls[0][0])

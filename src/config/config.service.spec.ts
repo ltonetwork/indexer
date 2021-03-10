@@ -61,11 +61,8 @@ describe('ConfigService', () => {
       expect(configService.getMonitorInterval()).toBe(5000);
     });
 
-    test('getLoggerGlobal()', async () => {
-      expect(configService.getLoggerGlobal()).toEqual({ level: 'debug' });
-    });
-
     test('getLoggerConsole()', async () => {
+      // @ts-ignore
       configService.getLoggerGlobal = jest.fn(() => '');
       expect(configService.getLoggerConsole()).toEqual({ level: 'info' });
 
@@ -74,6 +71,7 @@ describe('ConfigService', () => {
     });
 
     test('getLoggerCombined()', async () => {
+      // @ts-ignore
       configService.getLoggerGlobal = jest.fn(() => '');
       expect(configService.getLoggerCombined()).toEqual({ level: 'info' });
 

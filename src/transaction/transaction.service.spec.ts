@@ -90,7 +90,7 @@ describe('TransactionService', () => {
       expect(transactionService.hasIdentifier('association')).toBe(true);
       expect(transactionService.hasIdentifier('script')).toBe(true);
       expect(transactionService.hasIdentifier('sponsor')).toBe(true);
-      expect(transactionService.hasIdentifier('any')).toBe(true);
+      expect(transactionService.hasIdentifier('all')).toBe(true);
 
       expect(transactionService.hasIdentifier('foo')).toBe(false);
     });
@@ -119,7 +119,7 @@ describe('TransactionService', () => {
       expect(spies.storage.incrTxStats.mock.calls[1][0]).toBe('all_transfers');
       expect(spies.storage.incrTxStats.mock.calls[1][1]).toBe(18696);
 
-      expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('any');
+      expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
       expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(6);
@@ -138,10 +138,10 @@ describe('TransactionService', () => {
       expect(spies.storage.indexTx.mock.calls[3][1]).toBe(transaction.recipient);
       expect(spies.storage.indexTx.mock.calls[3][2]).toBe(transaction.id);
 
-      expect(spies.storage.indexTx.mock.calls[4][0]).toBe('any');
+      expect(spies.storage.indexTx.mock.calls[4][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[4][1]).toBe(transaction.sender);
       expect(spies.storage.indexTx.mock.calls[4][2]).toBe(transaction.id);
-      expect(spies.storage.indexTx.mock.calls[5][0]).toBe('any');
+      expect(spies.storage.indexTx.mock.calls[5][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[5][1]).toBe(transaction.recipient);
       expect(spies.storage.indexTx.mock.calls[5][2]).toBe(transaction.id);
     });
@@ -171,7 +171,7 @@ describe('TransactionService', () => {
       expect(spies.storage.incrTxStats.mock.calls[1][0]).toBe('all_transfers');
       expect(spies.storage.incrTxStats.mock.calls[1][1]).toBe(18696);
 
-      expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('any');
+      expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
       expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(12);
@@ -202,16 +202,16 @@ describe('TransactionService', () => {
       expect(spies.storage.indexTx.mock.calls[7][1]).toBe(transaction.transfers[1].recipient);
       expect(spies.storage.indexTx.mock.calls[7][2]).toBe(transaction.id);
 
-      expect(spies.storage.indexTx.mock.calls[8][0]).toBe('any');
+      expect(spies.storage.indexTx.mock.calls[8][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[8][1]).toBe(transaction.sender);
       expect(spies.storage.indexTx.mock.calls[8][2]).toBe(transaction.id);
-      expect(spies.storage.indexTx.mock.calls[9][0]).toBe('any');
+      expect(spies.storage.indexTx.mock.calls[9][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[9][1]).toBe(transaction.recipient);
       expect(spies.storage.indexTx.mock.calls[9][2]).toBe(transaction.id);
-      expect(spies.storage.indexTx.mock.calls[10][0]).toBe('any');
+      expect(spies.storage.indexTx.mock.calls[10][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[10][1]).toBe(transaction.transfers[0].recipient);
       expect(spies.storage.indexTx.mock.calls[10][2]).toBe(transaction.id);
-      expect(spies.storage.indexTx.mock.calls[11][0]).toBe('any');
+      expect(spies.storage.indexTx.mock.calls[11][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[11][1]).toBe(transaction.transfers[1].recipient);
       expect(spies.storage.indexTx.mock.calls[11][2]).toBe(transaction.id);
     });
