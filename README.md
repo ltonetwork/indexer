@@ -21,8 +21,8 @@ Two operations are supported:
 
 Through API these operations can be executed, using the following queries correspondingly:
 
-- `GET /hash/{hash}` This will check for `hex` encoded hashses.
-- `GET /hash/{hash}/encoding/{encoding}` With allow encoding types being: `base64`, `base58` and `hex`
+- `GET /hash/:hash` This will check for `hex` encoded hashses.
+- `GET /hash/:hash/encoding/:encoding` With allow encoding types being: `base64`, `base58` and `hex`
 - `POST /hash`
 
 With the body contain the hash and optionally the encoding of the hash:
@@ -116,6 +116,30 @@ The response is a DID document with an `authentication` section.
     "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
   ]
 }
+```
+
+## Transactions
+
+The public node will only store the latest transactions of each account. Use the indexer to store all transactions.
+
+- `GET /transactions/addresses/:address`
+
+The response is an array of transactions.
+
+### Transaction statistics
+
+The indexer will also keep track of the total number of transactions per day for each transaction type.
+
+- `GET /transactions/stats/:type/:from/:to`
+
+The `from` and `to` parameters are either a timestamp (in ms since epoch) or a date string as `year-month-day`.
+
+```json
+[
+  { "period": "2021-03-01 00:00:00", "count": 56847 },
+  { "period": "2021-03-02 00:00:00", "count": 103698 },
+  { "period": "2021-03-03 00:00:00", "count": 33329 }
+]
 ```
 
 ## Errors

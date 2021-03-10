@@ -11,16 +11,20 @@ describe('LevelDbStorageService', () => {
   function spy() {
     const leveldbConnection = {
       get: jest.fn(),
+      mget: jest.fn(),
       set: jest.fn(),
       del: jest.fn(),
+      incr: jest.fn(),
       zaddWithScore: jest.fn(),
       paginate: jest.fn(),
       countTx: jest.fn(),
       close: jest.fn(),
+      incrCount: jest.fn(),
     };
     const leveldb = {
       connect: jest.spyOn(leveldbService, 'connect')
-        .mockImplementation(() => leveldbConnection),
+        // @ts-ignore
+        .mockImplementation(async () => leveldbConnection),
     };
 
     return { leveldb, leveldbConnection };
@@ -44,13 +48,29 @@ describe('LevelDbStorageService', () => {
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
 
-      await storageService.getValue(hash);
+      spies.leveldbConnection.get.mockImplementation(() => 'fake_value');
+      expect(await storageService.getValue(hash)).toBe('fake_value');
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
 
       expect(spies.leveldbConnection.get.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.get.mock.calls[0][0]).toBe(hash);
+    });
+  });
+
+  describe('getMultipleValues()', () => {
+    test('should get multiple value', async () => {
+      const spies = spy();
+
+      spies.leveldbConnection.mget.mockImplementation(() => ['fake_value1', 'fake_value2']);
+      expect(await storageService.getMultipleValues(['key1', 'key2'])).toEqual(['fake_value1', 'fake_value2']);
+
+      expect(spies.leveldb.connect.mock.calls.length).toBe(1);
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+
+      expect(spies.leveldbConnection.mget.mock.calls.length).toBe(1);
+      expect(spies.leveldbConnection.mget.mock.calls[0][0]).toEqual(['key1', 'key2']);
     });
   });
 
@@ -85,6 +105,22 @@ describe('LevelDbStorageService', () => {
 
       expect(spies.leveldbConnection.del.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.del.mock.calls[0][0]).toBe(hash);
+    });
+  });
+
+  describe('incrValue()', () => {
+    test('should increment a value', async () => {
+      const spies = spy();
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+
+      await storageService.incrValue(hash);
+
+      expect(spies.leveldb.connect.mock.calls.length).toBe(1);
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('anchor-db');
+
+      expect(spies.leveldbConnection.incr.mock.calls.length).toBe(1);
+      expect(spies.leveldbConnection.incr.mock.calls[0][0]).toBe(hash);
     });
   });
 

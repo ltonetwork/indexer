@@ -20,11 +20,9 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
   }
 
   private async init() {
-    if (this.connection) {
-      return this.connection;
+    if (!this.connection) {
+      this.connection = await this.redis.connect(this.config.getRedisClient());
     }
-
-    this.connection = await this.redis.connect(this.config.getRedisClient());
   }
 
   private async close() {
@@ -39,9 +37,14 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     return this.connection.get(key);
   }
 
-  async setValue(key: string, value: string): Promise<string> {
+  async getMultipleValues(keys: string[]): Promise<string[]> {
     await this.init();
-    return this.connection.set(key, value);
+    return this.connection.mget(keys);
+  }
+
+  async setValue(key: string, value: string): Promise<void> {
+    await this.init();
+    await this.connection.set(key, value);
   }
 
   async delValue(key: string): Promise<any> {
@@ -49,11 +52,16 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     return this.connection.del(key);
   }
 
+  async incrValue(key: string): Promise<void> {
+    await this.init();
+    await this.connection.incr(key);
+  }
+
   async setObject(key: string, value: object): Promise<void> {
     await this.init();
-    Object.keys(value).forEach(async (field) => {
-      await this.connection.hset(key, field, value[field]);
-    });
+
+    const promises = Object.keys(value).map(field => this.connection.hset(key, field, value[field]));
+    await Promise.all(promises);
   }
 
   async sadd(key: string, value: string): Promise<void> {
@@ -67,11 +75,10 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
   }
 
   async getArray(key: string): Promise<string[]> {
+    await this.init();
+
     const res = await this.connection.smembers(key);
-    if (!res) {
-      return [];
-    }
-    return res;
+    return res ?? [];
   }
 
   async getObject(key: string): Promise<object> {
@@ -81,7 +88,7 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
   async countTx(type: string, address: string): Promise<number> {
     await this.init();
-    return await this.connection.zcard(`lto:tx:${type}:${address}`);
+    return this.connection.zcard(`lto:tx:${type}:${address}`);
   }
 
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
@@ -91,6 +98,6 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
   async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     await this.init();
-    return await this.connection.zrevrangePaginate(`lto:tx:${type}:${address}`, limit, offset);
+    return this.connection.zrevrangePaginate(`lto:tx:${type}:${address}`, limit, offset);
   }
 }

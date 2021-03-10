@@ -14,8 +14,7 @@ export class TransactionService {
   ) { }
 
   getAllTypes(): Array<{ id: string, types: number[] }> {
-    const types = Object.keys(TransactionTypes).map((k) => TransactionTypes[k]);
-    return types;
+    return Object.keys(TransactionTypes).map((k) => TransactionTypes[k]);
   }
 
   getIdentifiers(): string[] {
@@ -31,8 +30,7 @@ export class TransactionService {
 
   getIdentifiersByType(type: number): string[] {
     const types = this.getAllTypes();
-    const matches = types.filter((tx) => tx.types.indexOf(type) > -1).map((match) => match.id);
-    return matches;
+    return types.filter((tx) => tx.types.indexOf(type) > -1).map((match) => match.id);
   }
 
   hasIdentifier(identifier): boolean {
@@ -40,32 +38,41 @@ export class TransactionService {
     return identifiers.indexOf(identifier) > -1;
   }
 
+  async getStats(type: string, from: number, to: number): Promise<{period: string, count: number}[]> {
+    return this.storage.getTxStats(type, from, to);
+  }
+
   async index(index: IndexDocumentType) {
     const { transaction, blockHeight } = index;
     const identifiers = this.getIdentifiersByType(transaction.type);
+    const promises = [] as Promise<any>[];
 
     if (identifiers.length === 0) {
       return false;
     }
 
     for (const identifier of identifiers) {
+      promises.push(this.storage.incrTxStats(identifier, Math.floor(transaction.timestamp / 86400000)));
+
       if (transaction.sender) {
-        this.logger.debug(`transaction: index ${identifier} transaction ${transaction.id} for ${transaction.sender}`);
-        await this.storage.indexTx(identifier, transaction.sender, transaction.id, transaction.timestamp);
+        this.logger.debug(`transaction: index ${identifier} tx ${transaction.id} for ${transaction.sender}`);
+        promises.push(this.storage.indexTx(identifier, transaction.sender, transaction.id, transaction.timestamp));
       }
 
       if (transaction.recipient) {
-        this.logger.debug(`transaction: index ${identifier} transaction ${transaction.id} for ${transaction.recipient}`);
-        await this.storage.indexTx(identifier, transaction.recipient, transaction.id, transaction.timestamp);
+        this.logger.debug(`transaction: index ${identifier} tx ${transaction.id} for ${transaction.recipient}`);
+        promises.push(this.storage.indexTx(identifier, transaction.recipient, transaction.id, transaction.timestamp));
       }
 
       if (transaction.transfers) {
         for (const transfer of transaction.transfers) {
-          this.logger.debug(`transaction: index ${identifier} transaction ${transaction.id} for ${transfer.recipient}`);
-          await this.storage.indexTx(identifier, transfer.recipient, transaction.id, transaction.timestamp);
+          this.logger.debug(`transaction: index ${identifier} tx ${transaction.id} for ${transfer.recipient}`);
+          promises.push(this.storage.indexTx(identifier, transfer.recipient, transaction.id, transaction.timestamp));
         }
       }
     }
+
+    await Promise.all(promises);
 
     return true;
   }

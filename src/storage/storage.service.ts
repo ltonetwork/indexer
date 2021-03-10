@@ -6,7 +6,6 @@ import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import storageServices from './types';
 import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
-import { Association } from '../associations/dto/association.dto';
 import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
@@ -81,8 +80,26 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return associations;
   }
 
-  setArray(key: string, value: object[]): Promise<string> {
-    return this.storage.setValue(key, JSON.stringify(value));
+  incrTxStats(type: string, day: number): Promise<void> {
+    return this.storage.incrValue(`lto:txstats:${type}:${day}`);
+  }
+
+  async getTxStats(type: string, from: number, to: number): Promise<{period: string, count: number}[]> {
+    const length = to - from + 1;
+    const keys = Array.from({length}, (v, i) => `lto:txstats:${type}:${from + i}`);
+    const values = await this.storage.getMultipleValues(keys);
+
+    const periods = Array.from({length}, (v, i) => new Date((from + i) * 86400000));
+    return periods
+      .map((period: Date, index: number) => ({period: this.formatPeriod(period), count: Number(values[index])}));
+  }
+
+  private formatPeriod(date: Date): string {
+    const year = String(date.getUTCFullYear());
+    const month = ('0' + (date.getUTCMonth() + 1)).substr(-2);
+    const day = ('0' + date.getUTCDate()).substr(-2);
+
+    return `${year}-${month}-${day} 00:00:00`;
   }
 
   countTx(type: string, address: string): Promise<number> {
@@ -105,7 +122,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return height ? Number(height) : null;
   }
 
-  saveProcessingHeight(height: string | number): Promise<string> {
+  saveProcessingHeight(height: string | number): Promise<void> {
     return this.storage.setValue(`lto:processing-height`, String(height));
   }
 

@@ -5,6 +5,8 @@ describe('LeveldbConnection', () => {
     const connection = {
       get: jest.fn(),
       put: jest.fn(),
+      del: jest.fn(),
+      batch: jest.fn(),
       zadd: jest.fn(),
       zrange: jest.fn(),
       zcard: jest.fn(),
@@ -41,8 +43,50 @@ describe('LeveldbConnection', () => {
     });
   });
 
+  describe('mget()', () => {
+    test('should get multiple values from leveldb', async () => {
+      const spies = spy();
+
+      spies.connection.batch.mockImplementation(() => ['fake_value1', 'fake_value2']);
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      expect(await levelDBConnection.mget(['fake_key1', 'fake_key2'])).toEqual(['fake_value1', 'fake_value2']);
+      expect(spies.connection.batch.mock.calls.length).toBe(1);
+      expect(spies.connection.batch.mock.calls[0][0]).toEqual([
+        {type: 'get', key: 'fake_key1'},
+        {type: 'get', key: 'fake_key2'},
+      ]);
+    });
+  });
+
   describe('del()', () => {
-    test.skip('should del a value from leveldb', async () => {});
+    test('should delete a value from leveldb', async () => {
+      const spies = spy();
+
+      spies.connection.del.mockImplementation(() => 1);
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      expect(await levelDBConnection.del('fake_key')).toBe(1);
+      expect(spies.connection.del.mock.calls.length).toBe(1);
+      expect(spies.connection.del.mock.calls[0][0]).toBe('fake_key');
+    });
+  });
+
+  describe('incr()', () => {
+    test('should increment a value in leveldb', async () => {
+      const spies = spy();
+
+      spies.connection.get.mockImplementation(() => '42');
+      spies.connection.put.mockImplementation(() => '43');
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      expect(await levelDBConnection.incr('fake_key')).toBe('43');
+      expect(spies.connection.get.mock.calls.length).toBe(1);
+      expect(spies.connection.get.mock.calls[0][0]).toBe('fake_key');
+      expect(spies.connection.put.mock.calls.length).toBe(1);
+      expect(spies.connection.put.mock.calls[0][0]).toBe('fake_key');
+      expect(spies.connection.put.mock.calls[0][1]).toBe('43');
+    });
   });
 
   describe('zaddWithScore()', () => {
@@ -50,7 +94,7 @@ describe('LeveldbConnection', () => {
   });
 
   describe('paginate()', () => {
-    test.skip('shouldload values paginated from leveldb', async () => {});
+    test.skip('should load values paginated from leveldb', async () => {});
   });
 
   describe('countTx()', () => {

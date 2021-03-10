@@ -1,5 +1,8 @@
 import redis from 'ioredis';
 
+/**
+ * @todo What is the point of this wrapper class? Can't we just use `Redis|Cluster`?
+ */
 export class RedisConnection {
   constructor(
     private connection: redis.Redis|redis.Cluster,
@@ -22,8 +25,16 @@ export class RedisConnection {
     return this.connection.get(key);
   }
 
+  async mget(keys: string[]): Promise<string[]> {
+    return this.connection.mget(keys);
+  }
+
   async del(key: redis.KeyType): Promise<number|void> {
     return this.connection.del(key);
+  }
+
+  async incr(key: redis.KeyType): Promise<number> {
+    return this.connection.incr(key);
   }
 
   async sadd(key: redis.KeyType, value: string): Promise<number> {

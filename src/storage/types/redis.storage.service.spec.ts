@@ -13,8 +13,10 @@ describe('RedisStorageService', () => {
   function spy() {
     const redisConnection = {
       get: jest.fn(),
+      mget: jest.fn(),
       set: jest.fn(),
       del: jest.fn(),
+      incr: jest.fn(),
       hgetall: jest.fn(),
       hset: jest.fn(),
       zaddWithScore: jest.fn(),
@@ -24,7 +26,8 @@ describe('RedisStorageService', () => {
     };
     const redis = {
       connect: jest.spyOn(redisService, 'connect')
-        .mockImplementation(() => redisConnection),
+        // @ts-ignore
+        .mockImplementation(async () => redisConnection),
     };
 
     return { redis, redisConnection };
@@ -36,6 +39,7 @@ describe('RedisStorageService', () => {
     redisService = module.get<RedisService>(RedisService);
     configService = module.get<ConfigService>(ConfigService);
 
+    // @ts-ignore
     jest.spyOn(configService, 'getStorageType').mockImplementation(() => 'redis');
 
     await module.init();
@@ -58,6 +62,20 @@ describe('RedisStorageService', () => {
 
       expect(spies.redisConnection.get.mock.calls.length).toBe(1);
       expect(spies.redisConnection.get.mock.calls[0][0]).toBe(hash);
+    });
+  });
+
+  describe('getMultipleValues()', () => {
+    test('should get multiple value', async () => {
+      const spies = spy();
+
+      await storageService.getMultipleValues(['key1', 'key2']);
+
+      expect(spies.redis.connect.mock.calls.length).toBe(1);
+      expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
+
+      expect(spies.redisConnection.mget.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.mget.mock.calls[0][0]).toEqual(['key1', 'key2']);
     });
   });
 

@@ -20,11 +20,9 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
   }
 
   private async init() {
-    if (this.connection) {
-      return this.connection;
+    if (!this.connection) {
+      this.connection = await this.leveldb.connect(this.config.getLevelDb());
     }
-
-    this.connection = await this.leveldb.connect(this.config.getLevelDb());
   }
 
   private async close() {
@@ -39,9 +37,14 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     return this.connection.get(key);
   }
 
-  async setValue(key: string, value: string): Promise<string> {
+  async getMultipleValues(keys: string[]): Promise<string[]> {
     await this.init();
-    return this.connection.set(key, value);
+    return this.connection.mget(keys);
+  }
+
+  async setValue(key: string, value: string): Promise<void> {
+    await this.init();
+    await this.connection.set(key, value);
   }
 
   async delValue(key: string): Promise<void> {
@@ -49,23 +52,18 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     await this.connection.del(key);
   }
 
-  async setObject(key: string, value: object): Promise<void> {
+  async incrValue(key: string): Promise<void> {
     await this.init();
-    await this.setValue(key, JSON.stringify(value));
+    await this.connection.incr(key);
+  }
+
+  async setObject(key: string, value: object): Promise<void> {
+    return this.setValue(key, JSON.stringify(value));
   }
 
   async getObject(key: string): Promise<object> {
-    await this.init();
     const res = await this.getValue(key);
-    if (res) {
-      return JSON.parse(res);
-    }
-
-    return {};
-  }
-
-  setArray(key: string, value: object[]): Promise<string> {
-    return this.setValue(key, JSON.stringify(value));
+    return res ? JSON.parse(res) : {};
   }
 
   async sadd(key: string, value: string): Promise<void> {
@@ -93,6 +91,6 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     await this.init();
-    return this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
+    await this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
   }
 }

@@ -1,6 +1,9 @@
 import level from 'level';
 import offsetStream from 'offset-stream';
 
+/**
+ * @todo Move this logic into leveldb.storage.service
+ */
 export class LeveldbConnection {
   constructor(
     private connection: level.Level,
@@ -11,12 +14,26 @@ export class LeveldbConnection {
     return this.connection.get(key);
   }
 
+  mget(keys: level.KeyType[]): Promise<string[]> {
+    const opts = keys.map((key: string) => ({type: 'get', key}));
+    return this.connection.batch(opts);
+  }
+
   set(key: level.KeyType, value: string): Promise<string> {
     return this.connection.put(key, value);
   }
 
   del(key: level.KeyType): Promise<0 | 1> {
     return this.connection.del(key);
+  }
+
+  async incr(key): Promise<string> {
+    let count = 0;
+    try {
+      count = Number(await this.get(key));
+    } catch (e) {}
+
+    return this.set(key, String(count + 1));
   }
 
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
@@ -26,16 +43,10 @@ export class LeveldbConnection {
   }
 
   async incrCount(key): Promise<any> {
-    let count = 0;
-    try {
-      count = Number(await this.get(`${key}:count`));
-    } catch (e) {}
-
-    await this.set(`${key}:count`, String(++count));
+    return this.incr(`${key}:count`);
   }
 
   async paginate(key: level.KeyType, limit: number, offset: number): Promise<any> {
-
     return new Promise((resolve, reject) => {
       const _arr = [];
       const start = Number(offset);

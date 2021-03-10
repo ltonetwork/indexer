@@ -7,6 +7,9 @@ import { ConfigService } from '../config/config.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
 
+/**
+ * @todo Why does NodeService get things from storage?
+ */
 @Injectable()
 export class NodeService {
   constructor(

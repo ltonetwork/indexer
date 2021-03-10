@@ -4,7 +4,10 @@ describe('RedisConnection', () => {
   function spy() {
     const connection = {
       get: jest.fn(),
+      mget: jest.fn(),
       set: jest.fn(),
+      del: jest.fn(),
+      incr: jest.fn(),
       zadd: jest.fn(),
       zrange: jest.fn(),
       zcard: jest.fn(),
@@ -38,6 +41,45 @@ describe('RedisConnection', () => {
       expect(await redisConnection.get('fake_key')).toBe('fake_value');
       expect(spies.connection.get.mock.calls.length).toBe(1);
       expect(spies.connection.get.mock.calls[0][0]).toBe('fake_key');
+    });
+  });
+
+  describe('mget()', () => {
+    test('should get multiple values from redis', async () => {
+      const spies = spy();
+
+      spies.connection.mget.mockImplementation(() => ['fake_value1', 'fake_value2']);
+      const redisConnection = new RedisConnection(spies.connection as any);
+
+      expect(await redisConnection.mget(['fake_key1', 'fake_key2'])).toEqual(['fake_value1', 'fake_value2']);
+      expect(spies.connection.mget.mock.calls.length).toBe(1);
+      expect(spies.connection.mget.mock.calls[0][0]).toEqual(['fake_key1', 'fake_key2']);
+    });
+  });
+
+  describe('del()', () => {
+    test('should delete a value from redis', async () => {
+      const spies = spy();
+
+      spies.connection.del.mockImplementation(() => 1);
+      const redisConnection = new RedisConnection(spies.connection as any);
+
+      expect(await redisConnection.del('fake_key')).toBe(1);
+      expect(spies.connection.del.mock.calls.length).toBe(1);
+      expect(spies.connection.del.mock.calls[0][0]).toBe('fake_key');
+    });
+  });
+
+  describe('incr()', () => {
+    test('should increment a value from redis', async () => {
+      const spies = spy();
+
+      spies.connection.incr.mockImplementation(() => '43');
+      const redisConnection = new RedisConnection(spies.connection as any);
+
+      expect(await redisConnection.incr('fake_key')).toBe('43');
+      expect(spies.connection.incr.mock.calls.length).toBe(1);
+      expect(spies.connection.incr.mock.calls[0][0]).toBe('fake_key');
     });
   });
 

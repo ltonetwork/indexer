@@ -18,7 +18,8 @@ describe('StorageService', () => {
     };
     const redis = {
       connect: jest.spyOn(redisService, 'connect')
-        .mockImplementation(() => redisConnection),
+        // @ts-ignore
+        .mockImplementation(async () => redisConnection),
     };
 
     return { redis, redisConnection };
@@ -31,6 +32,7 @@ describe('StorageService', () => {
     redisService = module.get<RedisService>(RedisService);
     configService = module.get<ConfigService>(ConfigService);
 
+    // @ts-ignore
     jest.spyOn(configService, 'getStorageType').mockImplementation(() => 'redis');
     await module.init();
 
@@ -81,7 +83,7 @@ describe('StorageService', () => {
   describe('getTx()', () => {
     test('should get transaction type for address', async () => {
       const transactions = ['fake_transaction'];
-      const getTx = jest.spyOn(redisStorageService, 'getTx').mockImplementation(() => transactions);
+      const getTx = jest.spyOn(redisStorageService, 'getTx').mockImplementation(async () => transactions);
 
       const type = 'anchor';
       const address = 'fake_address';
@@ -99,7 +101,7 @@ describe('StorageService', () => {
 
   describe('countTx()', () => {
     test('should count transaction type for address', async () => {
-      const countTx = jest.spyOn(redisStorageService, 'countTx').mockImplementation(() => 3);
+      const countTx = jest.spyOn(redisStorageService, 'countTx').mockImplementation(async () => 3);
 
       const type = 'anchor';
       const address = 'fake_address';
@@ -111,12 +113,48 @@ describe('StorageService', () => {
     });
   });
 
+  describe('incrTxStats()', () => {
+    test('should increment stats for transaction type', async () => {
+      const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
+
+      const type = 'anchor';
+      const day = 18600;
+      await storageService.incrTxStats(type, day);
+
+      expect(incrValue.mock.calls.length).toBe(1);
+      expect(incrValue.mock.calls[0][0]).toBe(`lto:txstats:${type}:${day}`);
+    });
+  });
+
+  describe('getTxStats()', () => {
+    test('should increment stats for transaction type', async () => {
+      const getMultipleValues = jest.spyOn(redisStorageService, 'getMultipleValues')
+        .mockImplementation(async () => ['300', '329', '402', '293']);
+
+      const type = 'anchor';
+      expect(await storageService.getTxStats(type, 18600, 18603))
+        .toEqual([
+          {period: '2020-12-04 00:00:00', count: 300},
+          {period: '2020-12-05 00:00:00', count: 329},
+          {period: '2020-12-06 00:00:00', count: 402},
+          {period: '2020-12-07 00:00:00', count: 293},
+        ]);
+
+      expect(getMultipleValues.mock.calls.length).toBe(1);
+      expect(getMultipleValues.mock.calls[0][0]).toEqual([
+        `lto:txstats:${type}:18600`,
+        `lto:txstats:${type}:18601`,
+        `lto:txstats:${type}:18602`,
+        `lto:txstats:${type}:18603`,
+      ]);
+    });
+  });
+
   describe('getProcessingHeight()', () => {
     test('should get processing height', async () => {
-      const height = 100;
-      const getValue = jest.spyOn(redisStorageService, 'getValue').mockImplementation(() => height);
+      const getValue = jest.spyOn(redisStorageService, 'getValue').mockImplementation(async () => '100');
 
-      expect(await storageService.getProcessingHeight()).toBe(height);
+      expect(await storageService.getProcessingHeight()).toBe(100);
 
       expect(getValue.mock.calls.length).toBe(1);
       expect(getValue.mock.calls[0][0])
@@ -127,7 +165,7 @@ describe('StorageService', () => {
   describe('saveProcessingHeight()', () => {
     test('should save processing height', async () => {
       const height = 100;
-      const setValue = jest.spyOn(redisStorageService, 'setValue').mockResolvedValue(height);
+      const setValue = jest.spyOn(redisStorageService, 'setValue').mockImplementation(async () => {});
 
       await storageService.saveProcessingHeight(height);
 
