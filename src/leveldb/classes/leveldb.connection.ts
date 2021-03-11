@@ -1,13 +1,17 @@
 import level from 'level';
 import offsetStream from 'offset-stream';
+import AwaitLock from 'await-lock';
 
 /**
  * @todo Move this logic into leveldb.storage.service
  */
 export class LeveldbConnection {
+  private incrLock: AwaitLock;
+
   constructor(
     private connection: level.Level,
   ) {
+    this.incrLock = new AwaitLock();
   }
 
   get(key: level.KeyType): Promise<string> {
@@ -28,12 +32,19 @@ export class LeveldbConnection {
   }
 
   async incr(key): Promise<string> {
-    let count = 0;
-    try {
-      count = Number(await this.get(key));
-    } catch (e) {}
+    await this.incrLock.acquireAsync();
 
-    return this.set(key, String(count + 1));
+    try {
+      let count = 0;
+      try {
+        count = Number(await this.get(key));
+      } catch (e) {
+      }
+
+      return this.set(key, String(count + 1));
+    } finally {
+      this.incrLock.release();
+    }
   }
 
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {

@@ -41,6 +41,7 @@
     "@nestjs/swagger": "^2.5.1",
     "@types/crypto-js": "^4.0.1",
     "amqplib": "^0.5.6",
+    "await-lock": "^2.1.0",
     "axiom": "^0.1.6",
     "axios": "^0.18.1",
     "boolean": "^0.2.0",
