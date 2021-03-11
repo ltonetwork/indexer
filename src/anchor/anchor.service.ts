@@ -26,7 +26,6 @@ export class AnchorService {
       return;
     }
 
-    // @todo: move this to anchor-indexer service
     // Process old data transactions
     if (transaction.type === 12 && !!transaction.data) {
       for (const item of transaction.data) {
@@ -35,9 +34,7 @@ export class AnchorService {
           const hexHash = this.encoder.hexEncode(
             this.encoder.base64Decode(value),
           );
-          this.logger.info(
-            `anchor: save hash ${hexHash} with transaction ${transaction.id}`,
-          );
+          this.logger.debug(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
           await this.storage.saveAnchor(hexHash, {
             id: transaction.id,
             blockHeight,
@@ -50,9 +47,7 @@ export class AnchorService {
         const hexHash = this.encoder.hexEncode(
           this.encoder.base58Decode(anchor),
         );
-        this.logger.info(
-          `anchor: save hash ${hexHash} with transaction ${transaction.id}`,
-        );
+        this.logger.debug(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
         await this.storage.saveAnchor(hexHash, {
           id: transaction.id,
           blockHeight,

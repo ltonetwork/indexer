@@ -51,22 +51,21 @@ export class TransactionService {
       return false;
     }
 
+    this.logger.debug(`transaction ${transaction.id}: ` + identifiers.join(' '));
+
     for (const identifier of identifiers) {
       promises.push(this.storage.incrTxStats(identifier, Math.floor(transaction.timestamp / 86400000)));
 
       if (transaction.sender) {
-        this.logger.debug(`transaction: index ${identifier} tx ${transaction.id} for ${transaction.sender}`);
         promises.push(this.storage.indexTx(identifier, transaction.sender, transaction.id, transaction.timestamp));
       }
 
       if (transaction.recipient) {
-        this.logger.debug(`transaction: index ${identifier} tx ${transaction.id} for ${transaction.recipient}`);
         promises.push(this.storage.indexTx(identifier, transaction.recipient, transaction.id, transaction.timestamp));
       }
 
       if (transaction.transfers) {
         for (const transfer of transaction.transfers) {
-          this.logger.debug(`transaction: index ${identifier} tx ${transaction.id} for ${transfer.recipient}`);
           promises.push(this.storage.indexTx(identifier, transfer.recipient, transaction.id, transaction.timestamp));
         }
       }

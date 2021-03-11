@@ -18,9 +18,7 @@ export class PublicKeyService {
     const { transaction, blockHeight, position } = index;
     const { sender, senderPublicKey } = transaction;
 
-    this.logger.info(
-      `publicKey: address ${sender} has public key ${senderPublicKey}`,
-    );
+    this.logger.debug(`publicKey: address ${sender} has public key ${senderPublicKey}`);
     await this.storage.savePublicKey(sender, senderPublicKey);
   }
 }

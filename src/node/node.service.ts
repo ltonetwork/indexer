@@ -165,7 +165,7 @@ export class NodeService {
         return null;
       }
 
-      this.logger.info(`hash: successfully anchored '${hash}' as '${encoding}' in transaction '${transactionId}'`);
+      this.logger.debug(`hash: successfully anchored '${hash}' as '${encoding}' in transaction '${transactionId}'`);
       return this.asChainPoint(hash, transactionId);
     } catch (e) {
       this.logger.error(`hash: failed anchoring '${hash}' as '${encoding}'`);

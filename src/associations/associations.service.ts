@@ -44,7 +44,7 @@ export class AssociationsService implements OnModuleInit {
     const {sender, associationType} = transaction;
 
     if (this.config.getAssociationTypes().indexOf(associationType) === -1) {
-      this.logger.info('Ingoring association because unknown type');
+      this.logger.debug(`Ingoring association because unknown type ${associationType}`);
       return;
     }
 
@@ -52,7 +52,7 @@ export class AssociationsService implements OnModuleInit {
     if (sender === this.config.getAssociationsRoot() || associations.parents.length > 0) {
       this.storage.saveAssociation(transaction);
     } else {
-      this.logger.debug(`association-service: Ignoring because sender ender not root or unregistered provider`);
+      this.logger.debug(`association-service: Ignoring because sender not root or unregistered provider`);
     }
   }
 
@@ -60,7 +60,7 @@ export class AssociationsService implements OnModuleInit {
     const {sender, associationType} = transaction;
 
     if (this.config.getAssociationTypes().indexOf(associationType) === -1) {
-      this.logger.info('Ingoring association because unknown type');
+      this.logger.debug(`Ingoring association because unknown type ${associationType}`);
       return;
     }
 
@@ -68,7 +68,7 @@ export class AssociationsService implements OnModuleInit {
     if (sender === this.config.getAssociationsRoot() || associations.parents.length > 0) {
       this.storage.removeAssociation(transaction);
     } else {
-      this.logger.debug(`association-service: Ignoring because sender ender not root or unregistered provider`);
+      this.logger.debug(`association-service: Ignoring because sender not root or unregistered provider`);
     }
   }
 
