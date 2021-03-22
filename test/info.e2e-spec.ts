@@ -22,9 +22,9 @@ describe('Application e2e test', () => {
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toMatch(/json/);
       expect(res.body).toMatchObject({
-        name: 'identity',
-        version: '1.0.0',
-        description: 'LTO Network identity service',
+        name: 'indexer',
+        version: '1.1.0',
+        description: 'Index LTO Network transactions to query information like anchors and DIDs',
         env: 'test',
       });
     });

@@ -11,8 +11,8 @@ import { IndexMonitorService } from './index/index-monitor.service';
 
 async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
-    .setTitle('LTO Network identity service')
-    .setDescription('Service for DIDs and verifiable credentials')
+    .setTitle('LTO Network indexer service')
+    .setDescription('Index LTO Network transactions to query information like anchors and DIDs')
     .addBearerAuth()
     .build();
 
