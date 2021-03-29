@@ -4,60 +4,60 @@ import { Response, Request } from 'express';
 import { LoggerService } from '../logger/logger.service';
 import { StorageService } from '../storage/storage.service';
 
-@Controller('did')
-@ApiUseTags('did')
-export class DidController {
+@Controller('identities')
+@ApiUseTags('identity')
+export class IdentityController {
   constructor(
     private readonly logger: LoggerService,
     private readonly storage: StorageService,
   ) { }
 
-  @Get(':url')
+  @Get(':address')
   @ApiOperation({ title: 'Get a DID document' })
-  @ApiImplicitParam({ name: 'url', description: 'DID url or address' })
+  @ApiImplicitParam({ name: 'url', description: 'DID url or network address' })
   @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 400, description: 'invalid did url given' })
+  @ApiResponse({ status: 400, description: 'invalid identity url given' })
   @ApiResponse({ status: 404, description: 'address not indexed' })
   @ApiResponse({ status: 500, description: `failed to get DID document '[reason]'` })
   async getDidDocument(@Req() req: Request, @Res() res: Response): Promise<Response> {
     const url = req.params.url;
     if (!url) {
-      return res.status(400).json({error: 'invalid-did-url'});
+      return res.status(400).json({error: 'invalid-identity-url'});
     }
 
-    const address = url.replace(/^did:lto:/, '');
+    const address = url.replace(/^identity:lto:/, '');
 
     try {
       const publicKey = await this.storage.getPublicKey(address);
 
       if (!publicKey) {
-        return res.status(404).json({error: 'no-found'});
+        return res.status(404).json({error: 'not-found'});
       }
 
-      const did = this.asDidDocument(address, publicKey);
+      const identity = this.asDidDocument(address, publicKey);
 
-      res.status(200).json(did);
+      res.status(200).json(identity);
     } catch (e) {
-      this.logger.error(`did-controller: failed to get transaction by did '${e}'`, { stack: e.stack });
-      return res.status(500).send(`failed to get transaction by did '${e}'`);
+      this.logger.error(`identity-controller: failed to get transaction by identity '${e}'`, { stack: e.stack });
+      return res.status(500).send(`failed to get transaction by identity '${e}'`);
     }
   }
 
   asDidDocument(address: string, publicKey: string): object {
     return {
-      '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${address}`,
+      '@context': 'https://www.w3.org/ns/identity/v1',
+      'id': `identity:lto:${address}`,
       'verificationMethod': [{
-        id: `did:lto:${address}#key`,
+        id: `identity:lto:${address}#key`,
         type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${address}`,
+        controller: `identity:lto:${address}`,
         publicKeyBase58: publicKey,
       }],
       'authentication': [
-        `did:lto:${address}#key`,
+        `identity:lto:${address}#key`,
       ],
       'assertionMethod': [
-        `did:lto:${address}#key`,
+        `identity:lto:${address}#key`,
       ],
     };
   }

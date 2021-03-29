@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { DidModuleConfig } from './did.module';
+import { DidModuleConfig } from './identity.module';
 import { StorageService } from '../storage/storage.service';
 import { ConfigService } from '../config/config.service';
 
@@ -12,12 +12,12 @@ describe('DidController', () => {
   let app: INestApplication;
 
   function spy() {
-    const did = {
+    const identity = {
       getTransactionByDid: jest.spyOn(storageService, 'getPublicKey')
         .mockReturnValue('AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG'),
     };
 
-    return { did };
+    return { identity };
   }
 
   beforeEach(async () => {
@@ -33,37 +33,37 @@ describe('DidController', () => {
     await module.close();
   });
 
-  describe('GET /did/:url', () => {
-    test('should get a did document for the url', async () => {
+  describe('GET /identity/:url', () => {
+    test('should get a identity document for the url', async () => {
       const spies = spy();
 
       const address = '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL';
-      const didUrl = `did:lto:${address}`;
+      const identityUrl = `identity:lto:${address}`;
       const res = await request(app.getHttpServer())
-        .get(`/did/${didUrl}`)
+        .get(`/identity/${identityUrl}`)
         .send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({
-        '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${address}`,
+        '@context': 'https://www.w3.org/ns/identity/v1',
+        'id': `identity:lto:${address}`,
         'verificationMethod': [{
-          id: `did:lto:${address}#key`,
+          id: `identity:lto:${address}#key`,
           type: 'Ed25519VerificationKey2018',
-          controller: `did:lto:${address}`,
+          controller: `identity:lto:${address}`,
           publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
         }],
         'authentication': [
-          `did:lto:${address}#key`,
+          `identity:lto:${address}#key`,
         ],
         'assertionMethod': [
-          `did:lto:${address}#key`,
+          `identity:lto:${address}#key`,
         ],
       });
 
-      expect(spies.did.getTransactionByDid.mock.calls.length).toBe(1);
-      expect(spies.did.getTransactionByDid.mock.calls[0][0]).toBe(address);
+      expect(spies.identity.getTransactionByDid.mock.calls.length).toBe(1);
+      expect(spies.identity.getTransactionByDid.mock.calls[0][0]).toBe(address);
     });
   });
 });

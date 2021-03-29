@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
-import { didProviders } from './did.providers';
-import { DidController } from './did.controller';
+import { identityProviders } from './identity.providers';
+import { IdentityController } from './identity.controller';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
 import { StorageModule } from '../storage/storage.module';
 
 export const DidModuleConfig = {
   imports: [LoggerModule, ConfigModule, StorageModule],
-  controllers: [DidController],
+  controllers: [IdentityController],
   providers: [
-    ...didProviders,
+    ...identityProviders,
   ],
   exports: [
-    ...didProviders,
+    ...identityProviders,
   ],
 };
 
 @Module(DidModuleConfig)
-export class DidModule { }
+export class IdentityModule { }
