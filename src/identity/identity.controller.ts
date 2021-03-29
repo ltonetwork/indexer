@@ -63,13 +63,13 @@ export class IdentityController {
     };
   }
 
-  @Get(':address/derived/:nonce')
+  @Get(':address/derived/:secret')
   @ApiOperation({ title: 'Get a DID document for a derived identity' })
   @ApiImplicitParam({ name: 'address', description: 'DID url or network address' })
-  @ApiImplicitParam({ name: 'nonce', description: 'Base58 encoded unique (random) value' })
+  @ApiImplicitParam({ name: 'secret', description: 'Base58 encoded unique (random) value' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid did url given' })
-  @ApiResponse({ status: 400, description: 'invalid nonce given' })
+  @ApiResponse({ status: 400, description: 'invalid secret given' })
   @ApiResponse({ status: 404, description: 'address not indexed' })
   @ApiResponse({ status: 500, description: `failed to get DID document '[reason]'` })
   async getDerivedIdentity(@Req() req: Request, @Res() res: Response): Promise<Response> {
@@ -79,11 +79,11 @@ export class IdentityController {
     }
     const address = url.replace(/^did:lto:/, '');
 
-    const nonce = req.params.nonce;
+    const secret = req.params.secret;
     try {
-      base58decode(nonce);
+      base58decode(secret);
     } catch (err) {
-      return res.status(400).json({error: 'invalid-nonce'});
+      return res.status(400).json({error: 'invalid-secret'});
     }
 
     try {
@@ -92,8 +92,8 @@ export class IdentityController {
         return res.status(404).json({error: 'not-found'});
       }
 
-      const derivedAddress = deriveAddress({public: publicKey}, nonce, chainIdOf(address));
-      const identity = this.asDerivedDidDocument(address, nonce, derivedAddress, publicKey);
+      const derivedAddress = deriveAddress({public: publicKey}, secret, chainIdOf(address));
+      const identity = this.asDerivedDidDocument(address, secret, derivedAddress, publicKey);
 
       res.status(200).json(identity);
     } catch (e) {
@@ -102,10 +102,10 @@ export class IdentityController {
     }
   }
 
-  asDerivedDidDocument(controllerAddress: string, nonce: string, derivedAddress: string, publicKey: string): object {
+  asDerivedDidDocument(controllerAddress: string, secret: string, derivedAddress: string, publicKey: string): object {
     return {
       '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${controllerAddress}/derived/${nonce}`,
+      'id': `did:lto:${controllerAddress}/derived/${secret}`,
       'alsoKnownAs': [
         `did:lto:${derivedAddress}`,
       ],
