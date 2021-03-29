@@ -14,7 +14,7 @@ describe('DidController', () => {
   function spy() {
     const identity = {
       getTransactionByDid: jest.spyOn(storageService, 'getPublicKey')
-        .mockReturnValue('AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG'),
+        .mockReturnValue(Promise.resolve('AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG')),
     };
 
     return { identity };
@@ -38,16 +38,16 @@ describe('DidController', () => {
       const spies = spy();
 
       const address = '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL';
-      const identityUrl = `identity:lto:${address}`;
+      const identityUrl = `did:lto:${address}`;
       const res = await request(app.getHttpServer())
-        .get(`/identity/${identityUrl}`)
+        .get(`/identities/${identityUrl}`)
         .send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({
-        '@context': 'https://www.w3.org/ns/identity/v1',
-        'id': `identity:lto:${address}`,
+        '@context': 'https://www.w3.org/ns/did/v1',
+        'id': `did:lto:${address}`,
         'verificationMethod': [{
           id: `identity:lto:${address}#key`,
           type: 'Ed25519VerificationKey2018',
@@ -55,10 +55,10 @@ describe('DidController', () => {
           publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
         }],
         'authentication': [
-          `identity:lto:${address}#key`,
+          `did:lto:${address}#key`,
         ],
         'assertionMethod': [
-          `identity:lto:${address}#key`,
+          `did:lto:${address}#key`,
         ],
       });
 

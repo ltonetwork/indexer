@@ -39,6 +39,7 @@
   ],
   "license": "ISC",
   "dependencies": {
+    "@lto-network/lto-crypto": "github:ltonetwork/lto-crypto",
     "@nestjs/common": "^5.7.4",
     "@nestjs/core": "^5.7.4",
     "@nestjs/passport": "^5.1.0",
