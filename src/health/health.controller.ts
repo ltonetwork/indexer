@@ -1,11 +1,11 @@
 import { Controller, Get, Req, Res } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { HealthService } from './health.service';
 import { LoggerService } from '../logger/logger.service';
 
 @Controller('health')
-@ApiUseTags('health')
+@ApiTags('health')
 export class HealthController {
   constructor(
     private readonly logger: LoggerService,

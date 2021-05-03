@@ -1,5 +1,5 @@
 import {Controller, Post, Req, Res, Get, UseGuards} from '@nestjs/common';
-import { ApiImplicitParam, ApiImplicitBody, ApiOperation, ApiResponse, ApiUseTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { LoggerService } from '../logger/logger.service';
 import { HashDto } from './dto/hash.dto';
@@ -8,7 +8,7 @@ import { EncoderService } from '../encoder/encoder.service';
 import { BearerAuthGuard } from '../auth/auth.guard';
 
 @Controller('hash')
-@ApiUseTags('hash')
+@ApiTags('hash')
 export class HashController {
   constructor(
     private readonly logger: LoggerService,
@@ -18,8 +18,8 @@ export class HashController {
 
   @Post()
   @UseGuards(BearerAuthGuard)
-  @ApiOperation({ title: 'Anchor hash to the blockchain' })
-  @ApiImplicitBody({ name: 'hash', type: HashDto })
+  @ApiOperation({ summary: 'Anchor hash to the blockchain' })
+  @ApiBody({ type: HashDto })
   @ApiBearerAuth()
   @ApiResponse({ status: 200 })
   @ApiResponse({
@@ -61,8 +61,8 @@ export class HashController {
   }
 
   @Get(':hash')
-  @ApiOperation({ title: 'Verify if hash is anchored' })
-  @ApiImplicitParam({ name: 'hash' })
+  @ApiOperation({ summary: 'Verify if hash is anchored' })
+  @ApiParam({ name: 'hash' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'no hash given' })
   @ApiResponse({ status: 404 })
@@ -88,9 +88,9 @@ export class HashController {
   }
 
   @Get(':hash/encoding/:encoding')
-  @ApiOperation({ title: 'Verify if hash is anchored with given encoding' })
-  @ApiImplicitParam({ name: 'hash' })
-  @ApiImplicitParam({ name: 'encoding' })
+  @ApiOperation({ summary: 'Verify if hash is anchored with given encoding' })
+  @ApiParam({ name: 'hash' })
+  @ApiParam({ name: 'encoding' })
   @ApiResponse({ status: 200 })
   @ApiResponse({
     status: 400,

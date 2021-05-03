@@ -1,12 +1,12 @@
 import { Controller, Req, Res, Get } from '@nestjs/common';
-import { ApiImplicitParam, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
+import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { base58decode } from '@lto-network/lto-crypto';
 import { LoggerService } from '../logger/logger.service';
 import { IdentityService } from './identity.service';
 
 @Controller('identities')
-@ApiUseTags('identity')
+@ApiTags('identity')
 export class IdentityController {
   constructor(
     private readonly logger: LoggerService,
@@ -15,7 +15,7 @@ export class IdentityController {
 
   @Get(':address')
   @ApiOperation({ title: 'Get a DID document' })
-  @ApiImplicitParam({ name: 'address', description: 'DID url or network address' })
+  @ApiParam({ name: 'address', description: 'DID url or network address' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid did url given' })
   @ApiResponse({ status: 404, description: 'address not indexed' })
@@ -44,8 +44,8 @@ export class IdentityController {
 
   @Get(':address/derived/:secret')
   @ApiOperation({ title: 'Get a DID document for a derived identity' })
-  @ApiImplicitParam({ name: 'address', description: 'DID url or network address' })
-  @ApiImplicitParam({ name: 'secret', description: 'Base58 encoded unique (random) value' })
+  @ApiParam({ name: 'address', description: 'DID url or network address' })
+  @ApiParam({ name: 'secret', description: 'Base58 encoded unique (random) value' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid did url given' })
   @ApiResponse({ status: 400, description: 'invalid secret given' })

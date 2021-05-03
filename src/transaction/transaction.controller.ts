@@ -1,5 +1,5 @@
 import { Controller, Post, Req, Res, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiUseTags, ApiImplicitQuery, ApiImplicitParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { TransactionService } from './transaction.service';
 import { LoggerService } from '../logger/logger.service';
@@ -7,7 +7,7 @@ import { NodeService } from '../node/node.service';
 export type txType = 'transfer' | 'anchor';
 
 @Controller('transactions')
-@ApiUseTags('transaction')
+@ApiTags('transaction')
 export class TransactionController {
   constructor(
     private readonly logger: LoggerService,
@@ -16,11 +16,11 @@ export class TransactionController {
   ) { }
 
   @Get('addresses/:address')
-  @ApiOperation({ title: 'Get transactions by address' })
-  @ApiImplicitParam({ name: 'address', description: 'Filter by address' })
-  @ApiImplicitQuery({ name: 'limit', required: false, description: 'Limit amount of transactions returned' })
-  @ApiImplicitQuery({ name: 'offset', required: false, description: 'Start search at given offset' })
-  @ApiImplicitQuery({
+  @ApiOperation({ summary: 'Get transactions by address' })
+  @ApiParam({ name: 'address', description: 'Filter by address' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Limit amount of transactions returned' })
+  @ApiQuery({ name: 'offset', required: false, description: 'Start search at given offset' })
+  @ApiQuery({
     name: 'type',
     required: false,
     description: 'Filter by type',
@@ -79,10 +79,10 @@ export class TransactionController {
   }
 
   @Get('stats/:type/:from/:to')
-  @ApiOperation({ title: 'Get transaction count per day' })
-  @ApiImplicitParam({ name: 'type', description: 'Transaction type'})
-  @ApiImplicitParam({ name: 'from', description: 'Date as `year-month-day` or timestamp in ms' })
-  @ApiImplicitParam({ name: 'to', description: 'Date as `year-month-day` or timestamp in ms' })
+  @ApiOperation({ summary: 'Get transaction count per day' })
+  @ApiParam({ name: 'type', description: 'Transaction type'})
+  @ApiParam({ name: 'from', description: 'Date as `year-month-day` or timestamp in ms' })
+  @ApiParam({ name: 'to', description: 'Date as `year-month-day` or timestamp in ms' })
   @ApiResponse({ status: 200 })
   @ApiResponse({
     status: 400,
