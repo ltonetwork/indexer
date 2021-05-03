@@ -30,6 +30,40 @@ describe('LeveldbConnection', () => {
     });
   });
 
+  describe('add()', () => {
+    test('should set a value to leveldb if it doesn\'t exist', async () => {
+      const spies = spy();
+
+      spies.connection.get.mockImplementation(() => '');
+      spies.connection.put.mockImplementation(() => 'fake_value');
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      expect(await levelDBConnection.add('fake_key', 'fake_value')).toBe('fake_value');
+
+      expect(spies.connection.get.mock.calls.length).toBe(1);
+      expect(spies.connection.get.mock.calls[0][0]).toBe('fake_key');
+
+      expect(spies.connection.put.mock.calls.length).toBe(1);
+      expect(spies.connection.put.mock.calls[0][0]).toBe('fake_key');
+      expect(spies.connection.put.mock.calls[0][1]).toBe('fake_value');
+    });
+
+    test('should not set a value to leveldb if it already exists', async () => {
+      const spies = spy();
+
+      spies.connection.get.mockImplementation(() => 'current_value');
+      spies.connection.put.mockImplementation(() => 'fake_value');
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      expect(await levelDBConnection.add('fake_key', 'fake_value')).toBe('current_value');
+
+      expect(spies.connection.get.mock.calls.length).toBe(1);
+      expect(spies.connection.get.mock.calls[0][0]).toBe('fake_key');
+
+      expect(spies.connection.put.mock.calls.length).toBe(0);
+    });
+  });
+
   describe('get()', () => {
     test('should get a value from leveldb', async () => {
       const spies = spy();

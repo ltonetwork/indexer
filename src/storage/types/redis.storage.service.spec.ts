@@ -19,6 +19,7 @@ describe('RedisStorageService', () => {
       incr: jest.fn(),
       hgetall: jest.fn(),
       hset: jest.fn(),
+      hsetnx: jest.fn(),
       zaddWithScore: jest.fn(),
       zrevrangePaginate: jest.fn(),
       zcard: jest.fn(),
@@ -129,12 +130,44 @@ describe('RedisStorageService', () => {
     });
   });
 
+  describe('addObject()', () => {
+    test('should add an object if not exists', async () => {
+      const spies = spy();
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const transaction = {
+        id: 'fake_transaction',
+        block: '1',
+        position: '10',
+      };
+      await storageService.addObject(hash, transaction);
+
+      expect(spies.redis.connect.mock.calls.length).toBe(1);
+      expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
+
+      expect(spies.redisConnection.hsetnx.mock.calls.length).toBe(3);
+      expect(spies.redisConnection.hsetnx.mock.calls[0][0])
+        .toBe(hash);
+      expect(spies.redisConnection.hsetnx.mock.calls[0][1]).toBe('id');
+      expect(spies.redisConnection.hsetnx.mock.calls[0][2]).toBe(transaction.id);
+
+      expect(spies.redisConnection.hsetnx.mock.calls[1][0])
+        .toBe(hash);
+      expect(spies.redisConnection.hsetnx.mock.calls[1][1]).toBe('block');
+      expect(spies.redisConnection.hsetnx.mock.calls[1][2]).toBe(transaction.block);
+
+      expect(spies.redisConnection.hsetnx.mock.calls[2][0])
+        .toBe(hash);
+      expect(spies.redisConnection.hsetnx.mock.calls[2][1]).toBe('position');
+      expect(spies.redisConnection.hsetnx.mock.calls[2][2]).toBe(transaction.position);
+    });
+  });
+
   describe('setObject()', () => {
     test('should set an object', async () => {
       const spies = spy();
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      // const transaction = 'fake_transaction';
       const transaction = {
         id: 'fake_transaction',
         block: '1',

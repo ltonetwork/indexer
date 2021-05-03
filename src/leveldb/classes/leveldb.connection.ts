@@ -23,6 +23,21 @@ export class LeveldbConnection {
     return Promise.all(promises);
   }
 
+  async add(key: level.KeyType, value: string): Promise<string> {
+    await this.incrLock.acquireAsync();
+
+    try {
+      const existing = this.connection.get(key);
+      if (existing) {
+        return existing;
+      }
+
+      return this.connection.put(key, value);
+    } finally {
+      this.incrLock.release();
+    }
+  }
+
   set(key: level.KeyType, value: string): Promise<string> {
     return this.connection.put(key, value);
   }

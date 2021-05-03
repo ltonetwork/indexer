@@ -17,6 +17,10 @@ export class RedisConnection {
     return this.connection.hset(key, field, value);
   }
 
+  async hsetnx(key: redis.KeyType, field: string, value: any): Promise<number> {
+    return this.connection.hsetnx(key, field, value);
+  }
+
   async hgetall(key: redis.KeyType): Promise<object> {
     return this.connection.hgetall(key);
   }

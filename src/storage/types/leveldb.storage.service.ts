@@ -57,6 +57,11 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     await this.connection.incr(key);
   }
 
+  async addObject(key: string, value: object): Promise<void> {
+    await this.init();
+    await this.connection.add(key, JSON.stringify(value));
+  }
+
   async setObject(key: string, value: object): Promise<void> {
     return this.setValue(key, JSON.stringify(value));
   }
