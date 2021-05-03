@@ -45,7 +45,7 @@ describe('StorageService', () => {
 
   describe('saveAnchor()', () => {
     test('should save the anchor', async () => {
-      const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(() => Promise.resolve());
+      const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(() => Promise.resolve());
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       // const transaction = 'fake_transaction';
@@ -56,9 +56,9 @@ describe('StorageService', () => {
       };
       await storageService.saveAnchor(hash, transaction);
 
-      expect(setObject.mock.calls.length).toBe(1);
-      expect(setObject.mock.calls[0][0]).toBe(`lto:anchor:${hash.toLowerCase()}`);
-      expect(setObject.mock.calls[0][1]).toEqual(transaction);
+      expect(addObject.mock.calls.length).toBe(1);
+      expect(addObject.mock.calls[0][0]).toBe(`lto:anchor:${hash.toLowerCase()}`);
+      expect(addObject.mock.calls[0][1]).toEqual(transaction);
     });
   });
 

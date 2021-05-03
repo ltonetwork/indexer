@@ -35,7 +35,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   saveAnchor(hash: string, transaction: object) {
-    return this.storage.setObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
+    return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
   }
 
   getPublicKey(address: string) {
@@ -72,12 +72,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getAssociations(address: string): Promise<any> {
-    const associations = {
+    return {
       children: await this.storage.getArray(`lto:assoc:${address}:childs`),
       parents: await this.storage.getArray(`lto:assoc:${address}:parents`),
     };
-
-    return associations;
   }
 
   incrTxStats(type: string, day: number): Promise<void> {
