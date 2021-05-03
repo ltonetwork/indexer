@@ -1,16 +1,16 @@
-import { Controller, Post, Req, Res, Get } from '@nestjs/common';
-import { ApiImplicitParam, ApiOperation, ApiResponse, ApiUseTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Req, Res, Get } from '@nestjs/common';
+import { ApiImplicitParam, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { deriveAddress, chainIdOf, base58decode } from '@lto-network/lto-crypto';
+import { base58decode } from '@lto-network/lto-crypto';
 import { LoggerService } from '../logger/logger.service';
-import { StorageService } from '../storage/storage.service';
+import { IdentityService } from './identity.service';
 
 @Controller('identities')
 @ApiUseTags('identity')
 export class IdentityController {
   constructor(
     private readonly logger: LoggerService,
-    private readonly storage: StorageService,
+    private readonly service: IdentityService,
   ) { }
 
   @Get(':address')
@@ -29,38 +29,17 @@ export class IdentityController {
     const address = url.replace(/^did:lto:/, '');
 
     try {
-      const publicKey = await this.storage.getPublicKey(address);
+      const identity = await this.service.getIdentity(address);
 
-      if (!publicKey) {
-        return res.status(404).json({error: 'not-found'});
+      if (!identity) {
+        return res.status(404).json({ error: 'not-found' });
       }
 
-      const identity = this.asDidDocument(address, publicKey);
-
-      res.status(200).json(identity);
+      return res.status(200).json(identity);
     } catch (e) {
       this.logger.error(`identity-controller: failed to get DID document '${e}'`, { stack: e.stack });
       return res.status(500).send(`failed to get DID document '${e}'`);
     }
-  }
-
-  asDidDocument(address: string, publicKey: string): object {
-    return {
-      '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${address}`,
-      'verificationMethod': [{
-        id: `did:lto:${address}#key`,
-        type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${address}`,
-        publicKeyBase58: publicKey,
-      }],
-      'authentication': [
-        `did:lto:${address}#key`,
-      ],
-      'assertionMethod': [
-        `did:lto:${address}#key`,
-      ],
-    };
   }
 
   @Get(':address/derived/:secret')
@@ -87,40 +66,16 @@ export class IdentityController {
     }
 
     try {
-      const publicKey = await this.storage.getPublicKey(address);
-      if (!publicKey) {
-        return res.status(404).json({error: 'not-found'});
+      const identity = await this.service.getDerivedIdentity(address, secret);
+
+      if (!identity) {
+        return res.status(404).json({ error: 'not-found' });
       }
 
-      const derivedAddress = deriveAddress({public: publicKey}, secret, chainIdOf(address));
-      const identity = this.asDerivedDidDocument(address, secret, derivedAddress, publicKey);
-
-      res.status(200).json(identity);
+      return res.status(200).json(identity);
     } catch (e) {
       this.logger.error(`identity-controller: failed to get DID document '${e}'`, { stack: e.stack });
       return res.status(500).send(`failed to get DID document '${e}'`);
     }
-  }
-
-  asDerivedDidDocument(controllerAddress: string, secret: string, derivedAddress: string, publicKey: string): object {
-    return {
-      '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${controllerAddress}/derived/${secret}`,
-      'alsoKnownAs': [
-        `did:lto:${derivedAddress}`,
-      ],
-      'verificationMethod': [{
-        id: `did:lto:${controllerAddress}#key`,
-        type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${controllerAddress}`,
-        publicKeyBase58: publicKey,
-      }],
-      'authentication': [
-        `did:lto:${controllerAddress}#key`,
-      ],
-      'assertionMethod': [
-        `did:lto:${controllerAddress}#key`,
-      ],
-    };
   }
 }
