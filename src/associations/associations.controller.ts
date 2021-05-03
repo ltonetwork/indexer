@@ -1,8 +1,6 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { BearerAuthGuard } from '../auth/auth.guard';
-import { ApiBearerAuth, ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { BadRequestException, Controller, Get, Req, Res } from '@nestjs/common';
+import { ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { AssociationApiModel } from './api/association.model';
 import { AssociationsService } from './associations.service';
 
 @Controller('associations')
