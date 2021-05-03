@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RequestService } from '../request/request.service';
 import { NodeModuleConfig } from './node.module';
 import { NodeApiService } from './node-api.service';
-import { ConfigService } from "../config/config.service";
+import { ConfigService } from '../config/config.service';
+import { AxiosResponse } from 'axios';
 
 describe('NodeApiService', () => {
   let module: TestingModule;
@@ -36,7 +37,7 @@ describe('NodeApiService', () => {
     test('should get all node wallet addresses', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: ['fake_address'] };
+      const response = { status: 200, data: ['fake_address'] } as AxiosResponse;
       spies.request.get.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeApiService.getNodeAddresses()).toBe(response);
@@ -49,7 +50,10 @@ describe('NodeApiService', () => {
     test('should get all unconfirmed transactions', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: [{ id: 'fake_id', type: 12, data: [{ value: 'base64:fake_hash' }] }] };
+      const response = {
+        status: 200,
+        data: [{ id: 'fake_id', type: 12, data: [{ value: 'base64:fake_hash' }] }],
+      } as AxiosResponse;
       spies.request.get.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeApiService.getUnconfirmedTransactions()).toBe(response);
@@ -62,7 +66,7 @@ describe('NodeApiService', () => {
     test('should get last block', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { id: 'fake_id' } };
+      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
       spies.request.get.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeApiService.getLastBlock()).toBe(response);
@@ -75,7 +79,7 @@ describe('NodeApiService', () => {
     test('should get block by id', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { id: 'fake_id' } };
+      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
       spies.request.get.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeApiService.getBlock('fake_id')).toBe(response);
@@ -88,7 +92,7 @@ describe('NodeApiService', () => {
     test('should get blocks by range', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: [{ height: 1 }] };
+      const response = { status: 200, data: [{ height: 1 }] } as AxiosResponse;
       spies.request.get.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeApiService.getBlocks(1, 2)).toBe(response);
@@ -101,7 +105,7 @@ describe('NodeApiService', () => {
     test('should send transaction', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { id: 'fake_id' } };
+      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
       spies.request.post.mockImplementation(() => Promise.resolve(response));
       const transaction = { foo: 'bar' };
 

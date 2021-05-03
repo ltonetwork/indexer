@@ -1,13 +1,13 @@
-import { ApiModelProperty, ApiModelPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AssociationApiModel {
 
-  @ApiModelProperty()
+  @ApiProperty()
   readonly party: string;
 
-  @ApiModelProperty()
+  @ApiProperty()
   readonly type: number;
 
-  @ApiModelPropertyOptional()
+  @ApiPropertyOptional()
   readonly hash: string;
 }

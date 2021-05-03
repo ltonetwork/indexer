@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpService } from '@nestjs/common';
 import { RequestModuleConfig } from './request.module';
 import { RequestService } from './request.service';
+import { AxiosResponse } from 'axios';
+import { of } from 'rxjs';
 
 describe('RequestService', () => {
   let module: TestingModule;
@@ -9,11 +11,10 @@ describe('RequestService', () => {
   let httpService: HttpService;
 
   function spy() {
+    const response = { status: 200, data: 'foo' } as AxiosResponse;
     const http = {
       request: jest.spyOn(httpService, 'request')
-        .mockImplementation(() => ({
-          toPromise: () => ({ status: 200, body: 'foo' }),
-        })),
+        .mockImplementation(() => of(response)),
     };
 
     return { http };
@@ -36,7 +37,7 @@ describe('RequestService', () => {
       const spies = spy();
 
       const url = 'http://example.com/foo';
-      const response = { status: 200, body: 'foo' };
+      const response = { status: 200, data: 'foo' };
       expect(await requestService.get(url)).toEqual(response);
 
       expect(spies.http.request.mock.calls.length).toBe(1);
@@ -49,7 +50,7 @@ describe('RequestService', () => {
       const spies = spy();
 
       const url = 'http://example.com/foo';
-      const response = { status: 200, body: 'foo' };
+      const response = { status: 200, data: 'foo' };
       expect(await requestService.delete(url)).toEqual(response);
 
       expect(spies.http.request.mock.calls.length).toBe(1);
@@ -62,7 +63,7 @@ describe('RequestService', () => {
       const spies = spy();
 
       const url = 'http://example.com/foo';
-      const response = { status: 200, body: 'foo' };
+      const response = { status: 200, data: 'foo' };
       expect(await requestService.head(url)).toEqual(response);
 
       expect(spies.http.request.mock.calls.length).toBe(1);
@@ -75,7 +76,7 @@ describe('RequestService', () => {
       const spies = spy();
 
       const url = 'http://example.com/foo';
-      const response = { status: 200, body: 'foo' };
+      const response = { status: 200, data: 'foo' };
       expect(await requestService.post(url)).toEqual(response);
 
       expect(spies.http.request.mock.calls.length).toBe(1);
@@ -88,7 +89,7 @@ describe('RequestService', () => {
       const spies = spy();
 
       const url = 'http://example.com/foo';
-      const response = { status: 200, body: 'foo' };
+      const response = { status: 200, data: 'foo' };
       expect(await requestService.put(url)).toEqual(response);
 
       expect(spies.http.request.mock.calls.length).toBe(1);
@@ -101,7 +102,7 @@ describe('RequestService', () => {
       const spies = spy();
 
       const url = 'http://example.com/foo';
-      const response = { status: 200, body: 'foo' };
+      const response = { status: 200, data: 'foo' };
       expect(await requestService.patch(url)).toEqual(response);
 
       expect(spies.http.request.mock.calls.length).toBe(1);

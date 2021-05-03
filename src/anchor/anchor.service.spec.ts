@@ -10,7 +10,7 @@ describe('AnchorService', () => {
 
   function spy() {
     const storage = {
-      saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(() => { }),
+      saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(async () => { }),
     };
 
     return { storage };

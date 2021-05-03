@@ -1,7 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { WINSTON } from '../constants';
 import winston from 'winston';
-import winstonRotateFile from 'winston-daily-rotate-file';
 import moment from 'moment';
 import util from 'util';
 import { ConfigService } from '../config/config.service';
@@ -44,7 +43,7 @@ export class LoggerService {
             ...[winston.format.colorize()],
             ...formats,
           ),
-        })
+        }),
       ],
     });
   }

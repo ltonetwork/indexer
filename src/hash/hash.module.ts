@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { hashProviders } from './hash.providers';
 import { HashController } from './hash.controller';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
@@ -11,12 +10,7 @@ import { AuthModule } from '../auth/auth.module';
 export const HashModuleConfig = {
   imports: [LoggerModule, ConfigModule, NodeModule, StorageModule, EncoderModule, AuthModule],
   controllers: [HashController],
-  providers: [
-    ...hashProviders,
-  ],
-  exports: [
-    ...hashProviders,
-  ],
+  providers: [],
 };
 
 @Module(HashModuleConfig)
