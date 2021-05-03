@@ -15,7 +15,7 @@ export class AssociationsController {
 
   @Get('/:address')
   @ApiParam({ name: 'address' })
-  @ApiOperation({ title: 'Add association to the blockchain' })
+  @ApiOperation({ summary: 'Add association to the blockchain' })
   @ApiResponse({ status: 200 })
   @ApiResponse({
     status: 400,

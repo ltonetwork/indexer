@@ -21,16 +21,16 @@ describe('IndexMonitorService', () => {
     };
     const node = {
       getLastBlockHeight: jest.spyOn(nodeService, 'getLastBlockHeight')
-        .mockImplementation(() => 100),
+        .mockImplementation(async () => 100),
       getBlock: jest.spyOn(nodeService, 'getBlock')
-        .mockImplementation(() => ({ height: 100 })),
+        .mockImplementation(async () => ({ height: 100, transactions: [] })),
       getBlocks: jest.spyOn(nodeService, 'getBlocks')
-        .mockImplementation(() => ([{ height: 100 }])),
+        .mockImplementation(async () => ([{ height: 100, transactions: [] }])),
       getNodeStatus: jest.spyOn(nodeService, 'getNodeStatus'),
     };
     const storage = {
       getProcessingHeight: jest.spyOn(storageService, 'getProcessingHeight')
-        .mockImplementation(() => 99),
+        .mockImplementation(async () => 99),
       saveProcessingHeight: jest.spyOn(storageService, 'saveProcessingHeight')
         .mockImplementation(),
       saveAnchor: jest.spyOn(storageService, 'saveAnchor')
@@ -38,7 +38,7 @@ describe('IndexMonitorService', () => {
     };
     const indexer = {
       index: jest.spyOn(indexerService, 'index')
-        .mockImplementation(() => true),
+        .mockImplementation(async () => true),
     };
 
     return { monitor, node, storage, indexer };
@@ -78,24 +78,45 @@ describe('IndexMonitorService', () => {
     });
 
     test('should return false if processing height is lower then the node height', async () => {
+      const status = {
+        blockchainHeight: 101,
+        stateHeight: 1,
+        updatedTimestamp: 1549617037043,
+        updatedDate: '2019-02-08T09:10:37.043Z',
+      };
+
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve({blockchainHeight: 101}));
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       expect(await monitorService.isSynced()).toBeFalsy();
       expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
     });
 
     test('should return true if processing height is equal to the node height', async () => {
+      const status = {
+        blockchainHeight: 99,
+        stateHeight: 1,
+        updatedTimestamp: 1549617037043,
+        updatedDate: '2019-02-08T09:10:37.043Z',
+      };
+
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve({blockchainHeight: 99}));
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       expect(await monitorService.isSynced()).toBeTruthy();
       expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
     });
 
     test('should return true if processing height is higher then the node height', async () => {
+      const status = {
+        blockchainHeight: 98,
+        stateHeight: 1,
+        updatedTimestamp: 1549617037043,
+        updatedDate: '2019-02-08T09:10:37.043Z',
+      };
+
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve({blockchainHeight: 98}));
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       expect(await monitorService.isSynced()).toBeTruthy();
       expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
@@ -110,7 +131,7 @@ describe('IndexMonitorService', () => {
       await monitorService.checkNewBlocks();
 
       expect(spies.monitor.processBlock.mock.calls.length).toBe(1);
-      expect(spies.monitor.processBlock.mock.calls[0][0]).toEqual({ height: 100 });
+      expect(spies.monitor.processBlock.mock.calls[0][0]).toEqual({ height: 100, transactions: [] });
 
       expect(spies.node.getLastBlockHeight.mock.calls.length).toBe(1);
       expect(spies.node.getBlock.mock.calls.length).toBe(0);

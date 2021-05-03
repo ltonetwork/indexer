@@ -27,7 +27,7 @@ describe('InfoController', () => {
   describe('info', () => {
     test('should return application info', async () => {
       const result = { name: 'foo' };
-      jest.spyOn(infoService, 'info').mockImplementation(() => result);
+      jest.spyOn(infoService, 'info').mockImplementation(async () => result);
       expect(await infoController.info()).toBe(result);
     });
   });

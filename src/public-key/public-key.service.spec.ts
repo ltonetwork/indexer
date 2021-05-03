@@ -10,7 +10,7 @@ describe('PublicKeyService', () => {
 
   function spy() {
     const storage = {
-      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation(() => { }),
+      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation(async () => { }),
     };
 
     return { storage };

@@ -14,7 +14,7 @@ export class IdentityController {
   ) { }
 
   @Get(':address')
-  @ApiOperation({ title: 'Get a DID document' })
+  @ApiOperation({ summary: 'Get a DID document' })
   @ApiParam({ name: 'address', description: 'DID url or network address' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid did url given' })
@@ -43,7 +43,7 @@ export class IdentityController {
   }
 
   @Get(':address/derived/:secret')
-  @ApiOperation({ title: 'Get a DID document for a derived identity' })
+  @ApiOperation({ summary: 'Get a DID document for a derived identity' })
   @ApiParam({ name: 'address', description: 'DID url or network address' })
   @ApiParam({ name: 'secret', description: 'Base58 encoded unique (random) value' })
   @ApiResponse({ status: 200 })

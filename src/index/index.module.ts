@@ -6,9 +6,10 @@ import { ConfigModule } from '../config/config.module';
 import { NodeModule } from '../node/node.module';
 import { StorageModule } from '../storage/storage.module';
 import { EncoderModule } from '../encoder/encoder.module';
+import { LoggerModule } from '../logger/logger.module';
 
 export const IndexModuleConfig = {
-  imports: [EmitterModule, ConfigModule, EncoderModule, NodeModule, StorageModule],
+  imports: [EmitterModule, ConfigModule, EncoderModule, NodeModule, StorageModule, LoggerModule],
   providers: [IndexMonitorService, IndexService],
   exports: [IndexMonitorService],
 };

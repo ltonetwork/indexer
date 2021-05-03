@@ -7,9 +7,10 @@ import { ConfigModule } from '../config/config.module';
 import { NodeModule } from '../node/node.module';
 import { TransactionListenerService } from './transaction-listener.service';
 import { EmitterModule } from '../emitter/emitter.module';
+import { StorageModule } from '../storage/storage.module';
 
 export const TransactionModuleConfig = {
-  imports: [LoggerModule, ConfigModule, NodeModule, EmitterModule],
+  imports: [LoggerModule, ConfigModule, NodeModule, EmitterModule, StorageModule],
   controllers: [TransactionController],
   providers: [
     TransactionService,

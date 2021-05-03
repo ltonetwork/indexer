@@ -11,12 +11,24 @@ describe('HashController', () => {
   let configService: ConfigService;
   let app: INestApplication;
 
+  const chainpoint = {
+    '@context': 'https://w3id.org/chainpoint/v2',
+    'type': 'ChainpointSHA256v2',
+    'targetHash': 'bdf8c9bdf076d6aff0292a1c9448691d2ae283f2ce41b045355e2c8cb8e85ef2',
+    'anchors': [
+      {
+        type: 'LTO',
+        sourceId: '3JzVxKUyREwKAVYoEUTeUTv9xQh17TqAjtR',
+      },
+    ],
+  };
+
   function spy() {
     const hash = {
       anchor: jest.spyOn(nodeService, 'anchor')
-        .mockImplementation(() => ({ type: 'ChainpointSHA256v2' })),
+        .mockImplementation(async () => chainpoint),
       getTransactionByHash: jest.spyOn(nodeService, 'getTransactionByHash')
-        .mockImplementation(() => ({ type: 'ChainpointSHA256v2' })),
+        .mockImplementation(async () => chainpoint),
     };
 
     return { hash };
@@ -46,7 +58,7 @@ describe('HashController', () => {
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint: { type: 'ChainpointSHA256v2' } });
+      expect(res.body).toEqual({ chainpoint });
 
       expect(spies.hash.anchor.mock.calls.length).toBe(1);
       expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
@@ -66,7 +78,7 @@ describe('HashController', () => {
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint: { type: 'ChainpointSHA256v2' } });
+      expect(res.body).toEqual({ chainpoint });
 
       expect(spies.hash.anchor.mock.calls.length).toBe(1);
       expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
@@ -108,7 +120,7 @@ describe('HashController', () => {
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint: { type: 'ChainpointSHA256v2' } });
+      expect(res.body).toEqual({ chainpoint });
 
       expect(spies.hash.getTransactionByHash.mock.calls.length).toBe(1);
       expect(spies.hash.getTransactionByHash.mock.calls[0][0]).toBe(hash);
@@ -127,7 +139,7 @@ describe('HashController', () => {
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint: { type: 'ChainpointSHA256v2' } });
+      expect(res.body).toEqual({ chainpoint });
 
       expect(spies.hash.getTransactionByHash.mock.calls.length).toBe(1);
       expect(spies.hash.getTransactionByHash.mock.calls[0][0]).toBe(hash);

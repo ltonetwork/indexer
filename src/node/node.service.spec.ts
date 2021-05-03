@@ -3,6 +3,7 @@ import { NodeModuleConfig } from './node.module';
 import { NodeService } from './node.service';
 import { NodeApiService } from './node-api.service';
 import { StorageService } from '../storage/storage.service';
+import { AxiosResponse } from 'axios';
 
 describe('NodeService', () => {
   let module: TestingModule;
@@ -26,7 +27,7 @@ describe('NodeService', () => {
 
     const storage = {
       getAnchor: jest.spyOn(storageService, 'getAnchor')
-        .mockImplementation(() => fakeTransaction),
+        .mockImplementation(() => Promise.resolve(fakeTransaction)),
     };
 
     const api = {
@@ -59,7 +60,7 @@ describe('NodeService', () => {
     test('should get the node wallet address', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: ['fake_address'] };
+      const response = { status: 200, data: ['fake_address'] } as AxiosResponse;
       spies.api.getNodeAddresses.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getNodeWallet()).toBe(response.data[0]);
@@ -71,7 +72,10 @@ describe('NodeService', () => {
     test('should get the unconfirmed anchor', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: [{ id: 'fake_id', type: 12, data: [{ value: 'base64:fake_hash' }] }] };
+      const response = {
+        status: 200,
+        data: [{ id: 'fake_id', type: 12, data: [{ value: 'base64:fake_hash' }] }],
+      } as AxiosResponse;
       spies.api.getUnconfirmedTransactions.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getUnconfirmedAnchor('fake_hash')).toBe(response.data[0].id);
@@ -83,7 +87,7 @@ describe('NodeService', () => {
     test('should get last block height', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { height: 1 } };
+      const response = { status: 200, data: { height: 1 } } as AxiosResponse;
       spies.api.getLastBlock.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getLastBlockHeight()).toBe(response.data.height);
@@ -95,7 +99,7 @@ describe('NodeService', () => {
     test('should get block by id', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { id: 'fake_id' } };
+      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
       spies.api.getBlock.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getBlock('fake_id')).toBe(response.data);
@@ -108,21 +112,21 @@ describe('NodeService', () => {
       const spies = spy();
 
       const responses = [
-        { status: 200, data: [{ height: 1 }, { height: 100 }] },
-        { status: 200, data: [{ height: 101 }, { height: 200 }] },
-        { status: 200, data: [{ height: 201 }, { height: 300 }] },
-        { status: 200, data: [{ height: 301 }, { height: 400 }] },
-        { status: 200, data: [{ height: 401 }, { height: 500 }] },
-        { status: 200, data: [{ height: 501 }, { height: 555 }] },
+        { status: 200, data: [{ height: 1 }, { height: 100 }] } as AxiosResponse,
+        { status: 200, data: [{ height: 101 }, { height: 200 }] } as AxiosResponse,
+        { status: 200, data: [{ height: 201 }, { height: 300 }] } as AxiosResponse,
+        { status: 200, data: [{ height: 301 }, { height: 400 }] } as AxiosResponse,
+        { status: 200, data: [{ height: 401 }, { height: 500 }] } as AxiosResponse,
+        { status: 200, data: [{ height: 501 }, { height: 555 }] } as AxiosResponse,
       ];
 
       spies.api.getBlocks
-        .mockImplementationOnce(() => responses[0])
-        .mockImplementationOnce(() => responses[1])
-        .mockImplementationOnce(() => responses[2])
-        .mockImplementationOnce(() => responses[3])
-        .mockImplementationOnce(() => responses[4])
-        .mockImplementationOnce(() => responses[5]);
+        .mockImplementationOnce(() => Promise.resolve(responses[0]))
+        .mockImplementationOnce(() => Promise.resolve(responses[1]))
+        .mockImplementationOnce(() => Promise.resolve(responses[2]))
+        .mockImplementationOnce(() => Promise.resolve(responses[3]))
+        .mockImplementationOnce(() => Promise.resolve(responses[4]))
+        .mockImplementationOnce(() => Promise.resolve(responses[5]));
 
       expect(await nodeService.getBlocks(1, 555)).toEqual([
         { height: 1 }, { height: 100 },
@@ -142,7 +146,7 @@ describe('NodeService', () => {
     test('should create anchor transaction', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { id: 'fake_id' } };
+      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
       spies.api.sendTransaction.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.createAnchorTransaction('fake_sender', 'fake_hash')).toEqual('fake_id');
@@ -153,9 +157,9 @@ describe('NodeService', () => {
   describe('anchor()', () => {
     test('should anchor hash with given encoding', async () => {
       const spies = spy();
-      spies.node.getNodeWallet.mockImplementation(() => 'fake_wallet');
-      spies.node.createAnchorTransaction.mockImplementation(() => 'fake_transaction');
-      spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
+      spies.node.getNodeWallet.mockImplementation(() => Promise.resolve('fake_wallet'));
+      spies.node.createAnchorTransaction.mockImplementation(() => Promise.resolve('fake_transaction'));
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => Promise.resolve('fake_transaction'));
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const encoding = 'hex';
@@ -183,7 +187,7 @@ describe('NodeService', () => {
   describe('getTransactionByHash()', () => {
     test('should get transaction by hash', async () => {
       const spies = spy();
-      spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => Promise.resolve('fake_transaction'));
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const chainpoint = {
@@ -214,9 +218,9 @@ describe('NodeService', () => {
 
     test('should get transaction by hash by looking in unconfirmed transactions', async () => {
       const spies = spy();
-      spies.node.getUnconfirmedAnchor.mockImplementation(() => 'fake_transaction');
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => Promise.resolve('fake_transaction'));
 
-      spies.storage.getAnchor.mockImplementation(() => { return {}; });
+      spies.storage.getAnchor.mockImplementation(() => Promise.resolve({}));
 
       const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const chainpoint = {
@@ -249,11 +253,12 @@ describe('NodeService', () => {
           blockchainHeight: 1,
           stateHeight: 1,
           updatedTimestamp: 1549617037043,
-          updatedDate: "2019-02-08T09:10:37.043Z"
-        }
+          updatedDate: '2019-02-08T09:10:37.043Z',
+        },
       };
 
-      spies.api.getNodeStatus.mockImplementation(() =>  Promise.resolve({ data: expectData }));
+      const response = { status: 200, data: expectData } as AxiosResponse;
+      spies.api.getNodeStatus.mockImplementation(() =>  Promise.resolve(response));
 
       expect(await nodeService.getNodeStatus()).toEqual(expectData);
     });
@@ -262,16 +267,15 @@ describe('NodeService', () => {
   describe('isNodeHealthy()', () => {
     it('should return true when the node is healthy', async () => {
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>  Promise.resolve({ blockchainHeight: 1 }));
+      const status = {
+        blockchainHeight: 1,
+        stateHeight: 1,
+        updatedTimestamp: 1549617037043,
+        updatedDate: '2019-02-08T09:10:37.043Z',
+      };
+      spies.node.getNodeStatus.mockImplementation(() =>  Promise.resolve(status));
 
       expect(await nodeService.isNodeHealthy()).toBeTruthy();
-    });
-
-    it('should return true when the node is healthy', async () => {
-      const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>  Promise.resolve({}));
-
-      expect(await nodeService.isNodeHealthy()).toBeFalsy();
     });
 
     it('should return false when the node is not healthy', async () => {
@@ -284,15 +288,20 @@ describe('NodeService', () => {
 
   describe('getNodeInfo()', () => {
     it('should return the status data is received', async () => {
+      const status = {
+        blockchainHeight: 1,
+        stateHeight: 1,
+        updatedTimestamp: 1549617037043,
+        updatedDate: '2019-02-08T09:10:37.043Z',
+      };
+
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>  Promise.resolve({ blockchainHeight: 1 }));
-      spies.node.getNodeWallet.mockImplementation(() =>  'fake_address');
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
+      spies.node.getNodeWallet.mockImplementation(() => Promise.resolve('fake_address'));
 
       expect(await nodeService.getNodeInfo()).toEqual({
-        status: {
-          blockchainHeight: 1
-        },
-        address: 'fake_address'
+        status,
+        address: 'fake_address',
       });
     });
   });

@@ -13,7 +13,7 @@ export class HealthController {
   ) { }
 
   @Get()
-  @ApiOperation({ title: 'Health check' })
+  @ApiOperation({ summary: 'Health check' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 500, description: 'node is not healthy' })
   async check(@Req() req: Request, @Res() res: Response): Promise<Response> {
