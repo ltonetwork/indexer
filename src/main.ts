@@ -8,6 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import {LoggerService} from './logger/logger.service';
 import { IndexMonitorService } from './index/index-monitor.service';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function swagger(app: INestApplication) {
   const options = new DocumentBuilder()
@@ -16,14 +17,12 @@ async function swagger(app: INestApplication) {
     .addBearerAuth()
     .build();
 
-  options.schemes = ['http', 'https'];
-
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api-docs', app, document);
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   await swagger(app);
 
   app.use(cors({ exposedHeaders: ['X-Total'] }));

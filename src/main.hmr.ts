@@ -4,8 +4,8 @@ import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
 import { join } from 'path';
-import { renderFile } from 'ejs'
 import { IndexMonitorService } from './index/index-monitor.service';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 declare const module: any;
 
@@ -20,7 +20,7 @@ async function swagger(app: INestApplication) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   await swagger(app);
 
   const configService = app.get<ConfigService>(ConfigService);

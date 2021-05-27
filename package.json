@@ -70,6 +70,7 @@
     "passport-http-bearer": "^1.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.6.3",
+    "swagger-ui-express": "^4.1.6",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^3.10.0"
   },
