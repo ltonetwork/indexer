@@ -14,33 +14,25 @@ export class IdentityService {
   ) {
   }
 
-  async getIdentity(address: string): Promise<object|null> {
+  async resolve(did: string): Promise<object> {
+    const {address} = did.match(/^(?:did:lto:)?(?<address>\w+)(?::derived:(?<secret>\w+))?$/).groups;
+
     const publicKey = await this.storage.getPublicKey(address);
+    const id = did.replace(/^(?:did:lto:)?/, '');
 
-    if (!publicKey) {
-      return null;
-    }
-
-    return this.asDidDocument(address, publicKey);
+    return this.asDidDocument(id, address, publicKey);
   }
 
-  asDidDocument(address: string, publicKey: string): object {
-    return {
-      '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${address}`,
-      'verificationMethod': [{
-        id: `did:lto:${address}#key`,
-        type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${address}`,
-        publicKeyBase58: publicKey,
-      }],
-      'authentication': [
-        `did:lto:${address}#key`,
-      ],
-      'assertionMethod': [
-        `did:lto:${address}#key`,
-      ],
-    };
+  async getAddress(did: string): Promise<string> {
+    const {address, secret} = did.match(/(?:did:lto:)?(?<addr>\w+)(?::derived:(?<secret>\w+))?/).groups;
+
+    if (!secret) {
+      return address;
+    }
+
+    const publicKey = await this.storage.getPublicKey(address);
+
+    return deriveAddress({ public: publicKey }, secret, chainIdOf(address));
   }
 
   async getDerivedIdentity(address: string, secret: string): Promise<object> {
@@ -50,29 +42,25 @@ export class IdentityService {
       return null;
     }
 
-    const derivedAddress = deriveAddress({public: publicKey}, secret, chainIdOf(address));
-
-    return this.asDerivedDidDocument(address, secret, derivedAddress, publicKey);
+    return this.asDidDocument(`${address}:derived:${secret}`, address, publicKey);
   }
 
-  asDerivedDidDocument(controllerAddress: string, secret: string, derivedAddress: string, publicKey: string): object {
+  asDidDocument(id: string, address: string, publicKey: string): object {
     return {
       '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${controllerAddress}/derived/${secret}`,
-      'alsoKnownAs': [
-        `did:lto:${derivedAddress}`,
-      ],
+      'id': `did:lto:${id}`,
       'verificationMethod': [{
-        id: `did:lto:${controllerAddress}#key`,
+        id: `did:lto:${address}#key`,
         type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${controllerAddress}`,
+        controller: `did:lto:${address}`,
         publicKeyBase58: publicKey,
+        blockchainAccountId: `${address}@lto:${chainIdOf(address)}`,
       }],
       'authentication': [
-        `did:lto:${controllerAddress}#key`,
+        `did:lto:${address}#key`,
       ],
       'assertionMethod': [
-        `did:lto:${controllerAddress}#key`,
+        `did:lto:${address}#key`,
       ],
     };
   }
