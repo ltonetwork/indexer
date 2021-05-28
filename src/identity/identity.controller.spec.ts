@@ -53,6 +53,7 @@ describe('DidController', () => {
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${address}`,
           publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
+          blockchainAccountId: `${address}@lto:L`,
         }],
         'authentication': [
           `did:lto:${address}#key`,
