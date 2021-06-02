@@ -46,6 +46,16 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
   }
 
+  // @todo check if correct
+  getVerificationMethod(address: string): Promise<any> {
+    return this.storage.getObject(`lto:verification:${address}`);
+  }
+
+  // @todo check if correct
+  saveVerificationMethod(address: string, verificationMethod: object) {
+    return this.storage.addObject(`lto:verification:${address}`, verificationMethod);
+  }
+
   async saveAssociation(transaction: Transaction) {
     await this.storage.sadd(`lto:assoc:${transaction.sender}:childs`, transaction.party);
     await this.storage.sadd(`lto:assoc:${transaction.party}:parents`, transaction.sender);
@@ -116,7 +126,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     let height;
     try {
       height = await this.storage.getValue(`lto:processing-height`);
-    } catch (e) {}
+    } catch (e) { }
     return height ? Number(height) : null;
   }
 
