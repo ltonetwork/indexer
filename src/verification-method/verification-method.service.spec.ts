@@ -29,23 +29,28 @@ describe('VerificationMethodService', () => {
   });
 
   describe('index', () => {
-    // @todo: make tests for the bitwise operations
-    test('should process the transaction', async () => {
-      const spies = spy();
+    let transaction;
 
-      const transaction = {
+    beforeEach(() => {
+      transaction = {
         id: 'fake_transaction',
         type: 1,
         sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-        associationType: 0x010007 // authentication, assertion and key agreement
+        recipient: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+        associationType: 0x0107
       };
+    });
+
+    test('should process the transaction', async () => {
+      const spies = spy();
+
       await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(1);
       expect(spies.storage.saveVerificationMethod.mock.calls[0][0])
         .toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
       expect(spies.storage.saveVerificationMethod.mock.calls[0][1])
-        .toBe({
+        .toStrictEqual({
           authentication: [
             "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
           ],
@@ -56,6 +61,60 @@ describe('VerificationMethodService', () => {
             "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
           ]
         });
+    });
+
+    test('should not index if recipient is unknown', async () => {
+      const spies = spy();
+
+      transaction.recipient = null;
+
+      await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+      expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(0);
+    });
+
+    describe('verification methods', () => {
+      test('should index authentication and assertionMethod', async () => {
+        const spies = spy();
+
+        transaction.associationType = 0x0103;
+
+        await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+        expect(spies.storage.saveVerificationMethod.mock.calls[0][1])
+        .toStrictEqual({
+          authentication: [
+            "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+          ],
+          assertionMethod: [
+            "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+          ]
+        });
+      });
+
+      test('should index authentication, assertionMethod, keyAgreement and capabilityInvocation', async () => {
+        const spies = spy();
+
+        transaction.associationType = 0x010f;
+
+        await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+        expect(spies.storage.saveVerificationMethod.mock.calls[0][1])
+        .toStrictEqual({
+          authentication: [
+            "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+          ],
+          assertionMethod: [
+            "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+          ],
+          keyAgreement: [
+            "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+          ],
+          capabilityInvocation: [
+            "did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL#key"
+          ]
+        });
+      });
     });
   });
 });

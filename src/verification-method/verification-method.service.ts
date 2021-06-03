@@ -2,9 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
+import { METHODS_MAP } from './const/methods.const';
+import { VerificationMethods } from './interfaces/methods.interface';
 
 @Injectable()
 export class VerificationMethodService {
+
+  private readonly methodsMap = METHODS_MAP;
+
   constructor(
     private readonly logger: LoggerService,
     private readonly storage: StorageService,
@@ -13,7 +18,12 @@ export class VerificationMethodService {
 
   async index(index: IndexDocumentType) {
     const { transaction } = index;
-    const { sender, associationType } = transaction;
+    const { id, sender, associationType, recipient } = transaction;
+
+    if (!recipient) {
+      this.logger.debug(`verificationMethod: transaction ${id} didn't have a recipient address, skipped indexing`);
+      return;
+    }
 
     const verificationMethod = this.getVerificationFromAssociation(sender, associationType);
     
@@ -21,19 +31,16 @@ export class VerificationMethodService {
     await this.storage.saveVerificationMethod(sender, verificationMethod);
   }
 
-  private getVerificationFromAssociation(sender: string, associationType: number) {
-    // @todo: use proper types
-    let verification: any = {};
+  private getVerificationFromAssociation(sender: string, associationType: number): VerificationMethods {
+    let result: VerificationMethods = {};
     const verificationValue = `did:lto:${sender}#key`;
 
-    // @todo: make the calculations as they should be (bitwise operations)
-    // example
-    if (associationType === 0x010007) {
-      verification.authentication = verificationValue;
-      verification.assertionMethod = verificationValue;
-      verification.keyAgreement = verificationValue;
+    for (const key in this.methodsMap) {
+      if ((associationType | this.methodsMap[key]) == associationType) {
+        result[key] = [verificationValue];
+      }
     }
 
-    return verification;
+    return result;
   }
 }
