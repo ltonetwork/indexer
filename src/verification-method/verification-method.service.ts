@@ -2,13 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
-import { METHODS_MAP } from './const/methods.const';
-import { VerificationMethods } from './interfaces/methods.interface';
+import { VerificationMethod } from './model/verification-method.model';
 
 @Injectable()
 export class VerificationMethodService {
-
-  private readonly methodsMap = METHODS_MAP;
 
   constructor(
     private readonly logger: LoggerService,
@@ -18,29 +15,27 @@ export class VerificationMethodService {
 
   async index(index: IndexDocumentType) {
     const { transaction } = index;
-    const { id, sender, associationType, recipient } = transaction;
+    const { id, sender, recipient } = transaction;
 
     if (!recipient) {
       this.logger.debug(`verificationMethod: transaction ${id} didn't have a recipient address, skipped indexing`);
       return;
     }
 
-    const verificationMethod = this.getVerificationFromAssociation(sender, associationType);
-    
-    this.logger.debug(`verificationMethod: address ${sender} has verification method ${verificationMethod}`);
-    await this.storage.saveVerificationMethod(sender, verificationMethod);
+    const verificationMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient);
+    const asString = JSON.stringify(verificationMethod.json());
+
+    this.logger.debug(`verificationMethod: address ${sender} has verification method ${asString}`);
+    await this.storage.saveVerificationMethod(sender, asString);
   }
 
-  private getVerificationFromAssociation(sender: string, associationType: number): VerificationMethods {
-    let result: VerificationMethods = {};
-    const verificationValue = `did:lto:${sender}#key`;
+  async getMethodsFor(address: string): Promise<VerificationMethod[]> {
+    const verificationMethods = await this.storage.getVerificationMethods(address);
 
-    for (const key in this.methodsMap) {
-      if ((associationType | this.methodsMap[key]) == associationType) {
-        result[key] = [verificationValue];
-      }
-    }
+    return verificationMethods.map(each => {
+      const asJson = JSON.parse(each);
 
-    return result;
+      return new VerificationMethod(asJson.relationships, asJson.sender, asJson.recipient);
+    });
   }
 }

@@ -16,7 +16,6 @@ export class VerificationMethodListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    // @todo check if correct
     if (!this.config.isProcessorEnabled('verification-method')) {
       this.logger.debug(`transaction-listener: Not processing verification method`);
       return;
@@ -24,7 +23,6 @@ export class VerificationMethodListenerService implements OnModuleInit {
     this.onIndexTransaction();
   }
   async onIndexTransaction() {
-    // @todo check if correct
     this.indexEmitter.on(
       IndexEvent.IndexTransaction,
       (val: IndexEventsReturnType['IndexTransaction']) => this.verificationMethodService.index(val),

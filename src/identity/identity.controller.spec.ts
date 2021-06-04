@@ -15,6 +15,8 @@ describe('DidController', () => {
     const identity = {
       getTransactionByDid: jest.spyOn(storageService, 'getPublicKey')
         .mockReturnValue(Promise.resolve('AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG')),
+      getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods')
+        .mockReturnValue(Promise.resolve([`{"sender":"3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL","recipient":"3NCCqjZvtvx6ymbYzfEy7xrh7TEbPYGwxWN","relationships":259}`]))
     };
 
     return { identity };
@@ -37,8 +39,9 @@ describe('DidController', () => {
     test('should get a identity document for the url', async () => {
       const spies = spy();
 
-      const address = '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL';
-      const identityUrl = `did:lto:${address}`;
+      const sender = '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL';
+      const recipient = '3NCCqjZvtvx6ymbYzfEy7xrh7TEbPYGwxWN';
+      const identityUrl = `did:lto:${sender}`;
       const res = await request(app.getHttpServer())
         .get(`/identities/${identityUrl}`)
         .send();
@@ -47,24 +50,32 @@ describe('DidController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${address}`,
+        'id': `did:lto:${sender}`,
         'verificationMethod': [{
-          id: `did:lto:${address}#key`,
+          id: `did:lto:${sender}#key`,
           type: 'Ed25519VerificationKey2018',
-          controller: `did:lto:${address}`,
+          controller: `did:lto:${sender}`,
           publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
-          blockchainAccountId: `${address}@lto:L`,
+          blockchainAccountId: `${sender}@lto:L`,
+        }, {
+          id: `did:lto:${recipient}#key`,
+          type: 'Ed25519VerificationKey2018',
+          controller: `did:lto:${recipient}`,
+          publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
+          blockchainAccountId: `${recipient}@lto:T`,
         }],
         'authentication': [
-          `did:lto:${address}#key`,
+          `did:lto:${recipient}#key`
         ],
         'assertionMethod': [
-          `did:lto:${address}#key`,
+          `did:lto:${recipient}#key`
         ],
       });
 
       expect(spies.identity.getTransactionByDid.mock.calls.length).toBe(1);
-      expect(spies.identity.getTransactionByDid.mock.calls[0][0]).toBe(address);
+      expect(spies.identity.getTransactionByDid.mock.calls[0][0]).toBe(sender);
+      expect(spies.identity.getVerificationMethods.mock.calls.length).toBe(1);
+      expect(spies.identity.getVerificationMethods.mock.calls[0][0]).toBe(sender);
     });
   });
 });

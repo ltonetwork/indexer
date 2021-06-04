@@ -3,6 +3,8 @@ import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { chainIdOf, deriveAddress } from '@lto-network/lto-crypto';
+import { VerificationMethodService } from '../verification-method/verification-method.service';
+import { DIDDocument } from './interfaces/identity.interface';
 
 @Injectable()
 export class IdentityService {
@@ -11,16 +13,17 @@ export class IdentityService {
     readonly logger: LoggerService,
     readonly config: ConfigService,
     readonly storage: StorageService,
+    readonly verificationMethodService: VerificationMethodService
   ) {
   }
 
-  async resolve(did: string): Promise<object> {
+  async resolve(did: string): Promise<DIDDocument> {
     const {address} = did.match(/^(?:did:lto:)?(?<address>\w+)(?::derived:(?<secret>\w+))?$/).groups;
 
     const publicKey = await this.storage.getPublicKey(address);
     const id = did.replace(/^(?:did:lto:)?/, '');
 
-    return this.asDidDocument(id, address, publicKey);
+    return this.asDidDocument(id, publicKey);;
   }
 
   async getAddress(did: string): Promise<string> {
@@ -35,34 +38,42 @@ export class IdentityService {
     return deriveAddress({ public: publicKey }, secret, chainIdOf(address));
   }
 
-  async getDerivedIdentity(address: string, secret: string): Promise<object> {
+  async getDerivedIdentity(address: string, secret: string): Promise<DIDDocument> {
     const publicKey = await this.storage.getPublicKey(address);
 
     if (!publicKey) {
       return null;
     }
 
-    return this.asDidDocument(`${address}:derived:${secret}`, address, publicKey);
+    return this.asDidDocument(`${address}:derived:${secret}`, publicKey);
   }
 
-  asDidDocument(id: string, address: string, publicKey: string): object {
-    return {
+  async asDidDocument(id: string, publicKey: string): Promise<DIDDocument> {
+    const verificationMethods = await this.verificationMethodService.getMethodsFor(id);
+    const didDocument: DIDDocument = {
       '@context': 'https://www.w3.org/ns/did/v1',
-      'id': `did:lto:${id}`,
-      // @todo extend with verification method service (this is only basic, need to add additional methods)
-      'verificationMethod': [{
-        id: `did:lto:${address}#key`,
+      id: `did:lto:${id}`,
+      verificationMethod: [{
+        id: `did:lto:${id}#key`,
         type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${address}`,
+        controller: `did:lto:${id}`,
         publicKeyBase58: publicKey,
-        blockchainAccountId: `${address}@lto:${chainIdOf(address)}`,
-      }],
-      'authentication': [
-        `did:lto:${address}#key`,
-      ],
-      'assertionMethod': [
-        `did:lto:${address}#key`,
-      ],
+        blockchainAccountId: `${id}@lto:${chainIdOf(id)}`,
+      }]
     };
+
+    for (const verificationMethod of verificationMethods) {
+      const didVerificationMethod = verificationMethod.asDidMethod(publicKey);
+      didDocument.verificationMethod.push(didVerificationMethod);
+      const didReference = [didVerificationMethod.id];
+
+      if (verificationMethod.isAuthentication()) didDocument.authentication = didReference;
+      if (verificationMethod.isAssertionMethod()) didDocument.assertionMethod = didReference;
+      if (verificationMethod.isKeyAgreement()) didDocument.keyAgreement = didReference;
+      if (verificationMethod.isCapabilityInvocation()) didDocument.capabilityInvocation = didReference;
+      if (verificationMethod.isCapabilityDelegation()) didDocument.capabilityDelegation = didReference;
+    }
+
+    return didDocument;
   }
 }

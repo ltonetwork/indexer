@@ -46,14 +46,12 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
   }
 
-  // @todo check if correct
-  getVerificationMethod(address: string): Promise<any> {
-    return this.storage.getObject(`lto:verification:${address}`);
+  getVerificationMethods(address: string): Promise<string[]> {
+    return this.storage.getArray(`lto:verification:${address}`);
   }
 
-  // @todo check if correct
-  saveVerificationMethod(address: string, verificationMethod: object) {
-    return this.storage.addObject(`lto:verification:${address}`, verificationMethod);
+  saveVerificationMethod(address: string, verificationMethod: string): Promise<void> {
+    return this.storage.sadd(`lto:verification:${address}`, verificationMethod);
   }
 
   async saveAssociation(transaction: Transaction) {
