@@ -1,4 +1,10 @@
-import { DIDVerificationMethod } from "verification-method/model/verification-method.model";
+export interface DIDVerificationMethod {
+  id: string;
+  type: string;
+  controller: string;
+  publicKeyBase58: string;
+  blockchainAccountId: string;
+};
 
 export interface DIDDocument {
   '@context': string;
@@ -9,4 +15,4 @@ export interface DIDDocument {
   keyAgreement?: string[];
   capabilityInvocation?: string[];
   capabilityDelegation?: string[];
-}
+};

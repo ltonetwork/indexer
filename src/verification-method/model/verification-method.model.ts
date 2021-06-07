@@ -1,12 +1,5 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
-
-export interface DIDVerificationMethod {
-    id: string;
-    type: string;
-    controller: string;
-    publicKeyBase58: string;
-    blockchainAccountId: string;
-}
+import { DIDVerificationMethod } from "identity/interfaces/identity.interface";
 
 export class VerificationMethod {
     private relationships: number;

@@ -23,7 +23,7 @@ export class IdentityService {
     const publicKey = await this.storage.getPublicKey(address);
     const id = did.replace(/^(?:did:lto:)?/, '');
 
-    return this.asDidDocument(id, publicKey);;
+    return this.asDidDocument(id, address, publicKey);;
   }
 
   async getAddress(did: string): Promise<string> {
@@ -45,33 +45,65 @@ export class IdentityService {
       return null;
     }
 
-    return this.asDidDocument(`${address}:derived:${secret}`, publicKey);
+    return this.asDidDocument(`${address}:derived:${secret}`, address, publicKey);
   }
 
-  async asDidDocument(id: string, publicKey: string): Promise<DIDDocument> {
+  async asDidDocument(id: string, address: string, publicKey: string): Promise<DIDDocument> {
     const verificationMethods = await this.verificationMethodService.getMethodsFor(id);
     const didDocument: DIDDocument = {
       '@context': 'https://www.w3.org/ns/did/v1',
       id: `did:lto:${id}`,
       verificationMethod: [{
-        id: `did:lto:${id}#key`,
+        id: `did:lto:${address}#key`,
         type: 'Ed25519VerificationKey2018',
-        controller: `did:lto:${id}`,
+        controller: `did:lto:${address}`,
         publicKeyBase58: publicKey,
-        blockchainAccountId: `${id}@lto:${chainIdOf(id)}`,
-      }]
+        blockchainAccountId: `${address}@lto:${chainIdOf(address)}`,
+      }],
+      authentication: [
+        `did:lto:${address}#key`
+      ],
+      assertionMethod: [
+        `did:lto:${address}#key`
+      ],
+      capabilityInvocation: [
+        `did:lto:${address}#key`
+      ]
     };
 
     for (const verificationMethod of verificationMethods) {
       const didVerificationMethod = verificationMethod.asDidMethod(publicKey);
       didDocument.verificationMethod.push(didVerificationMethod);
-      const didReference = [didVerificationMethod.id];
 
-      if (verificationMethod.isAuthentication()) didDocument.authentication = didReference;
-      if (verificationMethod.isAssertionMethod()) didDocument.assertionMethod = didReference;
-      if (verificationMethod.isKeyAgreement()) didDocument.keyAgreement = didReference;
-      if (verificationMethod.isCapabilityInvocation()) didDocument.capabilityInvocation = didReference;
-      if (verificationMethod.isCapabilityDelegation()) didDocument.capabilityDelegation = didReference;
+      if (verificationMethod.isAuthentication()) {
+        didDocument.authentication = didDocument.authentication
+        ? [...didDocument.authentication, didVerificationMethod.id]
+        : [didVerificationMethod.id];
+      }
+
+      if (verificationMethod.isAssertionMethod()) {
+        didDocument.assertionMethod = didDocument.assertionMethod
+        ? [...didDocument.assertionMethod, didVerificationMethod.id]
+        : [didVerificationMethod.id];
+      }
+
+      if (verificationMethod.isKeyAgreement()) {
+        didDocument.keyAgreement = didDocument.keyAgreement
+        ? [...didDocument.keyAgreement, didVerificationMethod.id]
+        : [didVerificationMethod.id];
+      }
+
+      if (verificationMethod.isCapabilityInvocation()) {
+        didDocument.capabilityInvocation = didDocument.capabilityInvocation
+        ? [...didDocument.capabilityInvocation, didVerificationMethod.id]
+        : [didVerificationMethod.id];
+      }
+
+      if (verificationMethod.isCapabilityDelegation()) {
+        didDocument.capabilityDelegation = didDocument.capabilityDelegation
+        ? [...didDocument.capabilityDelegation, didVerificationMethod.id]
+        : [didVerificationMethod.id];
+      }
     }
 
     return didDocument;

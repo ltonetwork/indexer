@@ -35,7 +35,7 @@ export class IdentityController {
         return res.status(404).json({ error: 'notFound' });
       } else {
         this.logger.error(`identity-controller: failed to get DID document '${e}'`, { stack: e.stack });
-        return res.status(500).send(`failed to get DID document '${e}'`);
+        return res.status(500).json({ error: `failed to get DID document '${e}'` });
       }
     }
   }
