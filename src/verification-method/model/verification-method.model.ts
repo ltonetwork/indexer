@@ -1,10 +1,26 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
 import { DIDVerificationMethod } from "identity/interfaces/identity.interface";
 
+interface MethodMap {
+    authentication: number;
+    assertionMethod: number;
+    keyAgreement: number;
+    capabilityDelegation: number;
+    capabilityInvocation: number;
+}
+
 export class VerificationMethod {
     private relationships: number;
     private sender: string;
     private recipient: string;
+
+    private methodMap: MethodMap = {
+        authentication: 0x0101,
+        assertionMethod: 0x0102,
+        keyAgreement: 0x0104,
+        capabilityInvocation: 0x0108,
+        capabilityDelegation: 0x0110,
+    };
 
     constructor(relationships: number, sender: string, recipient: string) {
         this.sender = sender;
@@ -31,23 +47,23 @@ export class VerificationMethod {
     }
 
     public isAuthentication() {
-        const result = 0x0101 | this.relationships;
+        const result = this.methodMap.authentication | this.relationships;
         return result == this.relationships;
     }
     public isAssertionMethod() {
-        const result = 0x0102 | this.relationships;
+        const result = this.methodMap.assertionMethod | this.relationships;
         return result == this.relationships;
     }
     public isKeyAgreement() {
-        const result = 0x0104 | this.relationships;
+        const result = this.methodMap.keyAgreement | this.relationships;
         return result == this.relationships;
     }
     public isCapabilityInvocation() {
-        const result = 0x0108 | this.relationships;
+        const result = this.methodMap.capabilityInvocation | this.relationships;
         return result == this.relationships;
     }
     public isCapabilityDelegation() {
-        const result = 0x0110 | this.relationships;
+        const result = this.methodMap.capabilityDelegation | this.relationships;
         return result == this.relationships;
     }
 }
