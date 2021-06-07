@@ -8,6 +8,14 @@ describe('VerificationMethodService', () => {
   let verificationMethodService: VerificationMethodService;
   let storageService: StorageService;
 
+  const transaction = {
+    id: 'fake_transaction',
+    type: 1,
+    sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+    recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+    associationType: 0x0107
+  };
+
   function spy() {
     const storage = {
       saveVerificationMethod: jest.spyOn(storageService, 'saveVerificationMethod').mockImplementation(async () => { }),
@@ -29,18 +37,6 @@ describe('VerificationMethodService', () => {
   });
 
   describe('index', () => {
-    let transaction;
-
-    beforeEach(() => {
-      transaction = {
-        id: 'fake_transaction',
-        type: 1,
-        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-        recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
-        associationType: 0x0107
-      };
-    });
-
     test('should process the transaction', async () => {
       const spies = spy();
 
@@ -48,9 +44,9 @@ describe('VerificationMethodService', () => {
 
       expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(1);
       expect(spies.storage.saveVerificationMethod.mock.calls[0][0])
-        .toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+        .toBe(transaction.sender);
       expect(spies.storage.saveVerificationMethod.mock.calls[0][1])
-        .toBe(`{"sender":"3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL","recipient":"3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ","relationships":263}`)
+        .toBe(`{"sender":"${transaction.sender}","recipient":"${transaction.recipient}","relationships":${transaction.associationType}}`)
     });
 
     test('should not index if recipient is unknown', async () => {

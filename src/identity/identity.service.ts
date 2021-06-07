@@ -60,15 +60,6 @@ export class IdentityService {
         publicKeyBase58: publicKey,
         blockchainAccountId: `${address}@lto:${chainIdOf(address)}`,
       }],
-      authentication: [
-        `did:lto:${address}#key`
-      ],
-      assertionMethod: [
-        `did:lto:${address}#key`
-      ],
-      capabilityInvocation: [
-        `did:lto:${address}#key`
-      ]
     };
 
     for (const verificationMethod of verificationMethods) {
@@ -104,6 +95,12 @@ export class IdentityService {
         ? [...didDocument.capabilityDelegation, didVerificationMethod.id]
         : [didVerificationMethod.id];
       }
+    }
+
+    if (didDocument.verificationMethod.length == 1) {
+      didDocument.authentication = [ `did:lto:${address}#key` ];
+      didDocument.assertionMethod = [ `did:lto:${address}#key` ];
+      didDocument.capabilityInvocation = [ `did:lto:${address}#key` ];
     }
 
     return didDocument;
