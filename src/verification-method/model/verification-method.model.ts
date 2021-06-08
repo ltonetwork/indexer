@@ -1,6 +1,6 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
-import { DIDVerificationMethod } from "identity/interfaces/identity.interface";
-import { MethodMap } from "verification-method/enums/verification-method.enum";
+import { MethodMap } from "../enums/verification-method.enum";
+import { DIDVerificationMethod } from "../../identity/interfaces/identity.interface";
 
 export class VerificationMethod {
     private relationships: number;
