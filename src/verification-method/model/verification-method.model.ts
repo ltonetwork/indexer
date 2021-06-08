@@ -1,18 +1,18 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
 import { DIDVerificationMethod } from "identity/interfaces/identity.interface";
 
+export enum MethodMap {
+    authentication = 0x0101,
+    assertionMethod = 0x0101,
+    keyAgreement = 0x0104,
+    capabilityInvocation = 0x0108,
+    capabilityDelegation = 0x0110,
+};
+
 export class VerificationMethod {
     private relationships: number;
     private sender: string;
     private recipient: string;
-
-    private readonly methodMap = {
-        authentication: 0x0101,
-        assertionMethod: 0x0102,
-        keyAgreement: 0x0104,
-        capabilityInvocation: 0x0108,
-        capabilityDelegation: 0x0110,
-    };
 
     constructor(relationships: number, sender: string, recipient: string) {
         this.sender = sender;
@@ -39,23 +39,23 @@ export class VerificationMethod {
     }
 
     public isAuthentication() {
-        const result = this.methodMap.authentication | this.relationships;
+        const result = MethodMap.authentication | this.relationships;
         return result == this.relationships;
     }
     public isAssertionMethod() {
-        const result = this.methodMap.assertionMethod | this.relationships;
+        const result = MethodMap.assertionMethod | this.relationships;
         return result == this.relationships;
     }
     public isKeyAgreement() {
-        const result = this.methodMap.keyAgreement | this.relationships;
+        const result = MethodMap.keyAgreement | this.relationships;
         return result == this.relationships;
     }
     public isCapabilityInvocation() {
-        const result = this.methodMap.capabilityInvocation | this.relationships;
+        const result = MethodMap.capabilityInvocation | this.relationships;
         return result == this.relationships;
     }
     public isCapabilityDelegation() {
-        const result = this.methodMap.capabilityDelegation | this.relationships;
+        const result = MethodMap.capabilityDelegation | this.relationships;
         return result == this.relationships;
     }
 }
