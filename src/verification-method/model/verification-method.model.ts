@@ -1,20 +1,12 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
 import { DIDVerificationMethod } from "identity/interfaces/identity.interface";
 
-interface MethodMap {
-    authentication: number;
-    assertionMethod: number;
-    keyAgreement: number;
-    capabilityDelegation: number;
-    capabilityInvocation: number;
-}
-
 export class VerificationMethod {
     private relationships: number;
     private sender: string;
     private recipient: string;
 
-    private methodMap: MethodMap = {
+    private readonly methodMap = {
         authentication: 0x0101,
         assertionMethod: 0x0102,
         keyAgreement: 0x0104,
