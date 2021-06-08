@@ -49,7 +49,7 @@ export class IdentityService {
   }
 
   async asDidDocument(id: string, address: string, publicKey: string): Promise<DIDDocument> {
-    const verificationMethods = await this.verificationMethodService.getMethodsFor(id);
+    const verificationMethods = await this.verificationMethodService.getMethodsFor(address);
     const didDocument: DIDDocument = {
       '@context': 'https://www.w3.org/ns/did/v1',
       id: `did:lto:${id}`,

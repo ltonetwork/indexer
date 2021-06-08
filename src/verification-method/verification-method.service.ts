@@ -22,20 +22,19 @@ export class VerificationMethodService {
       return;
     }
 
-    const verificationMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient);
-    const asString = JSON.stringify(verificationMethod.json());
-
-    this.logger.debug(`verificationMethod: address ${sender} has verification method ${asString}`);
-    await this.storage.saveVerificationMethod(sender, asString);
+    const verificationMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient, Math.floor((+new Date()) / 1000));
+    
+    this.logger.debug(`verificationMethod: address ${sender} has verification method ${verificationMethod.asString()}`);
+    await this.storage.saveVerificationMethod(sender, verificationMethod);
+  }
+  
+  async getMethodsFor(address: string): Promise<VerificationMethod[]> {
+    return await this.storage.getVerificationMethods(address);
   }
 
-  async getMethodsFor(address: string): Promise<VerificationMethod[]> {
-    const verificationMethods = await this.storage.getVerificationMethods(address);
+  async revoke(verificationMethod: VerificationMethod): Promise<void> {
+    verificationMethod.revokedAt = Math.floor((+new Date()) / 1000);
 
-    return verificationMethods.map(each => {
-      const asJson = JSON.parse(each);
-
-      return new VerificationMethod(asJson.relationships, asJson.sender, asJson.recipient);
-    });
+    await this.storage.saveVerificationMethod(verificationMethod.sender, verificationMethod);
   }
 }

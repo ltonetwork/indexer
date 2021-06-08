@@ -7,6 +7,7 @@ import storageServices from './types';
 import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
+import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -46,12 +47,30 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
   }
 
-  getVerificationMethods(address: string): Promise<string[]> {
-    return this.storage.getArray(`lto:verification:${address}`);
+  async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
+    const result: VerificationMethod[] = [];
+    const methods = await this.storage.getObject(`lto:verification:${address}`);
+
+    for (const key in methods) {
+      const data: MethodObject = methods[key];
+
+      if (!data.revokedAt) {
+        const method = new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt);
+  
+        result.push(method);
+      };
+    }
+
+    return result;
   }
 
-  saveVerificationMethod(address: string, verificationMethod: string): Promise<void> {
-    return this.storage.sadd(`lto:verification:${address}`, verificationMethod);
+  async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
+    const data = await this.storage.getObject(`lto:verification:${address}`);
+    const newData = verificationMethod.json();
+
+    data[newData.recipient] = newData;
+
+    return this.storage.addObject(`lto:verification:${address}`, data);
   }
 
   async saveAssociation(transaction: Transaction) {

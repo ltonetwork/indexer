@@ -4,6 +4,7 @@ import { StorageModuleConfig } from './storage.module';
 import { StorageService } from './storage.service';
 import { ConfigService } from '../config/config.service';
 import { RedisStorageService } from './types/redis.storage.service';
+import { VerificationMethod } from '../verification-method/model/verification-method.model';
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -175,4 +176,81 @@ describe('StorageService', () => {
       expect(setValue.mock.calls[0][1]).toBe(String(height));
     });
   });
+
+  describe('verification methods', () => {
+    const mockMethod = { recipient: 'mock-recipient', relationships: 0x0101, sender: 'mock-sender', createdAt: 123456 };
+
+    describe('getVerificationMethods()', () => {
+      test('should return the verification methods from database', async () => {
+        const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+          return {
+            'mock-recipient': mockMethod
+          };
+        });
+  
+        const result = await storageService.getVerificationMethods('mock-sender');
+  
+        const mockVerificationMethod = new VerificationMethod(mockMethod.relationships, mockMethod.sender, mockMethod.recipient, mockMethod.createdAt);
+  
+        expect(getObject.mock.calls.length).toBe(1);
+        expect(getObject.mock.calls[0][0])
+          .toBe('lto:verification:mock-sender');
+        expect(result).toStrictEqual([mockVerificationMethod]);
+      });
+  
+      test('should skip revoked verification methods', async () => {
+        jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+          return {
+            'mock-recipient': { ...mockMethod, revokedAt: 123456 },
+          };
+        });
+  
+        const result = await storageService.getVerificationMethods('mock-sender');
+  
+        expect(result).toStrictEqual([]);
+      });
+    });
+  
+    describe('saveVerificationMethod()', () => {
+      test('should save a new verification method', async () => {
+        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
+        const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+          return {
+            'mock-recipient': mockMethod
+          };
+        });
+
+        const mockVerificationMethod = new VerificationMethod(mockMethod.relationships, mockMethod.sender, 'some-other-recipient', mockMethod.createdAt);
+
+        await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
+
+        expect(getObject.mock.calls.length).toBe(1);
+        expect(getObject.mock.calls[0][0])
+          .toBe('lto:verification:mock-sender');
+
+        expect(addObject.mock.calls.length).toBe(1);
+        expect(addObject.mock.calls[0][0])
+          .toBe('lto:verification:mock-sender');
+        expect(addObject.mock.calls[0][1])
+          .toStrictEqual({ 'mock-recipient': mockMethod, 'some-other-recipient': mockVerificationMethod.json() });
+      });
+  
+      test('should overwrite an existing verification method for the same sender', async () => {
+        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
+        jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+          return {
+            'mock-recipient': mockMethod
+          };
+        });
+
+        const mockVerificationMethod = new VerificationMethod(0x0107, mockMethod.sender, mockMethod.recipient, mockMethod.createdAt);
+
+        await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
+
+        expect(addObject.mock.calls[0][1])
+          .toStrictEqual({ 'mock-recipient': { ...mockMethod, relationships: 0x0107 } });
+      });
+    });
+  })
+
 });
