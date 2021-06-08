@@ -1,13 +1,6 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
 import { DIDVerificationMethod } from "identity/interfaces/identity.interface";
-
-export enum MethodMap {
-    authentication = 0x0101,
-    assertionMethod = 0x0101,
-    keyAgreement = 0x0104,
-    capabilityInvocation = 0x0108,
-    capabilityDelegation = 0x0110,
-};
+import { MethodMap } from "verification-method/enums/verification-method.enum";
 
 export class VerificationMethod {
     private relationships: number;
