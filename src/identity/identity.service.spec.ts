@@ -89,7 +89,7 @@ describe('IdentityService', () => {
       spies.verificationMethod.getMethodsFor = jest.spyOn(verificationMethodService, 'getMethodsFor').mockImplementation(async (address: string) => {
         const relationships = 0x0107; // authentication, assertion, key agreement
 
-        return [new VerificationMethod(relationships, address, recipient.address)];
+        return [new VerificationMethod(relationships, address, recipient.address, 123456)];
       });
 
       const did = await identityService.resolve(sender.address);
@@ -132,7 +132,7 @@ describe('IdentityService', () => {
         const relationships = 0x0107; // authentication, assertion, key agreement
         const secondRelationships = 0x0113; // authentication, assertion, capabilityDelegation
 
-        return [new VerificationMethod(relationships, address, recipient.address), new VerificationMethod(secondRelationships, address, secondRecipient.address)];
+        return [new VerificationMethod(relationships, address, recipient.address, 123456), new VerificationMethod(secondRelationships, address, secondRecipient.address, 123456)];
       });
 
       const did = await identityService.resolve(sender.address);
