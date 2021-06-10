@@ -7,6 +7,7 @@ import storageServices from './types';
 import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
+import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -44,6 +45,32 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   savePublicKey(address: string, publicKey: string) {
     return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
+  }
+
+  async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
+    const result: VerificationMethod[] = [];
+    const methods = await this.storage.getObject(`lto:verification:${address}`);
+
+    for (const key in methods) {
+      const data: MethodObject = methods[key];
+
+      if (!data.revokedAt) {
+        const method = new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt);
+  
+        result.push(method);
+      };
+    }
+
+    return result;
+  }
+
+  async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
+    const data = await this.storage.getObject(`lto:verification:${address}`);
+    const newData = verificationMethod.json();
+
+    data[newData.recipient] = newData;
+
+    return this.storage.addObject(`lto:verification:${address}`, data);
   }
 
   async saveAssociation(transaction: Transaction) {
@@ -116,7 +143,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     let height;
     try {
       height = await this.storage.getValue(`lto:processing-height`);
-    } catch (e) {}
+    } catch (e) { }
     return height ? Number(height) : null;
   }
 

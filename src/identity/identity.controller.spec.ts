@@ -2,22 +2,31 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { DidModuleConfig } from './identity.module';
-import { StorageService } from '../storage/storage.service';
+import { IdentityService } from './identity.service';
 import { ConfigService } from '../config/config.service';
+import { LoggerService } from '../logger/logger.service';
 
 describe('DidController', () => {
   let module: TestingModule;
-  let storageService: StorageService;
+  let loggerService: LoggerService;
+  let identityService: IdentityService;
   let configService: ConfigService;
   let app: INestApplication;
 
   function spy() {
     const identity = {
-      getTransactionByDid: jest.spyOn(storageService, 'getPublicKey')
-        .mockReturnValue(Promise.resolve('AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG')),
+      resolve: jest.spyOn(identityService, 'resolve').mockImplementation(() => {
+        return {
+          id: 'mock-did'
+        } as any;
+      }),
     };
 
-    return { identity };
+    const logger = {
+      error: jest.spyOn(loggerService, 'error').mockImplementation(() => {}),
+    };
+
+    return { identity, logger };
   }
 
   beforeEach(async () => {
@@ -25,8 +34,9 @@ describe('DidController', () => {
     app = module.createNestApplication();
     await app.init();
 
-    storageService = module.get<StorageService>(StorageService);
     configService = module.get<ConfigService>(ConfigService);
+    loggerService = module.get<LoggerService>(LoggerService);
+    identityService = module.get<IdentityService>(IdentityService);
   });
 
   afterEach(async () => {
@@ -37,34 +47,37 @@ describe('DidController', () => {
     test('should get a identity document for the url', async () => {
       const spies = spy();
 
-      const address = '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL';
-      const identityUrl = `did:lto:${address}`;
       const res = await request(app.getHttpServer())
-        .get(`/identities/${identityUrl}`)
+        .get('/identities/did:lto:sender')
         .send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({
-        '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${address}`,
-        'verificationMethod': [{
-          id: `did:lto:${address}#key`,
-          type: 'Ed25519VerificationKey2018',
-          controller: `did:lto:${address}`,
-          publicKeyBase58: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
-          blockchainAccountId: `${address}@lto:L`,
-        }],
-        'authentication': [
-          `did:lto:${address}#key`,
-        ],
-        'assertionMethod': [
-          `did:lto:${address}#key`,
-        ],
+        id: 'mock-did'
       });
 
-      expect(spies.identity.getTransactionByDid.mock.calls.length).toBe(1);
-      expect(spies.identity.getTransactionByDid.mock.calls[0][0]).toBe(address);
+      expect(spies.logger.error.mock.calls.length).toBe(0);
+      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+    });
+
+    test('should return error if identity service fails', async () => {
+      const spies = spy();
+
+      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockImplementation(() => {
+        throw Error('some bad error')
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/identities/did:lto:sender')
+        .send();
+
+      expect(res.status).toBe(500);
+      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
+      expect(res.body).toEqual({ error: `failed to get DID document '${Error('some bad error')}'` });
+
+      expect(spies.logger.error.mock.calls.length).toBe(1);
+      expect(spies.identity.resolve.mock.calls.length).toBe(1);
     });
   });
 });
