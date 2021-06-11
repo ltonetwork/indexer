@@ -12,7 +12,7 @@ export interface DIDDocument {
   verificationMethod: DIDVerificationMethod[];
   authentication?: string[];
   assertionMethod?: string[];
-  keyAgreement?: string[];
+  keyAgreement?: DIDVerificationMethod[];
   capabilityInvocation?: string[];
   capabilityDelegation?: string[];
 };

@@ -40,7 +40,7 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@lto-network/lto-crypto": "^1.1.0",
+    "@lto-network/lto-crypto": "^1.1.1",
     "@nestjs/common": "^7.6.0",
     "@nestjs/core": "^7.6.0",
     "@nestjs/passport": "^7.1.0",

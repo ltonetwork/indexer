@@ -12,11 +12,10 @@ export interface MethodObject {
 
 export class VerificationMethod {
     public sender: string;
+    public recipient: string;
     public createdAt?: number;
     public revokedAt?: number;
-
     private relationships: number;
-    private recipient: string;
 
     constructor(relationships: number, sender: string, recipient: string, createdAt: number, revokedAt?: number) {
         this.sender = sender;

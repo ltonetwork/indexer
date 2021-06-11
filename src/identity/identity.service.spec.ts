@@ -11,20 +11,24 @@ describe('IdentityService', () => {
   let identityService: IdentityService;
   let verificationMethodService: VerificationMethodService;
 
-  const publicKey = '6wx5nshSAkF7GEgxZRet86XnqSog3k3DzkyCaBKStiUd';
   const sender = {
     chainId: 'T',
     address: '3N6mZMgGqYn9EVAR2Vbf637iej4fFipECq8',
+    ed25519PublicKey: '6wx5nshSAkF7GEgxZRet86XnqSog3k3DzkyCaBKStiUd',
   };
 
   const recipient = {
     chainId: 'T',
     address: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+    ed25519PublicKey: '6YQpeq9Yeh3VDAuVQvnUQLcUTnEq9hPUwCb9nX3yZHPC',
+    x25519PublicKey: '37CFMfB3MU1tzJKNVadeZiGytUH6HFLDNNeJETzY7N8o',
   };
 
   const secondRecipient = {
     chainId: 'T',
     address: '3N2kNjWiCMuTgdGcLzx8uHiwBKY2J7Sd3t4',
+    ed25519PublicKey: 'DeAxCdh1pYXpU7h41ieyqTDrTyQmhJWZarqxTtkmJv99',
+    x25519PublicKey: 'E6C6H2pfFvjwxELHK63kcekh2ADhFM2Zt5wqKkStSAxX',
   };
 
   function spy() {
@@ -33,7 +37,13 @@ describe('IdentityService', () => {
     };
 
     const storage = {
-      getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async () => publicKey),
+      getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async (address: string) => {
+        if (address === sender.address) return sender.ed25519PublicKey;
+        if (address === recipient.address) return recipient.ed25519PublicKey;
+        if (address === secondRecipient.address) return secondRecipient.ed25519PublicKey;
+
+        return null;
+      }),
     };
 
     return { verificationMethod, storage };
@@ -65,7 +75,7 @@ describe('IdentityService', () => {
           id: `did:lto:${sender.address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${sender.address}`,
-          publicKeyBase58: publicKey,
+          publicKeyBase58: sender.ed25519PublicKey,
           blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
         }],
         authentication: [
@@ -94,7 +104,7 @@ describe('IdentityService', () => {
 
       const did = await identityService.resolve(sender.address);
 
-      expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
+      expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
 
       expect(did).toEqual({
@@ -104,13 +114,13 @@ describe('IdentityService', () => {
           id: `did:lto:${sender.address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${sender.address}`,
-          publicKeyBase58: publicKey,
+          publicKeyBase58: sender.ed25519PublicKey,
           blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
         }, {
           id: `did:lto:${recipient.address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${recipient.address}`,
-          publicKeyBase58: publicKey,
+          publicKeyBase58: recipient.ed25519PublicKey,
           blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
         }],
         authentication: [
@@ -119,9 +129,13 @@ describe('IdentityService', () => {
         assertionMethod: [
           `did:lto:${recipient.address}#key`,
         ],
-        keyAgreement: [
-          `did:lto:${recipient.address}#key`,
-        ],
+        keyAgreement: [{
+          id: `did:lto:${recipient.address}#sign`,
+          type: 'X25519KeyAgreementKey2019',
+          controller: `did:lto:${recipient.address}`,
+          publicKeyBase58: recipient.x25519PublicKey,
+          blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
+        }],
       });
     });
 
@@ -130,14 +144,14 @@ describe('IdentityService', () => {
 
       spies.verificationMethod.getMethodsFor = jest.spyOn(verificationMethodService, 'getMethodsFor').mockImplementation(async (address: string) => {
         const relationships = 0x0107; // authentication, assertion, key agreement
-        const secondRelationships = 0x0113; // authentication, assertion, capabilityDelegation
+        const secondRelationships = 0x0115; // authentication, assertion, key agreement, capability delegation
 
         return [new VerificationMethod(relationships, address, recipient.address, 123456), new VerificationMethod(secondRelationships, address, secondRecipient.address, 123456)];
       });
 
       const did = await identityService.resolve(sender.address);
 
-      expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
+      expect(spies.storage.getPublicKey.mock.calls.length).toBe(3);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
 
       expect(did).toEqual({
@@ -147,19 +161,19 @@ describe('IdentityService', () => {
           id: `did:lto:${sender.address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${sender.address}`,
-          publicKeyBase58: publicKey,
+          publicKeyBase58: sender.ed25519PublicKey,
           blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
         }, {
           id: `did:lto:${recipient.address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${recipient.address}`,
-          publicKeyBase58: publicKey,
+          publicKeyBase58: recipient.ed25519PublicKey,
           blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
         }, {
           id: `did:lto:${secondRecipient.address}#key`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${secondRecipient.address}`,
-          publicKeyBase58: publicKey,
+          publicKeyBase58: secondRecipient.ed25519PublicKey,
           blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
         }],
         authentication: [
@@ -170,9 +184,19 @@ describe('IdentityService', () => {
           `did:lto:${recipient.address}#key`,
           `did:lto:${secondRecipient.address}#key`,
         ],
-        keyAgreement: [
-          `did:lto:${recipient.address}#key`,
-        ],
+        keyAgreement: [{
+          id: `did:lto:${recipient.address}#sign`,
+          type: 'X25519KeyAgreementKey2019',
+          controller: `did:lto:${recipient.address}`,
+          publicKeyBase58: recipient.x25519PublicKey,
+          blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
+        }, {
+          id: `did:lto:${secondRecipient.address}#sign`,
+          type: 'X25519KeyAgreementKey2019',
+          controller: `did:lto:${secondRecipient.address}`,
+          publicKeyBase58: secondRecipient.x25519PublicKey,
+          blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
+        }],
         capabilityDelegation: [
           `did:lto:${secondRecipient.address}#key`,
         ]

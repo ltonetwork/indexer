@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { chainIdOf, deriveAddress } from '@lto-network/lto-crypto';
+import { chainIdOf, deriveAddress, convertED2KeyToX2 } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from '../verification-method/verification-method.service';
 import { DIDDocument } from './interfaces/identity.interface';
 
@@ -63,7 +63,11 @@ export class IdentityService {
     };
 
     for (const verificationMethod of verificationMethods) {
-      const didVerificationMethod = verificationMethod.asDidMethod(publicKey);
+      const recipientPublicKey = await this.storage.getPublicKey(verificationMethod.recipient);
+
+      if (!recipientPublicKey) return null;
+
+      const didVerificationMethod = verificationMethod.asDidMethod(recipientPublicKey);
       didDocument.verificationMethod.push(didVerificationMethod);
 
       if (verificationMethod.isAuthentication()) {
@@ -79,9 +83,17 @@ export class IdentityService {
       }
 
       if (verificationMethod.isKeyAgreement()) {
+        const keyAgreement = {
+          id: `${didVerificationMethod.controller}#sign`,
+          type: 'X25519KeyAgreementKey2019',
+          controller: didVerificationMethod.controller,
+          publicKeyBase58: convertED2KeyToX2(recipientPublicKey),
+          blockchainAccountId: didVerificationMethod.blockchainAccountId,
+        };
+
         didDocument.keyAgreement = didDocument.keyAgreement
-        ? [...didDocument.keyAgreement, didVerificationMethod.id]
-        : [didVerificationMethod.id];
+        ? [...didDocument.keyAgreement, keyAgreement]
+        : [keyAgreement];
       }
 
       if (verificationMethod.isCapabilityInvocation()) {
