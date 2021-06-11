@@ -54,7 +54,7 @@ export class IdentityService {
       '@context': 'https://www.w3.org/ns/did/v1',
       id: `did:lto:${id}`,
       verificationMethod: [{
-        id: `did:lto:${address}#key`,
+        id: `did:lto:${address}#sign`,
         type: 'Ed25519VerificationKey2018',
         controller: `did:lto:${address}`,
         publicKeyBase58: publicKey,
@@ -84,7 +84,7 @@ export class IdentityService {
 
       if (verificationMethod.isKeyAgreement()) {
         const keyAgreement = {
-          id: `${didVerificationMethod.controller}#sign`,
+          id: `${didVerificationMethod.controller}#encrypt`,
           type: 'X25519KeyAgreementKey2019',
           controller: didVerificationMethod.controller,
           publicKeyBase58: convertED2KeyToX2(recipientPublicKey),
@@ -110,9 +110,9 @@ export class IdentityService {
     }
 
     if (didDocument.verificationMethod.length == 1) {
-      didDocument.authentication = [ `did:lto:${address}#key` ];
-      didDocument.assertionMethod = [ `did:lto:${address}#key` ];
-      didDocument.capabilityInvocation = [ `did:lto:${address}#key` ];
+      didDocument.authentication = [ `did:lto:${address}#sign` ];
+      didDocument.assertionMethod = [ `did:lto:${address}#sign` ];
+      didDocument.capabilityInvocation = [ `did:lto:${address}#sign` ];
     }
 
     return didDocument;

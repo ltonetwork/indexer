@@ -45,7 +45,7 @@ export class VerificationMethod {
 
     public asDidMethod(publicKey: string): DIDVerificationMethod {
         return {
-            id: `did:lto:${this.recipient}#key`,
+            id: `did:lto:${this.recipient}#sign`,
             type: 'Ed25519VerificationKey2018',
             controller: `did:lto:${this.recipient}`,
             publicKeyBase58: publicKey,

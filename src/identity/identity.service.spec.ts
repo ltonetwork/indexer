@@ -72,20 +72,20 @@ describe('IdentityService', () => {
         '@context': 'https://www.w3.org/ns/did/v1',
         id: `did:lto:${sender.address}`,
         verificationMethod: [{
-          id: `did:lto:${sender.address}#key`,
+          id: `did:lto:${sender.address}#sign`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${sender.address}`,
           publicKeyBase58: sender.ed25519PublicKey,
           blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
         }],
         authentication: [
-          `did:lto:${sender.address}#key`,
+          `did:lto:${sender.address}#sign`,
         ],
         assertionMethod: [
-          `did:lto:${sender.address}#key`,
+          `did:lto:${sender.address}#sign`,
         ],
         capabilityInvocation: [
-          `did:lto:${sender.address}#key`,
+          `did:lto:${sender.address}#sign`,
         ]
       });
 
@@ -111,26 +111,26 @@ describe('IdentityService', () => {
         '@context': 'https://www.w3.org/ns/did/v1',
         id: `did:lto:${sender.address}`,
         verificationMethod: [{
-          id: `did:lto:${sender.address}#key`,
+          id: `did:lto:${sender.address}#sign`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${sender.address}`,
           publicKeyBase58: sender.ed25519PublicKey,
           blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
         }, {
-          id: `did:lto:${recipient.address}#key`,
+          id: `did:lto:${recipient.address}#sign`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${recipient.address}`,
           publicKeyBase58: recipient.ed25519PublicKey,
           blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
         }],
         authentication: [
-          `did:lto:${recipient.address}#key`,
+          `did:lto:${recipient.address}#sign`,
         ],
         assertionMethod: [
-          `did:lto:${recipient.address}#key`,
+          `did:lto:${recipient.address}#sign`,
         ],
         keyAgreement: [{
-          id: `did:lto:${recipient.address}#sign`,
+          id: `did:lto:${recipient.address}#encrypt`,
           type: 'X25519KeyAgreementKey2019',
           controller: `did:lto:${recipient.address}`,
           publicKeyBase58: recipient.x25519PublicKey,
@@ -158,47 +158,47 @@ describe('IdentityService', () => {
         '@context': 'https://www.w3.org/ns/did/v1',
         id: `did:lto:${sender.address}`,
         verificationMethod: [{
-          id: `did:lto:${sender.address}#key`,
+          id: `did:lto:${sender.address}#sign`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${sender.address}`,
           publicKeyBase58: sender.ed25519PublicKey,
           blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
         }, {
-          id: `did:lto:${recipient.address}#key`,
+          id: `did:lto:${recipient.address}#sign`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${recipient.address}`,
           publicKeyBase58: recipient.ed25519PublicKey,
           blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
         }, {
-          id: `did:lto:${secondRecipient.address}#key`,
+          id: `did:lto:${secondRecipient.address}#sign`,
           type: 'Ed25519VerificationKey2018',
           controller: `did:lto:${secondRecipient.address}`,
           publicKeyBase58: secondRecipient.ed25519PublicKey,
           blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
         }],
         authentication: [
-          `did:lto:${recipient.address}#key`,
-          `did:lto:${secondRecipient.address}#key`,
+          `did:lto:${recipient.address}#sign`,
+          `did:lto:${secondRecipient.address}#sign`,
         ],
         assertionMethod: [
-          `did:lto:${recipient.address}#key`,
-          `did:lto:${secondRecipient.address}#key`,
+          `did:lto:${recipient.address}#sign`,
+          `did:lto:${secondRecipient.address}#sign`,
         ],
         keyAgreement: [{
-          id: `did:lto:${recipient.address}#sign`,
+          id: `did:lto:${recipient.address}#encrypt`,
           type: 'X25519KeyAgreementKey2019',
           controller: `did:lto:${recipient.address}`,
           publicKeyBase58: recipient.x25519PublicKey,
           blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
         }, {
-          id: `did:lto:${secondRecipient.address}#sign`,
+          id: `did:lto:${secondRecipient.address}#encrypt`,
           type: 'X25519KeyAgreementKey2019',
           controller: `did:lto:${secondRecipient.address}`,
           publicKeyBase58: secondRecipient.x25519PublicKey,
           blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
         }],
         capabilityDelegation: [
-          `did:lto:${secondRecipient.address}#key`,
+          `did:lto:${secondRecipient.address}#sign`,
         ]
       });
     });
