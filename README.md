@@ -1,6 +1,7 @@
 ![github-banner](https://user-images.githubusercontent.com/100821/108692834-6a115200-74fd-11eb-92df-ee07bf62b386.png)
 
 # Indexer
+[![Build Status](https://travis-ci.com/ltonetwork/indexer.svg?branch=master)](https://travis-ci.com/ltonetwork/indexer)
 
 Index and query data from the LTO Network public chain.
 
