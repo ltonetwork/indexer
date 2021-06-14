@@ -12,11 +12,10 @@ export interface MethodObject {
 
 export class VerificationMethod {
     public sender: string;
+    public recipient: string;
     public createdAt?: number;
     public revokedAt?: number;
-
     private relationships: number;
-    private recipient: string;
 
     constructor(relationships: number, sender: string, recipient: string, createdAt: number, revokedAt?: number) {
         this.sender = sender;
@@ -46,7 +45,7 @@ export class VerificationMethod {
 
     public asDidMethod(publicKey: string): DIDVerificationMethod {
         return {
-            id: `did:lto:${this.recipient}#key`,
+            id: `did:lto:${this.recipient}#sign`,
             type: 'Ed25519VerificationKey2018',
             controller: `did:lto:${this.recipient}`,
             publicKeyBase58: publicKey,
