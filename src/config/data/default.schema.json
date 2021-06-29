@@ -37,6 +37,11 @@
       "env": "ASSOCIATIONS_DOMAIN_TYPE"
     }
   },
+  "roles": {
+    "doc": "Configuration for roles on trust network",
+    "default": {},
+    "env": "TRUST_NETWORK_ROLES"
+  },
   "anchor": {
     "doc": "The config of this application, with a namespace so it can be merged into larger configs",
     "api": {

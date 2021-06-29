@@ -1,2 +1,20 @@
 {
+  "roles": {
+    "king": {
+      "description": "The king of the network",
+      "issues": [
+        { "type": 100, "role": "authority" },
+        { "type": 101, "role": "notary" }
+      ]
+    },
+    "authority": {
+      "description": "Authority to issue notaries",
+      "issues": [
+        { "type": 101, "role": "notary" }
+      ]
+    },
+    "notary": {
+      "description": "A notary"
+    }
+  }
 }

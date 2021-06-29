@@ -73,6 +73,35 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:verification:${address}`, data);
   }
 
+  // @todo: proper types
+  async getTrustNetworkRoles(address: string) {
+    const result: any = {
+      roles: [],
+      issues_roles: []
+    };
+
+    const roles = await this.storage.getObject(`lto:roles:${address}`);
+
+    for (const key in roles) {
+      const roleData: any = roles[key];
+
+      result.roles.push(roleData.role);
+    }
+
+    // @todo: fill `issues_roles` prop according to config
+
+    return result;
+  }
+
+  // @todo: proper types
+  async saveTrustNetworkRole(address: string, roleData: any) {
+    const data = await this.storage.getObject(`lto:roles:${address}`);
+
+    data[roleData.role] = roleData;
+
+    return this.storage.addObject(`lto:roles:${address}`, data);
+  }
+
   async saveAssociation(transaction: Transaction) {
     await this.storage.sadd(`lto:assoc:${transaction.sender}:childs`, transaction.party);
     await this.storage.sadd(`lto:assoc:${transaction.party}:parents`, transaction.sender);
