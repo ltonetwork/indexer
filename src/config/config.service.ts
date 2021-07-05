@@ -133,7 +133,7 @@ export class ConfigService {
     return toBoolean(flag);
   }
 
-  getTrustNetworkRoles(): RoleConfig {
+  getRoles(): RoleConfig {
     return this.config.get('roles');
   }
 }

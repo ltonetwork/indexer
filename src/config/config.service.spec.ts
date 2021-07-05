@@ -83,8 +83,8 @@ describe('ConfigService', () => {
       expect(configService.getAssociationTypes()).toEqual([10, 100, 200]);
     });
 
-    test('getTrustNetworkRoles()', () => {
-      expect(configService.getTrustNetworkRoles()).toStrictEqual({
+    test('getRoles()', () => {
+      expect(configService.getRoles()).toStrictEqual({
         root: {
           description: 'The root role'
         }

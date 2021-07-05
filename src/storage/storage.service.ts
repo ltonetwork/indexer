@@ -8,7 +8,7 @@ import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
 import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
-import { Role, RoleData } from '../trust-network/interfaces/trust-network.interface';
+import { Role } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -74,40 +74,11 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:verification:${address}`, data);
   }
 
-  async getTrustNetworkRoles(address: string): Promise<RoleData> {
-    const result: RoleData = {
-      roles: [],
-      issues_roles: [],
-      issues_authorization: [],
-    };
-
-    const configRoles = this.config.getTrustNetworkRoles();
-    const roles = await this.storage.getObject(`lto:roles:${address}`);
-
-    for (const role in roles) {
-      const configData = configRoles[role];
-      
-      if (configData) {
-        result.roles.push(role);
-
-        configData.issues?.forEach(eachIssues => {
-          if (result.issues_roles.findIndex(each => each.role === eachIssues.role) === -1) {
-            result.issues_roles.push(eachIssues);
-          }
-        });
-
-        configData.authorization?.forEach(eachAuthorization => {
-          if (result.issues_authorization.findIndex(each => each === eachAuthorization) === -1) {
-            result.issues_authorization.push(eachAuthorization);
-          }
-        });
-      }
-    }
-
-    return result;
+  async getRolesFor(address: string): Promise<object> {
+    return this.storage.getObject(`lto:roles:${address}`);
   }
 
-  async saveTrustNetworkRole(recipient: string, sender: string, data: Role): Promise<void> {
+  async saveRoleAssociation(recipient: string, sender: string, data: Role): Promise<void> {
     const roles = await this.storage.getObject(`lto:roles:${recipient}`);
 
     roles[data.role] = { sender, type: data.type };
