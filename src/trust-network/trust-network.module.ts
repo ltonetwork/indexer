@@ -8,6 +8,7 @@ import { StorageModule } from '../storage/storage.module';
 import { EncoderModule } from '../encoder/encoder.module';
 import { TransactionModule } from '../transaction/transaction.module';
 import { TrustNetworkListenerService } from './trust-network.listener.service';
+import { TrustNetworkController } from './trust-network.controller';
 import { EmitterModule } from '../emitter/emitter.module';
 
 export const TrustNetworkModuleConfig = {
@@ -21,7 +22,7 @@ export const TrustNetworkModuleConfig = {
     TransactionModule,
     EmitterModule,
   ],
-  controllers: [],
+  controllers: [TrustNetworkController],
   providers: [
     TrustNetworkService,
     TrustNetworkListenerService,
