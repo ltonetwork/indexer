@@ -8,6 +8,7 @@ import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
 import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
+import { Role, RoleData } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -73,33 +74,45 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:verification:${address}`, data);
   }
 
-  // @todo: proper types
-  async getTrustNetworkRoles(address: string) {
-    const result: any = {
+  async getTrustNetworkRoles(address: string): Promise<RoleData> {
+    const result: RoleData = {
       roles: [],
-      issues_roles: []
+      issues_roles: [],
+      issues_authorization: [],
     };
 
+    const configRoles = this.config.getTrustNetworkRoles();
     const roles = await this.storage.getObject(`lto:roles:${address}`);
 
-    for (const key in roles) {
-      const roleData: any = roles[key];
+    for (const role in roles) {
+      const configData = configRoles[role];
+      
+      if (configData) {
+        result.roles.push(role);
 
-      result.roles.push(roleData.role);
+        configData.issues?.forEach(eachIssues => {
+          if (result.issues_roles.findIndex(each => each.role === eachIssues.role) === -1) {
+            result.issues_roles.push(eachIssues);
+          }
+        });
+
+        configData.authorization?.forEach(eachAuthorization => {
+          if (result.issues_authorization.findIndex(each => each === eachAuthorization) === -1) {
+            result.issues_authorization.push(eachAuthorization);
+          }
+        });
+      }
     }
-
-    // @todo: fill `issues_roles` prop according to config
 
     return result;
   }
 
-  // @todo: proper types
-  async saveTrustNetworkRole(address: string, roleData: any) {
-    const data = await this.storage.getObject(`lto:roles:${address}`);
+  async saveTrustNetworkRole(recipient: string, sender: string, data: Role): Promise<void> {
+    const roles = await this.storage.getObject(`lto:roles:${recipient}`);
 
-    data[roleData.role] = roleData;
+    roles[data.role] = { sender, type: data.type };
 
-    return this.storage.addObject(`lto:roles:${address}`, data);
+    return this.storage.addObject(`lto:roles:${recipient}`, roles);
   }
 
   async saveAssociation(transaction: Transaction) {

@@ -5,6 +5,8 @@ import { StorageService } from './storage.service';
 import { ConfigService } from '../config/config.service';
 import { RedisStorageService } from './types/redis.storage.service';
 import { VerificationMethod } from '../verification-method/model/verification-method.model';
+import { RoleData } from '../trust-network/interfaces/trust-network.interface';
+import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -33,8 +35,29 @@ describe('StorageService', () => {
     redisService = module.get<RedisService>(RedisService);
     configService = module.get<ConfigService>(ConfigService);
 
-    // @ts-ignore
-    jest.spyOn(configService, 'getStorageType').mockImplementation(() => 'redis');
+    jest.spyOn(configService, 'getStorageType').mockImplementation(() => StorageTypeEnum.Redis);
+    jest.spyOn(configService, 'getTrustNetworkRoles').mockImplementation(() => {
+      return {
+        root: {
+          description: 'The root',
+          issues: [{ type: 100, role: 'authority' }, { type: 102, role: 'credential_authority' }]
+        },
+        authority: {
+          description: 'The authority',
+          issues: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
+          authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+        },
+        sub_authority: {
+          description: 'The sub authority',
+          issues: [{ type: 100, role: 'university' }]
+        },
+        university: {
+          description: 'The university',
+          authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+        }
+      };
+    });
+
     await module.init();
 
     spy();
@@ -253,62 +276,103 @@ describe('StorageService', () => {
     });
   });
 
-  describe('trust network roles', () => {
-    const mockRole = { type: 100, role: 'authority' };
-
+  describe('trust network', () => {
     describe('getTrustNetworkRoles()', () => {
-      test('should return the roles from database', async () => {
+      test('should return the roles from database for an address', async () => {
         const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
           return {
-            'authority': mockRole
+            'authority': { sender: 'mock-sender', type: 100 }
           };
         });
   
-        const result = await storageService.getTrustNetworkRoles('mock-sender');
-        const expected = {
+        const result = await storageService.getTrustNetworkRoles('mock-recipient');
+        const expected: RoleData = {
           roles: [ 'authority' ],
-          issues_roles: [] // @todo: add `issues_roles`
+          issues_roles: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
+          issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1']
         };
   
         expect(getObject.mock.calls.length).toBe(1);
         expect(getObject.mock.calls[0][0])
-          .toBe('lto:roles:mock-sender');
+          .toBe('lto:roles:mock-recipient');
+        expect(result).toStrictEqual(expected);
+      });
+
+      test('should not return the same role twice', async () => {
+        jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+          return {
+            'authority': { sender: 'mock-sender', type: 100 },
+            'sub_authority': { sender: 'mock-sender', type: 101 },
+          };
+        });
+
+        const result = await storageService.getTrustNetworkRoles('mock-recipient');
+        const expected: RoleData = {
+          roles: [ 'authority', 'sub_authority' ],
+          issues_roles: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
+          issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+        };
+
+        expect(result).toStrictEqual(expected);
+      });
+
+      test('should not return the same authorization twice', async () => {
+        jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+          return {
+            'authority': { sender: 'mock-sender', type: 100 },
+            'university': { sender: 'mock-sender', type: 100 },
+          };
+        });
+
+        const result = await storageService.getTrustNetworkRoles('mock-recipient');
+        const expected: RoleData = {
+          roles: [ 'authority', 'university' ],
+          issues_roles: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
+          issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+        };
+
         expect(result).toStrictEqual(expected);
       });
     });
 
     describe('saveTrustNetworkRole()', () => {
+      const mockRole = { type: 100, role: 'authority' };
+
       test('should save a new trust network role association', async () => {
         const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
         const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
           return {};
         });
 
-        await storageService.saveTrustNetworkRole('mock-sender', mockRole);
+        await storageService.saveTrustNetworkRole('mock-recipient', 'mock-sender', mockRole);
 
         expect(getObject.mock.calls.length).toBe(1);
         expect(getObject.mock.calls[0][0])
-          .toBe('lto:roles:mock-sender');
+          .toBe('lto:roles:mock-recipient');
 
         expect(addObject.mock.calls.length).toBe(1);
         expect(addObject.mock.calls[0][0])
-          .toBe('lto:roles:mock-sender');
+          .toBe('lto:roles:mock-recipient');
         expect(addObject.mock.calls[0][1])
-          .toStrictEqual({ 'authority': mockRole });
+          .toStrictEqual({
+            'authority': { sender: 'mock-sender', type: mockRole.type }
+          });
       });
   
       test('should overwrite an existing role association if it exists', async () => {
         const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
         jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
           return {
-            'authority': mockRole
+            'authority': { sender: 'mock-sender', type: mockRole.type }
           };
         });
 
-        await storageService.saveTrustNetworkRole('mock-sender', mockRole);
+        await storageService.saveTrustNetworkRole('mock-recipient', 'mock-sender', mockRole);
 
         expect(addObject.mock.calls[0][1])
-          .toStrictEqual({ 'authority': mockRole });
+          .toStrictEqual({
+            'authority': { sender: 'mock-sender', type: mockRole.type }
+          });
       });
     });
   });

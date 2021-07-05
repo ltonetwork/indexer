@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
 import toBoolean from 'boolean';
+import { RoleConfig } from 'trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {
@@ -130,5 +131,9 @@ export class ConfigService {
 
     const flag = this.config.get(`index.processor.${token}`);
     return toBoolean(flag);
+  }
+
+  getTrustNetworkRoles(): RoleConfig {
+    return this.config.get('roles');
   }
 }

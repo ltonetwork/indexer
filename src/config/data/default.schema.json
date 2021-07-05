@@ -39,7 +39,11 @@
   },
   "roles": {
     "doc": "Configuration for roles on trust network",
-    "default": {},
+    "default": {
+      "root": {
+        "description": "The root role"
+      }
+    },
     "env": "TRUST_NETWORK_ROLES"
   },
   "anchor": {
