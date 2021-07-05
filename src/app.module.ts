@@ -18,7 +18,7 @@ import { IndexModule } from './index/index.module';
 import { EmitterModule } from './emitter/emitter.module';
 import { AssociationsModule } from './associations/associations.module';
 import { PublicKeyModule } from './public-key/public-key.module';
-import { TrustNetworkModule } from 'trust-network/trust-network.module';
+import { TrustNetworkModule } from './trust-network/trust-network.module';
 
 export const AppModuleConfig = {
   imports: [
