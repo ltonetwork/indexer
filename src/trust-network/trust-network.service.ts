@@ -18,10 +18,10 @@ export class TrustNetworkService {
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
-    const { id, sender, recipient, associationType } = transaction;
+    const { id, sender, party, associationType } = transaction;
     
-    if (!recipient) {
-      this.logger.debug(`trustNetwork: transaction ${id} didn't have a recipient address, skipped indexing`);
+    if (!party) {
+      this.logger.debug(`trustNetwork: transaction ${id} didn't have a party address, skipped indexing`);
       return;
     }
 
@@ -31,13 +31,13 @@ export class TrustNetworkService {
     }
 
     const senderRoles = await this.getRolesFor(sender);
-    
+
     const savedRoles: Role[] = [];
 
-    senderRoles.issues_roles.forEach(eachRole => {
+    senderRoles.issues_roles.forEach(async eachRole => {
       if (eachRole.type === associationType && !savedRoles.includes(eachRole)) {
         savedRoles.push(eachRole);
-        this.storage.saveRoleAssociation(recipient, sender, eachRole);
+        await this.storage.saveRoleAssociation(party, sender, eachRole);
       }
     });
   }

@@ -210,11 +210,19 @@ describe('StorageService', () => {
   
         expect(result).toStrictEqual([]);
       });
+
+      test('should not throw error if database rejects (key not found)', async () => {
+        jest.spyOn(redisStorageService, 'getObject').mockRejectedValue({});
+  
+        const result = await storageService.getVerificationMethods('mock-sender');
+
+        expect(result).toStrictEqual([]);
+      })
     });
   
     describe('saveVerificationMethod()', () => {
       test('should save a new verification method', async () => {
-        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
+        const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
         const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
           return {
             'mock-recipient': mockMethod
@@ -229,15 +237,15 @@ describe('StorageService', () => {
         expect(getObject.mock.calls[0][0])
           .toBe('lto:verification:mock-sender');
 
-        expect(addObject.mock.calls.length).toBe(1);
-        expect(addObject.mock.calls[0][0])
+        expect(setObject.mock.calls.length).toBe(1);
+        expect(setObject.mock.calls[0][0])
           .toBe('lto:verification:mock-sender');
-        expect(addObject.mock.calls[0][1])
+        expect(setObject.mock.calls[0][1])
           .toStrictEqual({ 'mock-recipient': mockMethod, 'some-other-recipient': mockVerificationMethod.json() });
       });
   
       test('should overwrite an existing verification method for the same sender', async () => {
-        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
+        const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
         jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
           return {
             'mock-recipient': mockMethod
@@ -248,7 +256,7 @@ describe('StorageService', () => {
 
         await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
 
-        expect(addObject.mock.calls[0][1])
+        expect(setObject.mock.calls[0][1])
           .toStrictEqual({ 'mock-recipient': { ...mockMethod, relationships: 0x0107 } });
       });
     });
@@ -272,16 +280,21 @@ describe('StorageService', () => {
           .toBe('lto:roles:mock-recipient');
         expect(result).toStrictEqual(expected);
       });
+
+      test('should not throw error if database rejects (key not found)', async () => {
+        jest.spyOn(redisStorageService, 'getObject').mockRejectedValue({});
+
+        const result = await storageService.getRolesFor('mock-recipient');
+        expect(result).toStrictEqual({});
+      });
     });
 
     describe('saveRoleAssociation()', () => {
       const mockRole = { type: 100, role: 'authority' };
 
       test('should save a new trust network role association', async () => {
-        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
-        const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-          return {};
-        });
+        const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
+        const getObject = jest.spyOn(redisStorageService, 'getObject').mockRejectedValue({});
 
         await storageService.saveRoleAssociation('mock-recipient', 'mock-sender', mockRole);
 
@@ -289,17 +302,17 @@ describe('StorageService', () => {
         expect(getObject.mock.calls[0][0])
           .toBe('lto:roles:mock-recipient');
 
-        expect(addObject.mock.calls.length).toBe(1);
-        expect(addObject.mock.calls[0][0])
+        expect(setObject.mock.calls.length).toBe(1);
+        expect(setObject.mock.calls[0][0])
           .toBe('lto:roles:mock-recipient');
-        expect(addObject.mock.calls[0][1])
+        expect(setObject.mock.calls[0][1])
           .toStrictEqual({
             'authority': { sender: 'mock-sender', type: mockRole.type }
           });
       });
   
       test('should overwrite an existing role association if it exists', async () => {
-        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(async () => {});
+        const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
         jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
           return {
             'authority': { sender: 'mock-sender', type: mockRole.type }
@@ -308,7 +321,7 @@ describe('StorageService', () => {
 
         await storageService.saveRoleAssociation('mock-recipient', 'mock-sender', mockRole);
 
-        expect(addObject.mock.calls[0][1])
+        expect(setObject.mock.calls[0][1])
           .toStrictEqual({
             'authority': { sender: 'mock-sender', type: mockRole.type }
           });

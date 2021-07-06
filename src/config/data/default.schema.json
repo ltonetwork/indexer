@@ -39,6 +39,7 @@
   },
   "roles": {
     "doc": "Configuration for roles on trust network",
+    "format": "Object",
     "default": {
       "root": {
         "description": "The root role"
@@ -152,6 +153,14 @@
       "association": {
         "default": 1,
         "env": "INDEX_PROCESSOR_ASSOCIATION"
+      },
+      "verification_method": {
+        "default": 1,
+        "env": "INDEX_PROCESSOR_VERIFICATION_METHOD"
+      },
+      "trust_network": {
+        "default": 1,
+        "env": "INDEX_PROCESSOR_TRUST_NETWORK"
       }
     }
   }

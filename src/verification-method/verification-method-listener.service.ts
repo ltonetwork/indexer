@@ -16,7 +16,7 @@ export class VerificationMethodListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('verification-method')) {
+    if (!this.config.isProcessorEnabled('verification_method')) {
       this.logger.debug(`transaction-listener: Not processing verification method`);
       return;
     }

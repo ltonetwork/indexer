@@ -15,14 +15,14 @@ export class VerificationMethodService {
 
   async index(index: IndexDocumentType) {
     const { transaction } = index;
-    const { id, sender, recipient } = transaction;
+    const { id, sender, party } = transaction;
 
-    if (!recipient) {
-      this.logger.debug(`verificationMethod: transaction ${id} didn't have a recipient address, skipped indexing`);
+    if (!party) {
+      this.logger.debug(`verificationMethod: transaction ${id} didn't have a party address, skipped indexing`);
       return;
     }
 
-    const verificationMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient, Math.floor((+new Date()) / 1000));
+    const verificationMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.party, Math.floor((+new Date()) / 1000));
     
     this.logger.debug(`verificationMethod: address ${sender} has verification method ${verificationMethod.asString()}`);
     await this.storage.saveVerificationMethod(sender, verificationMethod);

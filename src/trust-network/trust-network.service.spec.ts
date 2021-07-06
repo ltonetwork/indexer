@@ -69,7 +69,7 @@ describe('TrustNetworkService', () => {
       id: 'fake_transaction',
       type: 1,
       sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+      party: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       associationType: 101,
     };
 
@@ -90,7 +90,7 @@ describe('TrustNetworkService', () => {
 
       expect(spies.storage.saveRoleAssociation.mock.calls.length).toBe(1);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][0])
-        .toBe(transaction.recipient);
+        .toBe(transaction.party);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][1])
         .toBe(transaction.sender);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][2])
@@ -120,10 +120,10 @@ describe('TrustNetworkService', () => {
         .toStrictEqual(expectedRoles[1]);
     });
 
-    test('should skip indexing if there is no recipient', async () => {
+    test('should skip indexing if there is no party', async () => {
       const spies = spy();
 
-      delete transaction.recipient;
+      delete transaction.party;
 
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
@@ -145,7 +145,7 @@ describe('TrustNetworkService', () => {
     test('should resolve the roles for an address', async () => {
       const spies = spy();
 
-      const result = await trustNetworkService.getRolesFor('mock-recipient');
+      const result = await trustNetworkService.getRolesFor('mock-party');
 
       const expected: RoleData = {
         roles: [ 'authority' ],
@@ -156,7 +156,7 @@ describe('TrustNetworkService', () => {
       expect(spies.config.getRoles.mock.calls.length).toBe(1);
       expect(spies.storage.getRolesFor.mock.calls.length).toBe(1);
       expect(spies.storage.getRolesFor.mock.calls[0][0])
-        .toBe('mock-recipient');
+        .toBe('mock-party');
       expect(result).toStrictEqual(expected);
     });
 
@@ -184,7 +184,7 @@ describe('TrustNetworkService', () => {
         };
       });
 
-      const result = await trustNetworkService.getRolesFor('mock-recipient');
+      const result = await trustNetworkService.getRolesFor('mock-party');
       const expected: RoleData = {
         roles: [ 'authority', 'sub_authority' ],
         issues_roles: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
@@ -204,11 +204,27 @@ describe('TrustNetworkService', () => {
         };
       });
 
-      const result = await trustNetworkService.getRolesFor('mock-recipient');
+      const result = await trustNetworkService.getRolesFor('mock-party');
       const expected: RoleData = {
         roles: [ 'authority', 'university' ],
         issues_roles: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
         issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+      };
+
+      expect(result).toStrictEqual(expected);
+    });
+
+    test('should not error if address has no roles', async () => {
+      const spies = spy();
+
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => { return {} });
+
+      const result = await trustNetworkService.getRolesFor('mock-party');
+
+      const expected: RoleData = {
+        roles: [],
+        issues_roles: [],
+        issues_authorization: []
       };
 
       expect(result).toStrictEqual(expected);
