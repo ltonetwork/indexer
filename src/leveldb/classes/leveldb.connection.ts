@@ -26,16 +26,15 @@ export class LeveldbConnection {
   async add(key: level.KeyType, value: string): Promise<string> {
     await this.incrLock.acquireAsync();
 
-    try {
-      const existing = this.connection.get(key);
-      if (existing) {
-        return existing;
-      }
+    const existing = await this.connection.get(key).catch(() => null);
 
-      return this.connection.put(key, value);
-    } finally {
-      this.incrLock.release();
-    }
+    if (existing) return existing;
+
+    const result = await this.connection.put(key, value);
+
+    this.incrLock.release();
+
+    return result;
   }
 
   set(key: level.KeyType, value: string): Promise<string> {

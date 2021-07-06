@@ -34,10 +34,10 @@ export class TrustNetworkService {
 
     const savedRoles: Role[] = [];
 
-    senderRoles.issues_roles.forEach(async eachRole => {
+    senderRoles.issues_roles.forEach(eachRole => {
       if (eachRole.type === associationType && !savedRoles.includes(eachRole)) {
         savedRoles.push(eachRole);
-        await this.storage.saveRoleAssociation(party, sender, eachRole);
+        this.storage.saveRoleAssociation(party, sender, eachRole);
       }
     });
   }
