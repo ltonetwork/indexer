@@ -76,5 +76,19 @@ describe('TrustNetworkController', () => {
         error: 'failed to resolve roles'
       });
     });
+
+    test('should resolve if a DID address is given', async () => {
+      const spies = spy();
+
+      const address = 'did:lto:3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE';
+      const res = await request(app.getHttpServer())
+        .get(`/trust/${address}`)
+        .send();
+
+      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0])
+        .toBe('3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE');
+
+      expect(res.status).toBe(200);
+    });
   });
 });

@@ -20,11 +20,13 @@ export class TrustNetworkController {
     description: ['invalid address', 'failed to resolve roles'].join('<br>'),
   })
   async getRoles(@Req() req: Request, @Res() res: Response): Promise<Response> {
-    const address = req.params.address;
+    let address = req.params.address;
     
     if (!address) {
       return res.status(400).json({ error: 'invalid address' });
     }
+
+    address = address.replace('did:lto:', '');
 
     try {
       const roles = await this.service.getRolesFor(address);
