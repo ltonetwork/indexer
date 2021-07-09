@@ -14,7 +14,7 @@ export class SupplyController {
 
   @Get('circulating')
   @ApiOperation({ summary: 'Get circulating supply' })
-  @ApiQuery({ name: 'output', required: false, description: 'Flag for type of output', enum: 'raw' })
+  @ApiQuery({ name: 'output', required: false, description: 'Flag for type of output', enum: ['raw'] })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 500, description: 'failed to get circulating supply' })
   async getCirculatingSupply(@Req() req: Request, @Res() res: Response): Promise<Response> {
