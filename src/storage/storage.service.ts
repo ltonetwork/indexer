@@ -17,7 +17,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
     private readonly moduleRef: ModuleRef,
-  ) { }
+    ) { }
 
   async onModuleInit() {
     if (this.config.getStorageType() === StorageTypeEnum.Redis) {
@@ -105,7 +105,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  incrTxStats(type: string, day: number): Promise<void> {
+  async incrTxStats(type: string, day: number): Promise<void> {
     return this.storage.incrValue(`lto:txstats:${type}:${day}`);
   }
 
@@ -117,6 +117,15 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     const periods = Array.from({length}, (v, i) => new Date((from + i) * 86400000));
     return periods
       .map((period: Date, index: number) => ({period: this.formatPeriod(period), count: Number(values[index])}));
+  }
+
+  async setTxFeeBurned(value: string): Promise<void> {
+    return this.storage.setValue('lto:supply:txfeeburned', value);
+  }
+
+  async getTxFeeBurned(): Promise<number> {
+    const value = await this.storage.getValue('lto:supply:txfeeburned').catch(() => '0');
+    return Number(value);
   }
 
   private formatPeriod(date: Date): string {

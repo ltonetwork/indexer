@@ -7,7 +7,7 @@ import { ConfigService } from '../config/config.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
 
-interface Feature {
+export interface Feature {
   id: number;
   description: string;
   blockchainStatus: string;
@@ -15,7 +15,7 @@ interface Feature {
   activationHeight: number;
 }
 
-interface ActivationStatus {
+export interface ActivationStatus {
   height: number;
   votingInterval: number;
   votingThreshold: number;
