@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StorageService } from '../storage/storage.service';
-import { NodeService } from '../node/node.service';
+import { ActivationStatus, NodeService } from '../node/node.service';
 
 @Injectable()
 export class SupplyService {
@@ -31,11 +31,14 @@ export class SupplyService {
     private readonly storage: StorageService,
   ) { }
 
-  async getCirculatingSupply(): Promise<number> {
+  async getCirculatingSupply(): Promise<string> {
     const txFeeBurn = await this.getTxFeeBurned();
+
     // @todo: get the rest of the info
 
-    return Promise.resolve(txFeeBurn);
+    const result = (Math.round(txFeeBurn * 100) / 100).toFixed(8);
+
+    return Promise.resolve(result);
   }
 
   async incrTxFeeBurned(blockHeight: number): Promise<void> {
@@ -44,10 +47,9 @@ export class SupplyService {
       return;
     }
 
-    const value = await this.storage.getTxFeeBurned().catch(() => '0');
+    const current = await this.storage.getTxFeeBurned().catch<number>(() => 0);
 
     const burnFee = 0.1;
-    const current = Number(value);
     const newValue = current + (1 * burnFee);
 
     return this.storage.setTxFeeBurned(newValue.toString());
@@ -62,10 +64,10 @@ export class SupplyService {
   }
 
   async isFeatureActivated(blockHeight: number): Promise<boolean> {
-    const activationHeight = await this.getFeeBurnFeatureHeight().catch(() => null);
+    const activationHeight = await this.getFeeBurnFeatureHeight().catch<number | Error>(() => null);
 
     if (!activationHeight) {
-      const activationStatus = await this.node.getActivationStatus().catch(() => null);
+      const activationStatus = await this.node.getActivationStatus().catch<ActivationStatus>(() => null);
       if (!activationStatus) {
         return false;
       }

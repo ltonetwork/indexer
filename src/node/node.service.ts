@@ -12,7 +12,7 @@ export interface Feature {
   description: string;
   blockchainStatus: string;
   nodeStatus: string;
-  activationHeight: number;
+  activationHeight?: number;
 }
 
 export interface ActivationStatus {

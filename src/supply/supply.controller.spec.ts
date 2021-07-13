@@ -11,7 +11,7 @@ describe('SupplyController', () => {
 
   function spy() {
     const supply = {
-      getCirculatingSupply: jest.spyOn(supplyService, 'getCirculatingSupply').mockImplementation(async () => 12345678.12345678),
+      getCirculatingSupply: jest.spyOn(supplyService, 'getCirculatingSupply').mockImplementation(async () => '12345678.12345678'),
     };
 
     return { supply };
@@ -39,7 +39,7 @@ describe('SupplyController', () => {
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ circulatingSupply: 12345678.12345678 });
+      expect(res.body).toEqual({ circulatingSupply: '12345678.12345678' });
 
       expect(spies.supply.getCirculatingSupply.mock.calls.length).toBe(1);
     });

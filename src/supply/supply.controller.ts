@@ -24,7 +24,7 @@ export class SupplyController {
       const supply = await this.supplyService.getCirculatingSupply();
 
       if (isRaw) {
-        return res.status(200).contentType('text/plain').send(supply.toString());
+        return res.status(200).contentType('text/plain').send(supply);
       }
 
       return res.status(200).json({ circulatingSupply: supply });
