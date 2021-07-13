@@ -37,11 +37,11 @@ describe('VerificationMethodService', () => {
       id: 'fake_transaction',
       type: 1,
       sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+      party: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       associationType: 0x0107,
     };
 
-    expectedMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient, Math.floor(mockTimestamp / 1000));
+    expectedMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.party, Math.floor(mockTimestamp / 1000));
   });
 
   afterEach(async () => {
@@ -61,10 +61,10 @@ describe('VerificationMethodService', () => {
         .toStrictEqual(expectedMethod);
     });
 
-    test('should not index if recipient is unknown', async () => {
+    test('should not index if party is unknown', async () => {
       const spies = spy();
 
-      transaction.recipient = null;
+      transaction.party = null;
 
       await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
@@ -92,7 +92,7 @@ describe('VerificationMethodService', () => {
       const expectedRevokedMethod = new VerificationMethod(
         transaction.associationType,
         transaction.sender,
-        transaction.recipient,
+        transaction.party,
         Math.floor(mockTimestamp / 1000),
         Math.floor(mockTimestamp / 1000),
       );
