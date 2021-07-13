@@ -8,6 +8,7 @@ import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
 import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
+import { Role } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -49,7 +50,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
     const result: VerificationMethod[] = [];
-    const methods = await this.storage.getObject(`lto:verification:${address}`);
+    const methods = await this.storage.getObject(`lto:verification:${address}`).catch(() => { return {} });
 
     for (const key in methods) {
       const data: MethodObject = methods[key];
@@ -65,12 +66,24 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
-    const data = await this.storage.getObject(`lto:verification:${address}`);
+    const data = await this.storage.getObject(`lto:verification:${address}`).catch(() => { return {} });;
     const newData = verificationMethod.json();
 
     data[newData.recipient] = newData;
 
-    return this.storage.addObject(`lto:verification:${address}`, data);
+    return this.storage.setObject(`lto:verification:${address}`, data);
+  }
+
+  async getRolesFor(address: string): Promise<object> {
+    return this.storage.getObject(`lto:roles:${address}`).catch(() => { return {} });
+  }
+
+  async saveRoleAssociation(party: string, sender: string, data: Role): Promise<void> {
+    const roles = await this.storage.getObject(`lto:roles:${party}`).catch(() => { return {} });
+    
+    roles[data.role] = { sender, type: data.type };
+
+    return this.storage.setObject(`lto:roles:${party}`, roles);
   }
 
   async saveAssociation(transaction: Transaction) {

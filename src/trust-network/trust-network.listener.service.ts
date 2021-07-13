@@ -1,23 +1,23 @@
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { EmitterService } from '../emitter/emitter.service';
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { VerificationMethodService } from './verification-method.service';
+import { TrustNetworkService } from './trust-network.service';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
-export class VerificationMethodListenerService implements OnModuleInit {
+export class TrustNetworkListenerService implements OnModuleInit {
 
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
-    private readonly verificationMethodService: VerificationMethodService,
+    private readonly trustNetworkService: TrustNetworkService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('verification_method')) {
-      this.logger.debug(`transaction-listener: Not processing verification method`);
+    if (!this.config.isProcessorEnabled('trust_network')) {
+      this.logger.debug(`transaction-listener: Not processing trust network`);
       return;
     }
     this.onIndexTransaction();
@@ -25,7 +25,7 @@ export class VerificationMethodListenerService implements OnModuleInit {
   async onIndexTransaction() {
     this.indexEmitter.on(
       IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.verificationMethodService.index(val),
+      (val: IndexEventsReturnType['IndexTransaction']) => this.trustNetworkService.index(val),
     );
   }
 }
