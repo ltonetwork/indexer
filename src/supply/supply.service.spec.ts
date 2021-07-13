@@ -117,5 +117,13 @@ describe('SupplyService', () => {
         expect(result).toBe(10);
       });
     });
+
+    // @todo: tests
+    describe('getFeeBurnFeatureHeight()', () => {});
+    describe('isFeatureActivated()', () => {});
+  });
+
+  describe('circulating supply', () => {
+    describe('getCirculatingSupply()', () => {});
   });
 });

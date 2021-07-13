@@ -128,6 +128,15 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return Number(value);
   }
 
+  async setFeeBurnFeatureHeight(value: string): Promise<void> {
+    return this.storage.setValue('lto:supply:feeburnheight', value);
+  }
+
+  async getFeeBurnFeatureHeight(): Promise<number | Error> {
+    const value = await this.storage.getValue('lto:supply:feeburnheight');
+    return Number(value);
+  }
+
   private formatPeriod(date: Date): string {
     const year = String(date.getUTCFullYear());
     const month = ('0' + (date.getUTCMonth() + 1)).substr(-2);

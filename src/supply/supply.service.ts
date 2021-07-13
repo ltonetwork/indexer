@@ -39,25 +39,12 @@ export class SupplyService {
   }
 
   async incrTxFeeBurned(blockHeight: number): Promise<void> {
-    const activationStatus = await this.node.getActivationStatus().catch(() => null);
-    if (!activationStatus) {
-      return;
-    }
-
-    const feeBurnFeature = activationStatus.features.find(each => each.id === 12);
-    if (!feeBurnFeature) {
-      return;
-    }
-
-    if (blockHeight < feeBurnFeature.activationHeight) {
+    const isFeatureActivated = await this.isFeatureActivated(blockHeight);
+    if (!isFeatureActivated) {
       return;
     }
 
     const value = await this.storage.getTxFeeBurned().catch(() => '0');
-
-    if (value === '0') {
-      return;
-    }
 
     const burnFee = 0.1;
     const current = Number(value);
@@ -68,5 +55,37 @@ export class SupplyService {
 
   async getTxFeeBurned(): Promise<number> {
     return this.storage.getTxFeeBurned();
+  }
+
+  async getFeeBurnFeatureHeight(): Promise<number | Error> {
+    return this.storage.getFeeBurnFeatureHeight();
+  }
+
+  async isFeatureActivated(blockHeight: number): Promise<boolean> {
+    const activationHeight = await this.getFeeBurnFeatureHeight().catch(() => null);
+
+    if (!activationHeight) {
+      const activationStatus = await this.node.getActivationStatus().catch(() => null);
+      if (!activationStatus) {
+        return false;
+      }
+  
+      const feeBurnFeature = activationStatus.features.find(each => each.id === 12);
+      if (!feeBurnFeature || !feeBurnFeature.activationHeight) {
+        return false;
+      }
+
+      await this.storage.setFeeBurnFeatureHeight(feeBurnFeature.activationHeight.toString());
+  
+      if (blockHeight < feeBurnFeature.activationHeight) {
+        return false;
+      }
+    }
+
+    if (blockHeight < activationHeight) {
+      return false;
+    }
+
+    return true;
   }
 }
