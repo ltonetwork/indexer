@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AxiosResponse } from 'axios';
 import { NodeService, ActivationStatus } from '../node/node.service';
+import { RequestService } from '../request/request.service';
 import { StorageService } from '../storage/storage.service';
 import { SupplyModuleConfig } from './supply.module';
 import { SupplyService } from './supply.service';
@@ -9,6 +11,7 @@ describe('SupplyService', () => {
   let nodeService: NodeService;
   let supplyService: SupplyService;
   let storageService: StorageService;
+  let requestService: RequestService;
 
   beforeEach(async () => {
     module = await Test.createTestingModule(SupplyModuleConfig).compile();
@@ -17,6 +20,7 @@ describe('SupplyService', () => {
     nodeService = module.get<NodeService>(NodeService);
     supplyService = module.get<SupplyService>(SupplyService);
     storageService = module.get<StorageService>(StorageService);
+    requestService = module.get<RequestService>(RequestService);
   });
 
   afterEach(async () => {
@@ -159,10 +163,43 @@ describe('SupplyService', () => {
     });
   });
 
-  // @todo: make these tests
   describe('circulating supply', () => {
     describe('getCirculatingSupply()', () => {
-      test('should return number with 8 decimal places', () => {});
+      let getTxFeeBurned: jest.SpyInstance<Promise<number>>;
+      let httpGet: jest.SpyInstance<Promise<AxiosResponse | Error>>;
+
+      beforeEach(() => {
+        getTxFeeBurned = jest.spyOn(storageService, 'getTxFeeBurned').mockImplementation(async () => 5);
+        httpGet = jest.spyOn(requestService, 'get').mockImplementation(async () => {
+          return {
+            data: {
+              volume: {
+                lto: { supply: 10, burned: 5 },
+                lto20: { supply: 10, burned: 5 }
+              }
+            }
+          } as AxiosResponse;
+        });
+      });
+
+      test('should calculate the result correctly with 8 decimal places', async () => {
+        const result = await supplyService.getCirculatingSupply();
+
+        expect(httpGet.mock.calls.length).toBe(1);
+        expect(httpGet.mock.calls[0][0]).toBe('https://bridge.lto.network/stats');
+
+        expect(getTxFeeBurned.mock.calls.length).toBe(1);
+
+        expect(result).toBe('5.00000000');
+      });
+
+      test('should reject if bridge stats request fails', async () => {
+        httpGet = jest.spyOn(requestService, 'get').mockRejectedValue('some error');
+
+        await supplyService.getCirculatingSupply().catch(error => {
+          expect(error).toBe('some error');
+        });
+      });
     });
   });
 });

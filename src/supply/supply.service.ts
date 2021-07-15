@@ -1,44 +1,94 @@
 import { Injectable } from '@nestjs/common';
 import { StorageService } from '../storage/storage.service';
 import { ActivationStatus, NodeService } from '../node/node.service';
+import { RequestService } from '../request/request.service';
+
+export interface BridgeStats {
+  burn_rate: number;
+  burned: number;
+  volume: {
+    lto: {
+      address: string;
+      total: number;
+      supply: number;
+      burned: number;
+      remaining: number;
+      burn_fee: number;
+    },
+    lto20: {
+      address: string;
+      total: number;
+      supply: number;
+      bridge: number;
+      initial: number;
+      burned: number;
+      burn_fee: number;
+    },
+    binance: {
+      address: string;
+      total: number;
+      bridge: number;
+      supply: number;
+      burn_fee: number;
+    }
+  }
+}
 
 @Injectable()
 export class SupplyService {
+  private bridgeUrl: string = 'https://bridge.lto.network'
+
+  constructor(
+    private readonly node: NodeService,
+    private readonly storage: StorageService,
+    private readonly request: RequestService,
+  ) { }
+
   // @todo: get information from bridge
   //        https://bridge.lto.network
   //        this contains the total supply, burn wallets, ERC20
   //        tx fee burn will be an index calculated here
 
-  // @todo: What is supply:
+  // What is supply:
   //        total supply
   //        minus balance of burn wallets
   //        minus amount burned in ERC20 (or LTO20)
   //        minus TX fee burn
   //        minus locked from spreadsheet
 
-  // @todo: For fee burn:
+  // @todo: get fee burn
   //        count number of txs since block where feature activated * 0.1 LTO (tx fee burn)
   //        the fee burn for each tx changes to a percentage with the new feature vote of v1.4
 
-  // @todo: For locked:
+  // @todo: get information from locked spreadsheet
   //        https://docs.google.com/spreadsheets/d/1SaPvNOHk8SPMEUP9L-1OOBpGw8b6xKxQkmJE9f5zsA8/edit#gid=604296154
   //        the locked spreadsheet column Q has the new locked value
   //        retrieve the locked for current month (July 2021 = Q43 for example)
   //          - the amount should equal [ Q96 (total) - Q43 (locked) ] for July 2021
-
-  constructor(
-    private readonly node: NodeService,
-    private readonly storage: StorageService,
-  ) { }
-
   async getCirculatingSupply(): Promise<string> {
     const txFeeBurn = await this.getTxFeeBurned();
+    const bridgeStats = await this.request.get<BridgeStats>(`${this.bridgeUrl}/stats`);
+    if (bridgeStats instanceof Error) {
+      return Promise.reject(bridgeStats);
+    }
 
-    // @todo: get the rest of the info
+    const result = this.calculateResult(bridgeStats.data, txFeeBurn);
+    return this.fixedDecimals(result);
+  }
 
-    const result = (Math.round(txFeeBurn * 100) / 100).toFixed(8);
+  private calculateResult(bridgeStats: BridgeStats, txFeeBurn: number): number {
+    // @todo: minus locked from spreadsheet
+    return (
+      bridgeStats.volume.lto.supply
+      + bridgeStats.volume.lto20.supply
+      - bridgeStats.volume.lto.burned
+      - bridgeStats.volume.lto20.burned
+      - txFeeBurn
+    );
+  }
 
-    return Promise.resolve(result);
+  private fixedDecimals(input: number): string {
+    return (Math.round(input * 100) / 100).toFixed(8);
   }
 
   async incrTxFeeBurned(blockHeight: number): Promise<void> {
