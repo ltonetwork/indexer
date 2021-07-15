@@ -21,6 +21,9 @@ describe('SupplyService', () => {
     supplyService = module.get<SupplyService>(SupplyService);
     storageService = module.get<StorageService>(StorageService);
     requestService = module.get<RequestService>(RequestService);
+
+    // january 2021 = 294114776 (see locked-supply.data.json)
+    jest.spyOn(Date, 'now').mockImplementation(() => new Date('2021-01-01T13:13:37.000Z').valueOf());
   });
 
   afterEach(async () => {
@@ -174,8 +177,8 @@ describe('SupplyService', () => {
           return {
             data: {
               volume: {
-                lto: { supply: 10, burned: 5 },
-                lto20: { supply: 10, burned: 5 }
+                lto: { supply: 500000000, burned: 100000000 },
+                lto20: { supply: 100000000, burned: 50000000 }
               }
             }
           } as AxiosResponse;
@@ -190,7 +193,7 @@ describe('SupplyService', () => {
 
         expect(getTxFeeBurned.mock.calls.length).toBe(1);
 
-        expect(result).toBe('5.00000000');
+        expect(result).toBe('155885219.00000000');
       });
 
       test('should reject if bridge stats request fails', async () => {

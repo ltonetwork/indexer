@@ -1,7 +1,9 @@
+import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 import { StorageService } from '../storage/storage.service';
 import { ActivationStatus, NodeService } from '../node/node.service';
 import { RequestService } from '../request/request.service';
+import LockedSupplyData from './locked-supply.data.json';
 
 export interface BridgeStats {
   burn_rate: number;
@@ -43,28 +45,12 @@ export class SupplyService {
     private readonly storage: StorageService,
     private readonly request: RequestService,
   ) { }
-
-  // @todo: get information from bridge
-  //        https://bridge.lto.network
-  //        this contains the total supply, burn wallets, ERC20
-  //        tx fee burn will be an index calculated here
-
   // What is supply:
   //        total supply
   //        minus balance of burn wallets
   //        minus amount burned in ERC20 (or LTO20)
   //        minus TX fee burn
   //        minus locked from spreadsheet
-
-  // @todo: get fee burn
-  //        count number of txs since block where feature activated * 0.1 LTO (tx fee burn)
-  //        the fee burn for each tx changes to a percentage with the new feature vote of v1.4
-
-  // @todo: get information from locked spreadsheet
-  //        https://docs.google.com/spreadsheets/d/1SaPvNOHk8SPMEUP9L-1OOBpGw8b6xKxQkmJE9f5zsA8/edit#gid=604296154
-  //        the locked spreadsheet column Q has the new locked value
-  //        retrieve the locked for current month (July 2021 = Q43 for example)
-  //          - the amount should equal [ Q96 (total) - Q43 (locked) ] for July 2021
   async getCirculatingSupply(): Promise<string> {
     const txFeeBurn = await this.getTxFeeBurned();
     const bridgeStats = await this.request.get<BridgeStats>(`${this.bridgeUrl}/stats`);
@@ -72,18 +58,20 @@ export class SupplyService {
       return Promise.reject(bridgeStats);
     }
 
-    const result = this.calculateResult(bridgeStats.data, txFeeBurn);
+    const locked = this.getLockedSupply();
+    const result = this.calculateResult(bridgeStats.data, locked, txFeeBurn);
+
     return this.fixedDecimals(result);
   }
 
-  private calculateResult(bridgeStats: BridgeStats, txFeeBurn: number): number {
-    // @todo: minus locked from spreadsheet
+  private calculateResult(stats: BridgeStats, locked: number, burnFee: number): number {
     return (
-      bridgeStats.volume.lto.supply
-      + bridgeStats.volume.lto20.supply
-      - bridgeStats.volume.lto.burned
-      - bridgeStats.volume.lto20.burned
-      - txFeeBurn
+      stats.volume.lto.supply
+      + stats.volume.lto20.supply
+      - stats.volume.lto.burned
+      - stats.volume.lto20.burned
+      - burnFee
+      - locked
     );
   }
 
@@ -139,5 +127,12 @@ export class SupplyService {
     }
 
     return true;
+  }
+
+  private getLockedSupply(): number {
+    const year = moment().format('YYYY');
+    const month = moment().format('MMM').toLowerCase();
+
+    return LockedSupplyData[year][month] || 0;
   }
 }
