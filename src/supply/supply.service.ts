@@ -59,12 +59,23 @@ export class SupplyService {
     }
 
     const locked = this.getLockedSupply();
-    const result = this.calculateResult(bridgeStats.data, locked, txFeeBurn);
+    const result = this.calculateCirculatingSupply(bridgeStats.data, locked, txFeeBurn);
 
     return this.fixedDecimals(result);
   }
 
-  private calculateResult(stats: BridgeStats, locked: number, burnFee: number): number {
+  async getMaxSupply(): Promise<string> {
+    const bridgeStats = await this.request.get<BridgeStats>(`${this.bridgeUrl}/stats`);
+    if (bridgeStats instanceof Error) {
+      return Promise.reject(bridgeStats);
+    }
+
+    const maxSupply = bridgeStats.data.volume.lto.supply + bridgeStats.data.volume.lto20.supply;
+
+    return this.fixedDecimals(maxSupply)
+  }
+
+  private calculateCirculatingSupply(stats: BridgeStats, locked: number, burnFee: number): number {
     return (
       stats.volume.lto.supply
       + stats.volume.lto20.supply

@@ -33,4 +33,26 @@ export class SupplyController {
     }
 
   }
+
+  @Get('max')
+  @ApiOperation({ summary: 'Get max supply' })
+  @ApiQuery({ name: 'output', required: false, description: 'Flag for type of output', enum: ['raw'] })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 500, description: 'failed to get max supply' })
+  async getMaxSupply(@Req() req: Request, @Res() res: Response): Promise<Response> {
+    const isRaw = req.query.output === 'raw';
+
+    try {
+      const supply = await this.supplyService.getMaxSupply();
+
+      if (isRaw) {
+        return res.status(200).contentType('text/plain').send(supply);
+      }
+
+      return res.status(200).json({ maxSupply: supply });
+    } catch (error) {
+      return res.status(500).json({ error: `failed to get max supply: ${error}` });
+    }
+
+  }
 }

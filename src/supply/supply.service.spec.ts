@@ -166,42 +166,74 @@ describe('SupplyService', () => {
     });
   });
 
-  describe('circulating supply', () => {
-    describe('getCirculatingSupply()', () => {
-      let getTxFeeBurned: jest.SpyInstance<Promise<number>>;
-      let httpGet: jest.SpyInstance<Promise<AxiosResponse | Error>>;
+  describe('getCirculatingSupply()', () => {
+    let getTxFeeBurned: jest.SpyInstance<Promise<number>>;
+    let httpGet: jest.SpyInstance<Promise<AxiosResponse | Error>>;
 
-      beforeEach(() => {
-        getTxFeeBurned = jest.spyOn(storageService, 'getTxFeeBurned').mockImplementation(async () => 5);
-        httpGet = jest.spyOn(requestService, 'get').mockImplementation(async () => {
-          return {
-            data: {
-              volume: {
-                lto: { supply: 500000000, burned: 100000000 },
-                lto20: { supply: 100000000, burned: 50000000 }
-              }
+    beforeEach(() => {
+      getTxFeeBurned = jest.spyOn(storageService, 'getTxFeeBurned').mockImplementation(async () => 5);
+      httpGet = jest.spyOn(requestService, 'get').mockImplementation(async () => {
+        return {
+          data: {
+            volume: {
+              lto: { supply: 500000000, burned: 100000000 },
+              lto20: { supply: 100000000, burned: 50000000 }
             }
-          } as AxiosResponse;
-        });
+          }
+        } as AxiosResponse;
       });
+    });
 
-      test('should calculate the result correctly with 8 decimal places', async () => {
-        const result = await supplyService.getCirculatingSupply();
+    test('should calculate the result correctly with 8 decimal places', async () => {
+      const result = await supplyService.getCirculatingSupply();
 
-        expect(httpGet.mock.calls.length).toBe(1);
-        expect(httpGet.mock.calls[0][0]).toBe('https://bridge.lto.network/stats');
+      expect(httpGet.mock.calls.length).toBe(1);
+      expect(httpGet.mock.calls[0][0]).toBe('https://bridge.lto.network/stats');
 
-        expect(getTxFeeBurned.mock.calls.length).toBe(1);
+      expect(getTxFeeBurned.mock.calls.length).toBe(1);
 
-        expect(result).toBe('155885219.00000000');
+      expect(result).toBe('155885219.00000000');
+    });
+
+    test('should reject if bridge stats request fails', async () => {
+      httpGet = jest.spyOn(requestService, 'get').mockRejectedValue('some error');
+
+      await supplyService.getCirculatingSupply().catch(error => {
+        expect(error).toBe('some error');
       });
+    });
+  });
 
-      test('should reject if bridge stats request fails', async () => {
-        httpGet = jest.spyOn(requestService, 'get').mockRejectedValue('some error');
+  describe('getMaxSupply()', () => {
+    let httpGet: jest.SpyInstance<Promise<AxiosResponse | Error>>;
 
-        await supplyService.getCirculatingSupply().catch(error => {
-          expect(error).toBe('some error');
-        });
+    beforeEach(() => {
+      httpGet = jest.spyOn(requestService, 'get').mockImplementation(async () => {
+        return {
+          data: {
+            volume: {
+              lto: { supply: 500000000, burned: 100000000 },
+              lto20: { supply: 100000000, burned: 50000000 }
+            }
+          }
+        } as AxiosResponse;
+      });
+    });
+
+    test('should calculate the result correctly with 8 decimal places', async () => {
+      const result = await supplyService.getMaxSupply();
+
+      expect(httpGet.mock.calls.length).toBe(1);
+      expect(httpGet.mock.calls[0][0]).toBe('https://bridge.lto.network/stats');
+
+      expect(result).toBe('600000000.00000000');
+    });
+
+    test('should reject if bridge stats request fails', async () => {
+      httpGet = jest.spyOn(requestService, 'get').mockRejectedValue('some error');
+
+      await supplyService.getMaxSupply().catch(error => {
+        expect(error).toBe('some error');
       });
     });
   });

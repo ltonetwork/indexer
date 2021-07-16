@@ -11,6 +11,7 @@ describe('SupplyController', () => {
 
   function spy() {
     const supply = {
+      getMaxSupply: jest.spyOn(supplyService, 'getMaxSupply').mockImplementation(async () => '87654321.87654321'),
       getCirculatingSupply: jest.spyOn(supplyService, 'getCirculatingSupply').mockImplementation(async () => '12345678.12345678'),
     };
 
@@ -66,6 +67,46 @@ describe('SupplyController', () => {
 
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ error: 'failed to get circulating supply: some error' });
+    });
+  });
+
+  describe('GET /max/', () => {
+    test('should return the result', async () => {
+      const spies = spy();
+
+      const res = await request(app.getHttpServer())
+        .get(`/supply/max`)
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
+      expect(res.body).toEqual({ maxSupply: '87654321.87654321' });
+
+      expect(spies.supply.getMaxSupply.mock.calls.length).toBe(1);
+    });
+
+    test('should return the raw result if parameter is given', async () => {
+      const spies = spy();
+
+      const res = await request(app.getHttpServer())
+        .get(`/supply/max?output=raw`)
+        .send();
+
+      expect(res.header['content-type']).toBe('text/plain; charset=utf-8');
+      expect(res.text).toBe('87654321.87654321');
+    });
+
+    test('should return 500 if the service fails', async () => {
+      const spies = spy();
+
+      spies.supply.getMaxSupply.mockRejectedValue('some error');
+
+      const res = await request(app.getHttpServer())
+        .get(`/supply/max`)
+        .send();
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: 'failed to get max supply: some error' });
     });
   });
 });
