@@ -6,10 +6,9 @@ import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
-export class AssociationsService implements OnModuleInit {
+export class AssociationsService {
 
   private transactionTypes: number[];
-  private root: string;
 
   constructor(
     readonly logger: LoggerService,
@@ -17,10 +16,6 @@ export class AssociationsService implements OnModuleInit {
     readonly storage: StorageService,
   ) {
     this.transactionTypes = [16, 17];
-  }
-
-  onModuleInit(): void {
-    this.root = this.config.getAssociationsRoot();
   }
 
   async index(index: IndexDocumentType): Promise<void> {
@@ -34,20 +29,26 @@ export class AssociationsService implements OnModuleInit {
 
     const associationIndexing = this.config.getAssociationIndexing();
     const senderRoles = await this.storage.getRolesFor(sender);
-    const isSenderNotTrustNetwork = Object.keys(senderRoles).length === 0;
+    const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
 
     if (associationIndexing === 'none') {
+      this.logger.debug(`association-service: Association indexing set to "none"`);
       return;
     }
 
-    if (associationIndexing === 'trust' && isSenderNotTrustNetwork) {
+    if (associationIndexing === 'trust' && !isSenderTrustNetwork) {
+      this.logger.debug(`association-service: Sender is not part of trust network`);
       return;
     }
 
     const associations = await this.storage.getAssociations(sender);
+    const associationsRoot = this.config.getAssociationsRoot();
 
-    if (sender !== this.config.getAssociationsRoot() || associations.parents.length <= 0) {
-      this.logger.debug(`association-service: Sender not root or unregistered provider`);
+    const senderIsRoot = sender === associationsRoot;
+    const senderHasParents = associations.parents.length > 0;
+
+    if (!senderIsRoot && !senderHasParents) {
+      this.logger.debug(`association-service: Sender is unregistered provider`);
       return;
     }
 
@@ -57,8 +58,6 @@ export class AssociationsService implements OnModuleInit {
     } else if (transaction.type === 17) {
       this.logger.debug(`association-service: Removing association`);
       return this.storage.removeAssociation(transaction);
-    } else {
-      this.logger.debug(`association-service: Transaction not association type`);
     }
   }
 
