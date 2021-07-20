@@ -26,7 +26,7 @@ export class AnchorService {
 
     const anchorIndexing = this.config.getAnchorIndexing();
     const senderRoles = await this.storage.getRolesFor(sender);
-    const isSenderTrustNetwork = Object.keys(senderRoles).length === 0;
+    const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
 
     if (anchorIndexing === 'none') {
       return;
@@ -36,7 +36,7 @@ export class AnchorService {
       return;
     }
 
-    if (anchorIndexing === 'trust' && isSenderTrustNetwork) {
+    if (anchorIndexing === 'trust' && !isSenderTrustNetwork) {
       return;
     }
 
@@ -57,7 +57,7 @@ export class AnchorService {
         }
       }
     } else if (transaction.type === 15 && !!transaction.anchors) {
-      transaction.anchors.forEach(async anchor => {
+      for (const anchor of transaction.anchors) {
         const hexHash = this.encoder.hexEncode(
           this.encoder.base58Decode(anchor),
         );
@@ -67,7 +67,7 @@ export class AnchorService {
           blockHeight,
           position,
         });
-      });
+      }
     }
   }
 }

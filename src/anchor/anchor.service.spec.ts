@@ -101,16 +101,12 @@ describe('AnchorService', () => {
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
     });
 
-    test('should only process "trust" anchors when configured', async () => {
+    test('should process "trust" anchor if sender is trusted', async () => {
       const spies = spy();
 
       spies.config.getAnchorIndexing = jest.spyOn(configService, 'getAnchorIndexing').mockImplementation(() => 'trust');
-      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async (address: string) => {
-        if (address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ') {
-          return { root: { description: 'The root role' } };
-        }
-
-        return {};
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+        return { root: { description: 'The root role' } };
       });
 
       const transaction = {
@@ -124,12 +120,27 @@ describe('AnchorService', () => {
 
       await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
-      transaction.id = 'second_fake_transaction';
-      transaction.sender = '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ';
-
-      await anchorService.index({transaction: transaction as any, blockHeight: 2, position: 1});
-
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
+    });
+
+    test('should not process "trust" anchors if sender is not trusted', async () => {
+      const spies = spy();
+
+      spies.config.getAnchorIndexing = jest.spyOn(configService, 'getAnchorIndexing').mockImplementation(() => 'trust');
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => { return {} });
+
+      const transaction = {
+        id: 'fake_transaction',
+        type: 15,
+        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+        anchors: [
+          '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
+        ],
+      };
+
+      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+      expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
     });
   });
 });
