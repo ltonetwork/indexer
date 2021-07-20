@@ -30,6 +30,9 @@ export class AssociationsService implements OnModuleInit {
       return ;
     }
 
+    // @todo: make it so that association type doesn't matter for indexing
+    // @todo: add config for indexing `none`, `trust` or `all` associations
+
     this.logger.debug(`association-service: Indexing association`);
 
     if (transaction.type === 16) {
@@ -39,6 +42,7 @@ export class AssociationsService implements OnModuleInit {
     }
   }
 
+  // @todo: do this on index method instead and remove createAssocIndex
   async createAssocIndex(transaction: Transaction) {
 
     const {sender, associationType} = transaction;
@@ -56,6 +60,7 @@ export class AssociationsService implements OnModuleInit {
     }
   }
 
+  // @todo: do this on index method instead and remove removeAssocIndex
   async removeAssocIndex(transaction: Transaction) {
     const {sender, associationType} = transaction;
 
