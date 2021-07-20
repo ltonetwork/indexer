@@ -99,7 +99,7 @@ export class SupplyService {
     const current = await this.storage.getTxFeeBurned().catch<number>(() => 0);
 
     const burnFee = 0.1;
-    const newValue = current + (1 * burnFee);
+    const newValue = current + burnFee;
 
     return this.storage.setTxFeeBurned(newValue.toString());
   }

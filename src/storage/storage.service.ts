@@ -18,7 +18,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
     private readonly moduleRef: ModuleRef,
-    ) { }
+  ) { }
 
   async onModuleInit() {
     if (this.config.getStorageType() === StorageTypeEnum.Redis) {

@@ -175,16 +175,16 @@ describe('TransactionService', () => {
       await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.incrTxStats.mock.calls.length).toBe(3);
-      
+
       expect(spies.storage.incrTxStats.mock.calls[0][0]).toBe('mass_transfer');
       expect(spies.storage.incrTxStats.mock.calls[0][1]).toBe(18696);
-      
+
       expect(spies.storage.incrTxStats.mock.calls[1][0]).toBe('all_transfers');
       expect(spies.storage.incrTxStats.mock.calls[1][1]).toBe(18696);
-      
+
       expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
       expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
-      
+
       expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(3);
 
       expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1);
