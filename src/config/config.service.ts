@@ -136,4 +136,8 @@ export class ConfigService {
   getRoles(): RoleConfig {
     return this.config.get('roles');
   }
+
+  getAssociationIndexing(): 'none' | 'trust' | 'all' {
+    return this.config.get('association_indexing');
+  }
 }

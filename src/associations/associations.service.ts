@@ -23,57 +23,42 @@ export class AssociationsService implements OnModuleInit {
     this.root = this.config.getAssociationsRoot();
   }
 
-  async index(index: IndexDocumentType) {
+  async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
+    const { sender } = transaction;
 
     if (this.transactionTypes.indexOf(transaction.type) === -1){
-      return ;
+      this.logger.debug(`association-service: Unknown transaction type`);
+      return;
     }
 
-    // @todo: make it so that association type doesn't matter for indexing
-    // @todo: add config for indexing `none`, `trust` or `all` associations
+    const associationIndexing = this.config.getAssociationIndexing();
+    const senderRoles = await this.storage.getRolesFor(sender);
+    const isSenderNotTrustNetwork = Object.keys(senderRoles).length === 0;
 
-    this.logger.debug(`association-service: Indexing association`);
+    if (associationIndexing === 'none') {
+      return;
+    }
+
+    if (associationIndexing === 'trust' && isSenderNotTrustNetwork) {
+      return;
+    }
+
+    const associations = await this.storage.getAssociations(sender);
+
+    if (sender !== this.config.getAssociationsRoot() || associations.parents.length <= 0) {
+      this.logger.debug(`association-service: Sender not root or unregistered provider`);
+      return;
+    }
 
     if (transaction.type === 16) {
-      return this.createAssocIndex(transaction);
+      this.logger.debug(`association-service: Saving association`);
+      return this.storage.saveAssociation(transaction);
     } else if (transaction.type === 17) {
-      return this.removeAssocIndex(transaction);
-    }
-  }
-
-  // @todo: do this on index method instead and remove createAssocIndex
-  async createAssocIndex(transaction: Transaction) {
-
-    const {sender, associationType} = transaction;
-
-    if (this.config.getAssociationTypes().indexOf(associationType) === -1) {
-      this.logger.debug(`Ingoring association because unknown type ${associationType}`);
-      return;
-    }
-
-    const associations = await this.storage.getAssociations(sender);
-    if (sender === this.config.getAssociationsRoot() || associations.parents.length > 0) {
-      this.storage.saveAssociation(transaction);
+      this.logger.debug(`association-service: Removing association`);
+      return this.storage.removeAssociation(transaction);
     } else {
-      this.logger.debug(`association-service: Ignoring because sender not root or unregistered provider`);
-    }
-  }
-
-  // @todo: do this on index method instead and remove removeAssocIndex
-  async removeAssocIndex(transaction: Transaction) {
-    const {sender, associationType} = transaction;
-
-    if (this.config.getAssociationTypes().indexOf(associationType) === -1) {
-      this.logger.debug(`Ingoring association because unknown type ${associationType}`);
-      return;
-    }
-
-    const associations = await this.storage.getAssociations(sender);
-    if (sender === this.config.getAssociationsRoot() || associations.parents.length > 0) {
-      this.storage.removeAssociation(transaction);
-    } else {
-      this.logger.debug(`association-service: Ignoring because sender not root or unregistered provider`);
+      this.logger.debug(`association-service: Transaction not association type`);
     }
   }
 

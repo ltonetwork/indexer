@@ -18,8 +18,6 @@ describe('AssociationsService', () => {
 
   // @todo: make these tests
   describe('index()', () => {
-    // spy on createAssocIndex and removeAssocIndex
-
     test('should index an association (create)', async () => {});
     test('should index a revoke (remove)', async () => {});
     test('should skip if transaction type is not association', async () => {});
