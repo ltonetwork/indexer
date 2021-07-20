@@ -2,11 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionModuleConfig } from './transaction.module';
 import { TransactionService } from './transaction.service';
 import { StorageService } from '../storage/storage.service';
+import { SupplyService } from '../supply/supply.service';
 
 describe('TransactionService', () => {
   let module: TestingModule;
   let transactionService: TransactionService;
   let storageService: StorageService;
+  let supplyService: SupplyService;
 
   function spy() {
     const storage = {
@@ -14,7 +16,11 @@ describe('TransactionService', () => {
       incrTxStats: jest.spyOn(storageService, 'incrTxStats').mockImplementation(async () => {}),
     };
 
-    return { storage };
+    const supply = {
+      incrTxFeeBurned: jest.spyOn(supplyService, 'incrTxFeeBurned').mockImplementation(async () => {}),
+    }
+
+    return { storage, supply };
   }
 
   beforeEach(async () => {
@@ -23,6 +29,7 @@ describe('TransactionService', () => {
 
     transactionService = module.get<TransactionService>(TransactionService);
     storageService = module.get<StorageService>(StorageService);
+    supplyService = module.get<SupplyService>(SupplyService);
   });
 
   afterEach(async () => {
@@ -122,6 +129,10 @@ describe('TransactionService', () => {
       expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
       expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
 
+      expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(3);
+
+      expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1);
+
       expect(spies.storage.indexTx.mock.calls.length).toBe(6);
 
       expect(spies.storage.indexTx.mock.calls[0][0]).toBe('transfer');
@@ -173,6 +184,10 @@ describe('TransactionService', () => {
 
       expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
       expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
+
+      expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(3);
+
+      expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(12);
 
