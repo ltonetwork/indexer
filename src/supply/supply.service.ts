@@ -70,7 +70,9 @@ export class SupplyService {
       return Promise.reject(bridgeStats);
     }
 
-    const maxSupply = bridgeStats.data.volume.lto.supply + bridgeStats.data.volume.lto20.supply;
+    const maxSupply = bridgeStats.data.volume.lto.supply
+                      + bridgeStats.data.volume.lto20.supply
+                      + bridgeStats.data.volume.binance.supply;
 
     return this.fixedDecimals(maxSupply)
   }
@@ -79,8 +81,7 @@ export class SupplyService {
     return (
       stats.volume.lto.supply
       + stats.volume.lto20.supply
-      - stats.volume.lto.burned
-      - stats.volume.lto20.burned
+      + stats.volume.binance.supply
       - burnFee
       - locked
     );

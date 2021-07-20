@@ -171,13 +171,14 @@ describe('SupplyService', () => {
     let httpGet: jest.SpyInstance<Promise<AxiosResponse | Error>>;
 
     beforeEach(() => {
-      getTxFeeBurned = jest.spyOn(storageService, 'getTxFeeBurned').mockImplementation(async () => 5);
+      getTxFeeBurned = jest.spyOn(storageService, 'getTxFeeBurned').mockImplementation(async () => 100000000);
       httpGet = jest.spyOn(requestService, 'get').mockImplementation(async () => {
         return {
           data: {
             volume: {
-              lto: { supply: 500000000, burned: 100000000 },
-              lto20: { supply: 100000000, burned: 50000000 }
+              lto: { supply: 500000000 },
+              lto20: { supply: 100000000 },
+              binance: { supply: 100000000 },
             }
           }
         } as AxiosResponse;
@@ -192,7 +193,7 @@ describe('SupplyService', () => {
 
       expect(getTxFeeBurned.mock.calls.length).toBe(1);
 
-      expect(result).toBe('155885219.00000000');
+      expect(result).toBe('305885224.00000000');
     });
 
     test('should reject if bridge stats request fails', async () => {
@@ -212,8 +213,9 @@ describe('SupplyService', () => {
         return {
           data: {
             volume: {
-              lto: { supply: 500000000, burned: 100000000 },
-              lto20: { supply: 100000000, burned: 50000000 }
+              lto: { supply: 500000000 },
+              lto20: { supply: 100000000 },
+              binance: { supply: 100000000 }
             }
           }
         } as AxiosResponse;
@@ -226,7 +228,7 @@ describe('SupplyService', () => {
       expect(httpGet.mock.calls.length).toBe(1);
       expect(httpGet.mock.calls[0][0]).toBe('https://bridge.lto.network/stats');
 
-      expect(result).toBe('600000000.00000000');
+      expect(result).toBe('700000000.00000000');
     });
 
     test('should reject if bridge stats request fails', async () => {
