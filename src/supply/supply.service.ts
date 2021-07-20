@@ -45,12 +45,7 @@ export class SupplyService {
     private readonly storage: StorageService,
     private readonly request: RequestService,
   ) { }
-  // What is supply:
-  //        total supply
-  //        minus balance of burn wallets
-  //        minus amount burned in ERC20 (or LTO20)
-  //        minus TX fee burn
-  //        minus locked from spreadsheet
+
   async getCirculatingSupply(): Promise<string> {
     const txFeeBurn = await this.getTxFeeBurned();
     const bridgeStats = await this.request.get<BridgeStats>(`${this.bridgeUrl}/stats`);
