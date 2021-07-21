@@ -20,21 +20,6 @@
       "doc": "Root association address",
       "default": "",
       "env": "ASSOCIATIONS_ROOT"
-    },
-    "types": {
-      "doc": "Provider AssoctionType",
-      "default": "10,100,200",
-      "env": "ASSOCIATIONS_PROVIDER_TYPE"
-    },
-    "provider_type": {
-      "doc": "Provider AssoctionType",
-      "default": 10,
-      "env": "ASSOCIATIONS_PROVIDER_TYPE"
-    },
-    "domain_type": {
-      "doc": "Domain AssoctionType",
-      "default": 100,
-      "env": "ASSOCIATIONS_DOMAIN_TYPE"
     }
   },
   "roles": {
