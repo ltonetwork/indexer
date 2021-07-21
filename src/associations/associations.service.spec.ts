@@ -28,7 +28,6 @@ describe('AssociationsService', () => {
 
     const config = {
       getAssociationIndexing: jest.spyOn(configService, 'getAssociationIndexing').mockImplementation(() => 'all'),
-      getAssociationsRoot: jest.spyOn(configService, 'getAssociationsRoot').mockImplementation(() => '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'),
     };
 
     const logger = {
@@ -63,13 +62,10 @@ describe('AssociationsService', () => {
 
       await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
-      expect(spies.config.getAssociationsRoot.mock.calls.length).toBe(1);
       expect(spies.config.getAssociationIndexing.mock.calls.length).toBe(1);
 
       expect(spies.storage.getRolesFor.mock.calls.length).toBe(1);
       expect(spies.storage.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
-      expect(spies.storage.getAssociations.mock.calls.length).toBe(1);
-      expect(spies.storage.getAssociations.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
       
       expect(spies.logger.debug.mock.calls.length).toBe(1);
       expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
@@ -114,40 +110,6 @@ describe('AssociationsService', () => {
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
       expect(spies.storage.removeAssociation.mock.calls.length).toBe(0);
-    });
-
-    test('should index if sender is not root but is registered provider (has parents)', async () => {
-      const spies = spy();
-
-      spies.storage.getAssociations.mockImplementation(async () => {
-        return { parents: ['3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'] };
-      });
-
-      const transaction = {
-        id: 'fake_transaction',
-        type: 16,
-        sender: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ'
-      };
-
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0});
-
-      expect(spies.storage.saveAssociation.mock.calls.length).toBe(1);
-    });
-    
-    test('should not index if sender is unregistered provider (not root and no parents)', async () => {
-      const spies = spy();
-
-      const transaction = {
-        id: 'fake_transaction',
-        type: 16,
-        sender: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ'
-      };
-
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0});
-
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Sender is unregistered provider');
-
-      expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
     });
 
     test('should not index if config is set to "none"', async () => {

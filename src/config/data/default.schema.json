@@ -15,13 +15,6 @@
     "default": 80,
     "env": "PORT"
   },
-  "associations": {
-    "root": {
-      "doc": "Root association address",
-      "default": "",
-      "env": "ASSOCIATIONS_ROOT"
-    }
-  },
   "roles": {
     "doc": "Configuration for roles on trust network",
     "format": "Object",

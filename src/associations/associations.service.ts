@@ -41,17 +41,6 @@ export class AssociationsService {
       return;
     }
 
-    const associations = await this.storage.getAssociations(sender);
-    const associationsRoot = this.config.getAssociationsRoot();
-
-    const senderIsRoot = sender === associationsRoot;
-    const senderHasParents = associations.parents.length > 0;
-
-    if (!senderIsRoot && !senderHasParents) {
-      this.logger.debug(`association-service: Sender is unregistered provider`);
-      return;
-    }
-
     if (transaction.type === 16) {
       this.logger.debug(`association-service: Saving association`);
       return this.storage.saveAssociation(transaction);

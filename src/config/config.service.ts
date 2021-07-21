@@ -108,10 +108,6 @@ export class ConfigService {
     return this.config.get('storage.type');
   }
 
-  getAssociationsRoot(): string {
-    return this.config.get('associations.root');
-  }
-
   isProcessorEnabled(token: string): boolean {
     if (!this.config.has(`index.processor.${token}`)) {
       return true;
