@@ -79,10 +79,6 @@ describe('ConfigService', () => {
       expect(configService.getLoggerCombined()).toEqual({ level: 'debug' });
     });
 
-    test('getAssociationTypes()', async () => {
-      expect(configService.getAssociationTypes()).toEqual([10, 100, 200]);
-    });
-
     test('getRoles()', () => {
       expect(configService.getRoles()).toStrictEqual({
         root: {
