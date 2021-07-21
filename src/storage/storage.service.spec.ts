@@ -367,4 +367,15 @@ describe('StorageService', () => {
       });
     });
   });
+
+  describe('incrOperationStats()', () => {
+    test('should increase the value of operation stats', async () => {
+      const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
+
+      await storageService.incrOperationStats();
+
+      expect(incrValue.mock.calls.length).toBe(1);
+      expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operation`);
+    });
+  });
 });

@@ -14,11 +14,12 @@ describe('TransactionService', () => {
     const storage = {
       indexTx: jest.spyOn(storageService, 'indexTx').mockImplementation(async () => {}),
       incrTxStats: jest.spyOn(storageService, 'incrTxStats').mockImplementation(async () => {}),
+      incrOperationStats: jest.spyOn(storageService, 'incrOperationStats').mockImplementation(async () => {}),
     };
 
     const supply = {
       incrTxFeeBurned: jest.spyOn(supplyService, 'incrTxFeeBurned').mockImplementation(async () => {}),
-    }
+    };
 
     return { storage, supply };
   }
@@ -229,6 +230,65 @@ describe('TransactionService', () => {
       expect(spies.storage.indexTx.mock.calls[11][0]).toBe('all');
       expect(spies.storage.indexTx.mock.calls[11][1]).toBe(transaction.transfers[1].recipient);
       expect(spies.storage.indexTx.mock.calls[11][2]).toBe(transaction.id);
+    });
+
+    describe('operation stats', () => {
+      test('should increase operation stats on regular transaction', async () => {
+        const spies = spy();
+  
+        const transaction = {
+          id: 'fake_transaction',
+          type: 11,
+          sender: 'fake_sender',
+          recipient: 'fake_recipient',
+          timestamp: 1615371049542,
+        };
+  
+        await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+  
+        expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
+      });
+
+      test('should increase operation stats on mass transaction', async () => {
+        const spies = spy();
+  
+        const transaction = {
+          id: 'fake_transaction',
+          type: 11,
+          sender: 'fake_sender',
+          recipient: 'fake_recipient',
+          transfers: [
+            { recipient: 'fake_transfer_1' },
+            { recipient: 'fake_transfer_2' },
+            { recipient: 'fake_transfer_3' },
+          ],
+          timestamp: 1615371049542,
+        };
+  
+        await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+  
+        expect(spies.storage.incrOperationStats.mock.calls.length).toBe(3);
+      });
+
+      test('should not increase operation stats on anchor transaction', async () => {
+        const spies = spy();
+  
+        const transaction = {
+          id: 'fake_transaction',
+          type: 12,
+          sender: 'fake_sender',
+          recipient: 'fake_recipient',
+          anchors: [
+            'some_hash',
+            'another_hash'
+          ],
+          timestamp: 1615371049542,
+        };
+
+        await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+  
+        expect(spies.storage.incrOperationStats.mock.calls.length).toBe(0);
+      });
     });
   });
 });

@@ -35,6 +35,8 @@ export class AnchorService {
             this.encoder.base64Decode(value),
           );
           this.logger.debug(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
+
+          await this.storage.incrOperationStats();
           await this.storage.saveAnchor(hexHash, {
             id: transaction.id,
             blockHeight,
@@ -48,6 +50,8 @@ export class AnchorService {
           this.encoder.base58Decode(anchor),
         );
         this.logger.debug(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
+
+        await this.storage.incrOperationStats();
         await this.storage.saveAnchor(hexHash, {
           id: transaction.id,
           blockHeight,

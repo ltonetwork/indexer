@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
-import TransactionTypes from './const/types.const';
+import TransactionTypes, { ANCHOR_TX } from './const/types.const';
 import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { StorageService } from '../storage/storage.service';
@@ -54,6 +54,14 @@ export class TransactionService {
     }
 
     this.logger.debug(`transaction ${transaction.id}: ` + identifiers.join(' '));
+
+    if (identifiers.indexOf('anchor') === -1) {
+      const iterations = transaction.transfers?.length || 1;
+
+      for (let index = 0; index < iterations; index++) {
+        promises.push(this.storage.incrOperationStats());
+      }
+    }
 
     for (const identifier of identifiers) {
       promises.push(this.supply.incrTxFeeBurned(blockHeight));
