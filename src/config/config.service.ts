@@ -138,6 +138,6 @@ export class ConfigService {
   }
 
   getAnchorIndexing(): 'none' | 'trust' | 'all' {
-    return this.config.get('anchor.node.indexing');
+    return this.config.get('anchor.indexing');
   }
 }
