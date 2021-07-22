@@ -75,6 +75,11 @@
       "default": "lto-index",
       "env": "ANCHOR_LEVELDB"
     },
+    "indexing": {
+      "default": "all",
+      "format": ["none", "trust", "all"],
+      "env": "ANCHOR_INDEXING"
+    },
     "node": {
       "url": {
         "default": "",
