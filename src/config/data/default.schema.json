@@ -25,6 +25,13 @@
     },
     "env": "TRUST_NETWORK_ROLES"
   },
+  "association": {
+    "indexing": {
+      "default": "all",
+      "format": ["none", "trust", "all"],
+      "env": "ASSOCIATION_INDEXING"
+    }
+  },
   "anchor": {
     "doc": "The config of this application, with a namespace so it can be merged into larger configs",
     "api": {
@@ -65,11 +72,6 @@
       },
       "starting_block": 1,
       "restart_sync": false,
-      "association_indexing": {
-        "default": "all",
-        "format": ["none", "trust", "all"],
-        "env": "ASSOCIATION_INDEXING"
-      },
       "anchor_fee": {
         "default": 35000000,
         "env": "ANCHOR_NODE_ANCHOR_FEE"
