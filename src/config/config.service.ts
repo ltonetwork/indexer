@@ -122,6 +122,10 @@ export class ConfigService {
   }
 
   getAssociationIndexing(): 'none' | 'trust' | 'all' {
-    return this.config.get('association_indexing');
+    return this.config.get('association.indexing');
+  }
+
+  getAnchorIndexing(): 'none' | 'trust' | 'all' {
+    return this.config.get('anchor.indexing');
   }
 }
