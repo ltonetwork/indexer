@@ -55,14 +55,6 @@ export class TransactionService {
 
     this.logger.debug(`transaction ${transaction.id}: ` + identifiers.join(' '));
 
-    if (identifiers.indexOf('anchor') === -1) {
-      const iterations = transaction.transfers?.length || 1;
-
-      for (let index = 0; index < iterations; index++) {
-        promises.push(this.storage.incrOperationStats());
-      }
-    }
-
     for (const identifier of identifiers) {
       promises.push(this.supply.incrTxFeeBurned(blockHeight));
       promises.push(this.storage.incrTxStats(identifier, Math.floor(transaction.timestamp / 86400000)));

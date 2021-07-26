@@ -20,6 +20,7 @@ import { AssociationsModule } from './associations/associations.module';
 import { PublicKeyModule } from './public-key/public-key.module';
 import { SupplyModule } from './supply/supply.module';
 import { TrustNetworkModule } from './trust-network/trust-network.module';
+import { OperationStatsModule } from './operation-stats/operation-stats.module';
 
 export const AppModuleConfig = {
   imports: [
@@ -43,6 +44,7 @@ export const AppModuleConfig = {
     PublicKeyModule,
     SupplyModule,
     TrustNetworkModule,
+    OperationStatsModule,
   ],
   controllers: [AppController],
   providers: [],

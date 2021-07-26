@@ -368,14 +368,28 @@ describe('StorageService', () => {
     });
   });
 
-  describe('incrOperationStats()', () => {
-    test('should increase the value of operation stats', async () => {
-      const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
+  describe('operation stats', () => {
+    describe('incrOperationStats()', () => {
+      test('should increase the value of operation stats', async () => {
+        const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
 
-      await storageService.incrOperationStats();
+        await storageService.incrOperationStats();
 
-      expect(incrValue.mock.calls.length).toBe(1);
-      expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operation`);
+        expect(incrValue.mock.calls.length).toBe(1);
+        expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operation`);
+      });
+    });
+
+    describe('getOperationStats()', () => {
+      test('should fetch the value of operation stats', async () => {
+        const getValue = jest.spyOn(redisStorageService, 'getValue').mockImplementation(async () => '15');
+
+        const result = await storageService.getOperationStats();
+
+        expect(getValue.mock.calls.length).toBe(1);
+        expect(getValue.mock.calls[0][0]).toBe(`lto:stats:operation`);
+        expect(result).toBe('15');
+      });
     });
   });
 });

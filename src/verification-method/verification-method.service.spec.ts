@@ -52,7 +52,7 @@ describe('VerificationMethodService', () => {
     test('should index a new verification method', async () => {
       const spies = spy();
 
-      await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});      
+      await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(1);
       expect(spies.storage.saveVerificationMethod.mock.calls[0][0])

@@ -161,6 +161,10 @@
       "trust_network": {
         "default": 1,
         "env": "INDEX_PROCESSOR_TRUST_NETWORK"
+      },
+      "operation_stats": {
+        "default": 1,
+        "env": "INDEX_PROCESSOR_OPERATION_STATS"
       }
     }
   }

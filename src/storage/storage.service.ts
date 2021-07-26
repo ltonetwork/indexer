@@ -126,6 +126,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.incrValue(`lto:stats:operation`);
   }
 
+  async getOperationStats(): Promise<string> {
+    return this.storage.getValue(`lto:stats:operation`);
+  }
+
   async getTxStats(type: string, from: number, to: number): Promise<{period: string, count: number}[]> {
     const length = to - from + 1;
     const keys = Array.from({length}, (v, i) => `lto:txstats:${type}:${from + i}`);
