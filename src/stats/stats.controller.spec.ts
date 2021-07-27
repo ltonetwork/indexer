@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { TransactionService } from '../transaction/transaction.service';
 import { OperationsService } from './operations/operations.service';
 import { StatsModuleConfig } from './stats.module';
 import { StatsService } from './stats.service';
@@ -11,6 +12,7 @@ describe('TrustNetworkController', () => {
   let statsService: StatsService;
   let supplyService: SupplyService;
   let operationsService: OperationsService;
+  let transactionService: TransactionService;
   let app: INestApplication;
 
   function spy() {
@@ -23,7 +25,15 @@ describe('TrustNetworkController', () => {
       getCirculatingSupply: jest.spyOn(supplyService, 'getCirculatingSupply').mockImplementation(async () => '12345678.12345678'),
     };
 
-    return { operations, supply };
+    const transactions = {
+      getStats: jest.spyOn(transactionService, 'getStats').mockImplementation(async () => [
+        { period: '2021-03-01 00:00:00', count: 56847 },
+        { period: '2021-03-02 00:00:00', count: 103698 },
+        { period: '2021-03-03 00:00:00', count: 33329 },
+      ]),
+    };
+
+    return { operations, supply, transactions };
   }
 
   beforeEach(async () => {
@@ -34,6 +44,7 @@ describe('TrustNetworkController', () => {
     statsService = module.get<StatsService>(StatsService);
     supplyService = module.get<SupplyService>(SupplyService);
     operationsService = module.get<OperationsService>(OperationsService);
+    transactionService = module.get<TransactionService>(TransactionService);
   });
 
   afterEach(async () => {
@@ -152,6 +163,50 @@ describe('TrustNetworkController', () => {
 
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ error: 'failed to get max supply: some error' });
+    });
+  });
+
+  describe('GET /stats/transactions/:type/:from/:to', () => {
+    test('should get stats using timestamps', async () => {
+      const spies = spy();
+
+      const res = await request(app.getHttpServer())
+        .get(`/stats/transactions/all/1614597904336/1614793341900`)
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
+      expect(res.body).toEqual([
+        { period: '2021-03-01 00:00:00', count: 56847 },
+        { period: '2021-03-02 00:00:00', count: 103698 },
+        { period: '2021-03-03 00:00:00', count: 33329 },
+      ]);
+
+      expect(spies.transactions.getStats.mock.calls.length).toBe(1);
+      expect(spies.transactions.getStats.mock.calls[0][0]).toBe('all');
+      expect(spies.transactions.getStats.mock.calls[0][1]).toBe(18687);
+      expect(spies.transactions.getStats.mock.calls[0][2]).toBe(18689);
+    });
+
+    test('should get stats using date strings', async () => {
+      const spies = spy();
+
+      const res = await request(app.getHttpServer())
+        .get(`/stats/transactions/all/2021-03-01/2021-03-03`)
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
+      expect(res.body).toEqual([
+        { period: '2021-03-01 00:00:00', count: 56847 },
+        { period: '2021-03-02 00:00:00', count: 103698 },
+        { period: '2021-03-03 00:00:00', count: 33329 },
+      ]);
+
+      expect(spies.transactions.getStats.mock.calls.length).toBe(1);
+      expect(spies.transactions.getStats.mock.calls[0][0]).toBe('all');
+      expect(spies.transactions.getStats.mock.calls[0][1]).toBe(18687);
+      expect(spies.transactions.getStats.mock.calls[0][2]).toBe(18689);
     });
   });
 });
