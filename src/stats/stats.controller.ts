@@ -1,18 +1,36 @@
 import { Controller, Req, Res, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
-import { Response, Request } from 'express';
-import { SupplyService } from './supply.service';
-import { LoggerService } from '../logger/logger.service';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller('supply')
-@ApiTags('supply')
-export class SupplyController {
+import { Response, Request } from 'express';
+
+import { StatsService } from './stats.service';
+import { SupplyService } from './supply/supply.service';
+import { OperationsService } from './operations/operations.service';
+
+@Controller('stats')
+@ApiTags('stats')
+export class StatsController {
   constructor(
-    private readonly logger: LoggerService,
-    private readonly supplyService: SupplyService,
+    private readonly service: StatsService,
+    private readonly operations: OperationsService,
+    private readonly supply: SupplyService,
   ) { }
 
-  @Get('circulating')
+  @Get('/operations')
+  @ApiOperation({ summary: 'Retrieves the operation stats' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 400, description: 'failed to retrieve operation stats' })
+  async getOperationStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
+    try {
+      const operations = await this.operations.getOperationStats();
+
+      return res.status(200).json({ operations });
+    } catch (error) {
+      return res.status(400).json({ error: 'failed to retrieve operation stats' });
+    }
+  }
+
+  @Get('/supply/circulating')
   @ApiOperation({ summary: 'Get circulating supply' })
   @ApiQuery({ name: 'output', required: false, description: 'Flag for type of output', enum: ['raw'] })
   @ApiResponse({ status: 200 })
@@ -21,7 +39,7 @@ export class SupplyController {
     const isRaw = req.query.output === 'raw';
 
     try {
-      const supply = await this.supplyService.getCirculatingSupply();
+      const supply = await this.supply.getCirculatingSupply();
 
       if (isRaw) {
         return res.status(200).contentType('text/plain').send(supply);
@@ -34,7 +52,7 @@ export class SupplyController {
 
   }
 
-  @Get('max')
+  @Get('/supply/max')
   @ApiOperation({ summary: 'Get max supply' })
   @ApiQuery({ name: 'output', required: false, description: 'Flag for type of output', enum: ['raw'] })
   @ApiResponse({ status: 200 })
@@ -43,7 +61,7 @@ export class SupplyController {
     const isRaw = req.query.output === 'raw';
 
     try {
-      const supply = await this.supplyService.getMaxSupply();
+      const supply = await this.supply.getMaxSupply();
 
       if (isRaw) {
         return res.status(200).contentType('text/plain').send(supply);

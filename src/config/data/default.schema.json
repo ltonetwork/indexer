@@ -47,6 +47,26 @@
     },
     "env": "TRUST_NETWORK_ROLES"
   },
+  "stats": {
+    "operations": {
+      "doc": "Statistics for operations in the blockchain",
+      "default": true,
+      "format": "Boolean",
+      "env": "STATS_OPERATIONS"
+    },
+    "transactions": {
+      "doc": "Statistics for transactions in the blockchain",
+      "default": true,
+      "format": "Boolean",
+      "env": "STATS_TRANSACTIONS"
+    },
+    "supply": {
+      "doc": "Statistics for token supply",
+      "default": true,
+      "format": "Boolean",
+      "env": "STATS_SUPPLY"
+    }
+  },
   "anchor": {
     "doc": "The config of this application, with a namespace so it can be merged into larger configs",
     "api": {
@@ -167,9 +187,9 @@
         "default": 1,
         "env": "INDEX_PROCESSOR_TRUST_NETWORK"
       },
-      "operation_stats": {
+      "stats": {
         "default": 1,
-        "env": "INDEX_PROCESSOR_OPERATION_STATS"
+        "env": "INDEX_PROCESSOR_STATS"
       }
     }
   }

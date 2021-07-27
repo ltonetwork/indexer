@@ -125,7 +125,7 @@ describe('StorageService', () => {
       await storageService.incrTxStats(type, day);
 
       expect(incrValue.mock.calls.length).toBe(1);
-      expect(incrValue.mock.calls[0][0]).toBe(`lto:txstats:${type}:${day}`);
+      expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:transactions:${type}:${day}`);
     });
   });
 
@@ -145,10 +145,10 @@ describe('StorageService', () => {
 
       expect(getMultipleValues.mock.calls.length).toBe(1);
       expect(getMultipleValues.mock.calls[0][0]).toEqual([
-        `lto:txstats:${type}:18600`,
-        `lto:txstats:${type}:18601`,
-        `lto:txstats:${type}:18602`,
-        `lto:txstats:${type}:18603`,
+        `lto:stats:transactions:${type}:18600`,
+        `lto:stats:transactions:${type}:18601`,
+        `lto:stats:transactions:${type}:18602`,
+        `lto:stats:transactions:${type}:18603`,
       ]);
     });
   });
@@ -187,7 +187,7 @@ describe('StorageService', () => {
         await storageService.setTxFeeBurned('20');
 
         expect(setValue.mock.calls.length).toBe(1);
-        expect(setValue.mock.calls[0][0]).toBe('lto:supply:txfeeburned');
+        expect(setValue.mock.calls[0][0]).toBe('lto:stats:supply:txfeeburned');
         expect(setValue.mock.calls[0][1]).toBe('20');
       });
     });
@@ -199,7 +199,7 @@ describe('StorageService', () => {
         const result = await storageService.getTxFeeBurned();
   
         expect(getValue.mock.calls.length).toBe(1);
-        expect(getValue.mock.calls[0][0]).toBe('lto:supply:txfeeburned');
+        expect(getValue.mock.calls[0][0]).toBe('lto:stats:supply:txfeeburned');
 
         expect(result).toBe(10);
       });
@@ -210,7 +210,7 @@ describe('StorageService', () => {
         const result = await storageService.getTxFeeBurned();
   
         expect(getValue.mock.calls.length).toBe(1);
-        expect(getValue.mock.calls[0][0]).toBe('lto:supply:txfeeburned');
+        expect(getValue.mock.calls[0][0]).toBe('lto:stats:supply:txfeeburned');
 
         expect(result).toBe(0);
       });
@@ -376,7 +376,7 @@ describe('StorageService', () => {
         await storageService.incrOperationStats();
 
         expect(incrValue.mock.calls.length).toBe(1);
-        expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operation`);
+        expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operations`);
       });
     });
 
@@ -387,7 +387,7 @@ describe('StorageService', () => {
         const result = await storageService.getOperationStats();
 
         expect(getValue.mock.calls.length).toBe(1);
-        expect(getValue.mock.calls[0][0]).toBe(`lto:stats:operation`);
+        expect(getValue.mock.calls[0][0]).toBe(`lto:stats:operations`);
         expect(result).toBe('15');
       });
     });

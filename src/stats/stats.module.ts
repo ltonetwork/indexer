@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
-import { OperationStatsService } from './operation-stats.service';
+import { StatsService } from './stats.service';
 import { ConfigModule } from '../config/config.module';
 import { LoggerModule } from '../logger/logger.module';
 import { RedisModule } from '../redis/redis.module';
 import { StorageModule } from '../storage/storage.module';
 import { EncoderModule } from '../encoder/encoder.module';
+import { RequestModule } from '../request/request.module';
 import { TransactionModule } from '../transaction/transaction.module';
-import { OperationStatsListenerService } from './operation-stats.listener.service';
-import { OperationStatsController } from './operation-stats.controller';
+import { StatsListenerService } from './stats.listener.service';
 import { EmitterModule } from '../emitter/emitter.module';
 import { AnchorModule } from '../anchor/anchor.module';
+import { SupplyService } from './supply/supply.service';
+import { OperationsService } from './operations/operations.service';
+import { StatsController } from './stats.controller';
+import { NodeModule } from '../node/node.module';
 
-export const OperationStatsModuleConfig = {
+export const StatsModuleConfig = {
   imports: [
     LoggerModule,
     ConfigModule,
@@ -21,16 +25,22 @@ export const OperationStatsModuleConfig = {
     TransactionModule,
     EmitterModule,
     AnchorModule,
+    NodeModule,
+    RequestModule,
   ],
-  controllers: [OperationStatsController],
+  controllers: [StatsController],
   providers: [
-    OperationStatsService,
-    OperationStatsListenerService,
+    StatsService,
+    SupplyService,
+    OperationsService,
+    StatsListenerService,
   ],
   exports: [
-    OperationStatsService,
+    StatsService,
+    SupplyService,
+    OperationsService,
   ],
 };
 
-@Module(OperationStatsModuleConfig)
-export class OperationStatsModule { }
+@Module(StatsModuleConfig)
+export class StatsModule { }
