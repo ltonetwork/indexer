@@ -2,25 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionModuleConfig } from './transaction.module';
 import { TransactionService } from './transaction.service';
 import { StorageService } from '../storage/storage.service';
-import { SupplyService } from '../supply/supply.service';
 
 describe('TransactionService', () => {
   let module: TestingModule;
   let transactionService: TransactionService;
   let storageService: StorageService;
-  let supplyService: SupplyService;
 
   function spy() {
     const storage = {
       indexTx: jest.spyOn(storageService, 'indexTx').mockImplementation(async () => {}),
-      incrTxStats: jest.spyOn(storageService, 'incrTxStats').mockImplementation(async () => {}),
     };
 
-    const supply = {
-      incrTxFeeBurned: jest.spyOn(supplyService, 'incrTxFeeBurned').mockImplementation(async () => {}),
-    }
-
-    return { storage, supply };
+    return { storage };
   }
 
   beforeEach(async () => {
@@ -29,7 +22,6 @@ describe('TransactionService', () => {
 
     transactionService = module.get<TransactionService>(TransactionService);
     storageService = module.get<StorageService>(StorageService);
-    supplyService = module.get<SupplyService>(SupplyService);
   });
 
   afterEach(async () => {
@@ -104,7 +96,6 @@ describe('TransactionService', () => {
   });
 
   describe('index', () => {
-
     test('should index the transfer transaction', async () => {
       const spies = spy();
 
@@ -117,21 +108,6 @@ describe('TransactionService', () => {
       };
 
       await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
-
-      expect(spies.storage.incrTxStats.mock.calls.length).toBe(3);
-
-      expect(spies.storage.incrTxStats.mock.calls[0][0]).toBe('transfer');
-      expect(spies.storage.incrTxStats.mock.calls[0][1]).toBe(18696);
-
-      expect(spies.storage.incrTxStats.mock.calls[1][0]).toBe('all_transfers');
-      expect(spies.storage.incrTxStats.mock.calls[1][1]).toBe(18696);
-
-      expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
-      expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
-
-      expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(3);
-
-      expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(6);
 
@@ -173,21 +149,6 @@ describe('TransactionService', () => {
       };
 
       await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
-
-      expect(spies.storage.incrTxStats.mock.calls.length).toBe(3);
-
-      expect(spies.storage.incrTxStats.mock.calls[0][0]).toBe('mass_transfer');
-      expect(spies.storage.incrTxStats.mock.calls[0][1]).toBe(18696);
-
-      expect(spies.storage.incrTxStats.mock.calls[1][0]).toBe('all_transfers');
-      expect(spies.storage.incrTxStats.mock.calls[1][1]).toBe(18696);
-
-      expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
-      expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
-
-      expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(3);
-
-      expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1);
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(12);
 

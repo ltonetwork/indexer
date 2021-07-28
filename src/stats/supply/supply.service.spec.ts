@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AxiosResponse } from 'axios';
-import { NodeService, ActivationStatus } from '../node/node.service';
-import { RequestService } from '../request/request.service';
-import { StorageService } from '../storage/storage.service';
-import { SupplyModuleConfig } from './supply.module';
+import { NodeService, ActivationStatus } from '../../node/node.service';
+import { RequestService } from '../../request/request.service';
+import { StorageService } from '../../storage/storage.service';
+import { StatsModuleConfig } from '../stats.module';
 import { SupplyService } from './supply.service';
 
 describe('SupplyService', () => {
@@ -14,7 +14,7 @@ describe('SupplyService', () => {
   let requestService: RequestService;
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(SupplyModuleConfig).compile();
+    module = await Test.createTestingModule(StatsModuleConfig).compile();
     await module.init();
 
     nodeService = module.get<NodeService>(NodeService);

@@ -117,6 +117,10 @@ export class ConfigService {
     return toBoolean(flag);
   }
 
+  isStatsEnabled(token: 'operations' | 'transactions' | 'supply'): boolean {
+    return !!this.config.get(`stats.${token}`);
+  }
+
   getRoles(): RoleConfig {
     return this.config.get('roles');
   }

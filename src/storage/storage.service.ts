@@ -119,12 +119,20 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async incrTxStats(type: string, day: number): Promise<void> {
-    return this.storage.incrValue(`lto:txstats:${type}:${day}`);
+    return this.storage.incrValue(`lto:stats:transactions:${type}:${day}`);
+  }
+
+  async incrOperationStats(): Promise<void> {
+    return this.storage.incrValue(`lto:stats:operations`);
+  }
+
+  async getOperationStats(): Promise<string> {
+    return this.storage.getValue(`lto:stats:operations`);
   }
 
   async getTxStats(type: string, from: number, to: number): Promise<{period: string, count: number}[]> {
     const length = to - from + 1;
-    const keys = Array.from({length}, (v, i) => `lto:txstats:${type}:${from + i}`);
+    const keys = Array.from({length}, (v, i) => `lto:stats:transactions:${type}:${from + i}`);
     const values = await this.storage.getMultipleValues(keys);
 
     const periods = Array.from({length}, (v, i) => new Date((from + i) * 86400000));
@@ -133,20 +141,20 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async setTxFeeBurned(value: string): Promise<void> {
-    return this.storage.setValue('lto:supply:txfeeburned', value);
+    return this.storage.setValue('lto:stats:supply:txfeeburned', value);
   }
 
   async getTxFeeBurned(): Promise<number> {
-    const value = await this.storage.getValue('lto:supply:txfeeburned').catch(() => '0');
+    const value = await this.storage.getValue('lto:stats:supply:txfeeburned').catch(() => '0');
     return Number(value);
   }
 
   async setFeeBurnFeatureHeight(value: string): Promise<void> {
-    return this.storage.setValue('lto:supply:feeburnheight', value);
+    return this.storage.setValue('lto:stats:supply:feeburnheight', value);
   }
 
   async getFeeBurnFeatureHeight(): Promise<number | Error> {
-    const value = await this.storage.getValue('lto:supply:feeburnheight');
+    const value = await this.storage.getValue('lto:stats:supply:feeburnheight');
     return Number(value);
   }
 

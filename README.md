@@ -127,13 +127,75 @@ The public node will only store the latest transactions of each account. Use the
 
 The response is an array of transactions.
 
+## Statistics
+
+The indexer will keep track of multiple statistics, if set on the configuration:
+
+
+```json
+{
+  "stats": {
+    "operations": true,
+    "transactions": true,
+    "supply": true,
+  }
+}
+```
+
+### Operations Statistics
+
+Will keep track of the total number of operations. 
+
+One transaction = one operation, unless one of the following:
+
+- Anchors:
+  - In the case of an anchor, each anchor hash will count as an operation
+- Mass transfers:
+  - In the case of mass transfers, each transfer will count as an operation
+
+- `GET /stats/operations/`
+
+The response is the amount of operations.
+
+```json
+{
+  "operations": "12345"
+}
+```
+
+### Supply Statistics
+
+Will keep track of the token supply in the chain, including the transaction fee burned per transaction.
+
+- `GET /stats/supply/circulating`
+
+The response is the current circulating token supply
+
+```json
+{
+  "circulatingSupply": "21466013.57000000"
+}
+```
+
+- `GET /stats/supply/max`
+
+The response is the current max token supply
+
+```json
+{
+  "maxSupply": "50000000.00000000"
+}
+```
+
 ### Transaction statistics
 
-The indexer will also keep track of the total number of transactions per day for each transaction type.
+Will keep track of the total number of transactions per day for each transaction type.
+
+The `from` and `to` parameters are either a timestamp (in ms since epoch) or a date string as `year-month-day`.
 
 - `GET /transactions/stats/:type/:from/:to`
 
-The `from` and `to` parameters are either a timestamp (in ms since epoch) or a date string as `year-month-day`.
+The response is an aray of days with a transaction count for each.
 
 ```json
 [
