@@ -3,6 +3,7 @@ import { AnchorModuleConfig } from './anchor.module';
 import { AnchorService } from './anchor.service';
 import { StorageService } from '../storage/storage.service';
 import { ConfigService } from '../config/config.service';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('AnchorService', () => {
   let module: TestingModule;
@@ -36,9 +37,8 @@ describe('AnchorService', () => {
     await module.close();
   });
 
-  describe('index', () => {
-
-    test('should process the data transaction', async () => {
+  describe('index()', () => {
+    test('should process (old) data transactions', async () => {
       const spies = spy();
 
       const transaction = {
@@ -54,8 +54,9 @@ describe('AnchorService', () => {
             value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywga',
           },
         ],
-      };
-      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      } as Transaction;
+
+      await anchorService.index({transaction, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
@@ -64,7 +65,7 @@ describe('AnchorService', () => {
         .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
     });
 
-    test('should process the anchor transaction', async () => {
+    test('should process anchor transactions', async () => {
       const spies = spy();
 
       const transaction = {
@@ -73,8 +74,9 @@ describe('AnchorService', () => {
         anchors: [
           '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
         ],
-      };
-      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      } as Transaction;
+
+      await anchorService.index({transaction, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
@@ -94,9 +96,9 @@ describe('AnchorService', () => {
         anchors: [
           '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
         ],
-      };
+      } as Transaction;
 
-      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
     });
@@ -116,9 +118,9 @@ describe('AnchorService', () => {
         anchors: [
           '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
         ],
-      };
+      } as Transaction;
 
-      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
     });
@@ -136,11 +138,48 @@ describe('AnchorService', () => {
         anchors: [
           '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
         ],
-      };
+      } as Transaction;
 
-      await anchorService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
+    });
+  });
+
+  describe('getAnchorHahes()', () => {
+    test('should return hashes for (old) data transactions', () => {
+      const transaction = {
+        id: 'fake_transaction',
+        type: 12,
+        data: [
+          {
+            key: anchorService.anchorToken,
+            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywg',
+          },
+          {
+            key: 'invalid key',
+            value: 'base64:LGeJmzGkBiCwdgA1cgqcq9f0FMbaPbVhRhseSP4mywga',
+          },
+        ],
+      } as Transaction;
+
+      const hashes = anchorService.getAnchorHashes(transaction);
+
+      expect(hashes).toEqual(['2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08']);
+    });
+
+    test('should return hashes for anchor transactions', () => {
+      const transaction = {
+        id: 'fake_transaction',
+        type: 15,
+        anchors: [
+          '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
+        ],
+      } as Transaction;
+
+      const hashes = anchorService.getAnchorHashes(transaction);
+
+      expect(hashes).toEqual(['2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08']);
     });
   });
 });

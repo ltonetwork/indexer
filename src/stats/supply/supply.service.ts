@@ -1,8 +1,8 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
-import { StorageService } from '../storage/storage.service';
-import { ActivationStatus, NodeService } from '../node/node.service';
-import { RequestService } from '../request/request.service';
+import { StorageService } from '../../storage/storage.service';
+import { ActivationStatus, NodeService } from '../../node/node.service';
+import { RequestService } from '../../request/request.service';
 import LockedSupplyData from './locked-supply.data.json';
 
 export interface BridgeStats {

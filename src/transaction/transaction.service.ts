@@ -1,18 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
 import TransactionTypes from './const/types.const';
 import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { StorageService } from '../storage/storage.service';
-import { SupplyService } from '../supply/supply.service';
 
 @Injectable()
 export class TransactionService {
   constructor(
-    private readonly config: ConfigService,
     private readonly logger: LoggerService,
     private readonly storage: StorageService,
-    private readonly supply: SupplyService,
   ) { }
 
   getAllTypes(): Array<{ id: string, types: number[] }> {
@@ -56,9 +52,6 @@ export class TransactionService {
     this.logger.debug(`transaction ${transaction.id}: ` + identifiers.join(' '));
 
     for (const identifier of identifiers) {
-      promises.push(this.supply.incrTxFeeBurned(blockHeight));
-      promises.push(this.storage.incrTxStats(identifier, Math.floor(transaction.timestamp / 86400000)));
-
       if (transaction.sender) {
         promises.push(this.storage.indexTx(identifier, transaction.sender, transaction.id, transaction.timestamp));
       }

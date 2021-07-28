@@ -18,8 +18,8 @@ import { IndexModule } from './index/index.module';
 import { EmitterModule } from './emitter/emitter.module';
 import { AssociationsModule } from './associations/associations.module';
 import { PublicKeyModule } from './public-key/public-key.module';
-import { SupplyModule } from './supply/supply.module';
 import { TrustNetworkModule } from './trust-network/trust-network.module';
+import { StatsModule } from './stats/stats.module';
 
 export const AppModuleConfig = {
   imports: [
@@ -41,8 +41,8 @@ export const AppModuleConfig = {
     EmitterModule,
     AssociationsModule,
     PublicKeyModule,
-    SupplyModule,
     TrustNetworkModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [],
