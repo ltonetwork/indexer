@@ -21,24 +21,22 @@ export class AnchorService {
     this.anchorToken = '\u2693';
   }
 
-  async index(index: IndexDocumentType) {
+  async index(index: IndexDocumentType, anchorIndexing: 'trust' | 'all') {
     const { transaction, blockHeight, position } = index;
     const { sender } = transaction;
-
-    const anchorIndexing = this.config.getAnchorIndexing();
-    const senderRoles = await this.storage.getRolesFor(sender);
-    const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
-
-    if (anchorIndexing === 'none') {
-      return;
-    }
 
     if (this.transactionTypes.indexOf(transaction.type) === -1) {
       return;
     }
 
-    if (anchorIndexing === 'trust' && !isSenderTrustNetwork) {
-      return;
+    if (anchorIndexing === 'trust') {
+      const senderRoles = await this.storage.getRolesFor(sender);
+      const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
+
+      if (!isSenderTrustNetwork) {
+        this.logger.debug(`anchor: Sender is not part of trust network`);
+        return;
+      }
     }
 
     const hashes = this.getAnchorHashes(transaction);

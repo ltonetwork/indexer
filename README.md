@@ -225,10 +225,49 @@ Verification is performed not on blockchain, but on anchors, uploaded from block
 
 **You can run container with predefined environment variables:**
 
-|env variable   |description|
-|---------------|-----------|
-|`LTO_API_KEY`  | ApiKey used in communication with the public node |
-|`LOG_LEVEL`    | Node logging level, available values: `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG` |
-|`PORT`         | Port number the service should use |
-|`LTO_NODE_URL` | URL of the LTO public node |
+|env variable     |description                                        |values                                   |
+|-----------------|---------------------------------------------------|-----------------------------------------|
+|`LTO_API_KEY`    | ApiKey used in communication with the public node | `some_api_string`                       |
+|`LOG_LEVEL`      | Node logging level                                | `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG` |
+|`PORT`           | Port number the service should use                | `80`                                    |
+|`LTO_NODE_URL`   | URL of the LTO public node                        | `https://testnet.lto.network`           |
+|`ANCHOR_INDEXING`| Whether or not the indexer should process anchors | `none`, `trust`, `all`                  |
+
+A list of all available variables can be found on (./src/config/data/default.schema.json)[./src/config/data/default.schema.json] (see the `env` property of each variable).
+
+### Changing values on the config file
+
+An option to change the configuration is by changing the config file, found in (./src/config/data/default.config.json)[./src/config/data/default.config.json].
+
+*Do not mistake this file with `default.SCHEMA.json`. The `schema` file contains only information on what variables are available, and what are their possible values. This should NOT be changed.*
+
+By default, `default.config.json` should be empty. You can set any variable you'd like as a JSON structure. If you'd like to enable the indexing of anchor transactions for example:
+
+```json
+{
+  "anchor": {
+    "indexing": "all"
+  }
+}
+```
+
+The indexing configurations have the values of `none`, `trust` or `all`.
+
+- `none`: no transactions will be indexed
+- `trust`: only transactions from someone in your configured trust network will be indexed (see [configuring a trust network](https://docs.ltonetwork.com/v/edge/identity-node/configuration-1/configuration))
+- `all`: all transactions will be indexed
+
+*Note*: Keep in mind that if you change a configuration after the indexer has already processed blocks, you will need to restart the synchronization, basically making
+the indexer process blocks all over again. This WILL take some time to complete, if you choose to start from the genesis block.
+
+```json
+{
+  "anchor": {
+    "node": {
+      "starting_block": 1,
+      "restart_sync": true
+    }
+  }
+}
+```
 

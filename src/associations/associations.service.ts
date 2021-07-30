@@ -18,7 +18,7 @@ export class AssociationsService {
     this.transactionTypes = [16, 17];
   }
 
-  async index(index: IndexDocumentType): Promise<void> {
+  async index(index: IndexDocumentType, associationIndexing: 'trust' | 'all'): Promise<void> {
     const { transaction } = index;
     const { sender } = transaction;
 
@@ -27,18 +27,14 @@ export class AssociationsService {
       return;
     }
 
-    const associationIndexing = this.config.getAssociationIndexing();
-    const senderRoles = await this.storage.getRolesFor(sender);
-    const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
+    if (associationIndexing === 'trust') {
+      const senderRoles = await this.storage.getRolesFor(sender);
+      const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
 
-    if (associationIndexing === 'none') {
-      this.logger.debug(`association-service: Association indexing set to "none"`);
-      return;
-    }
-
-    if (associationIndexing === 'trust' && !isSenderTrustNetwork) {
-      this.logger.debug(`association-service: Sender is not part of trust network`);
-      return;
+      if (!isSenderTrustNetwork) {
+        this.logger.debug(`association-service: Sender is not part of trust network`);
+        return;
+      }
     }
 
     if (transaction.type === 16) {
