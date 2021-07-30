@@ -108,22 +108,6 @@ export class ConfigService {
     return this.config.get('storage.type');
   }
 
-  getAssociationsRoot(): string {
-    return this.config.get('associations.root');
-  }
-
-  getAssociationTypes(): number[] {
-    return this.config.get('associations.types').split(/\s*,\s*/).map(Number);
-  }
-
-  getAssociationsProviderType(): number {
-    return this.config.get('associations.provider_type');
-  }
-
-  getAssociationsDomainType(): number {
-    return this.config.get('associations.domain_type');
-  }
-
   isProcessorEnabled(token: string): boolean {
     if (!this.config.has(`index.processor.${token}`)) {
       return true;
@@ -139,6 +123,10 @@ export class ConfigService {
 
   getRoles(): RoleConfig {
     return this.config.get('roles');
+  }
+
+  getAssociationIndexing(): 'none' | 'trust' | 'all' {
+    return this.config.get('association.indexing');
   }
 
   getAnchorIndexing(): 'none' | 'trust' | 'all' {

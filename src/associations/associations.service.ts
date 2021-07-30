@@ -6,10 +6,9 @@ import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
-export class AssociationsService implements OnModuleInit {
+export class AssociationsService {
 
   private transactionTypes: number[];
-  private root: string;
 
   constructor(
     readonly logger: LoggerService,
@@ -19,56 +18,31 @@ export class AssociationsService implements OnModuleInit {
     this.transactionTypes = [16, 17];
   }
 
-  onModuleInit(): void {
-    this.root = this.config.getAssociationsRoot();
-  }
-
-  async index(index: IndexDocumentType) {
+  async index(index: IndexDocumentType, associationIndexing: 'trust' | 'all'): Promise<void> {
     const { transaction } = index;
+    const { sender } = transaction;
 
     if (this.transactionTypes.indexOf(transaction.type) === -1){
-      return ;
+      this.logger.debug(`association-service: Unknown transaction type`);
+      return;
     }
 
-    this.logger.debug(`association-service: Indexing association`);
+    if (associationIndexing === 'trust') {
+      const senderRoles = await this.storage.getRolesFor(sender);
+      const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
+
+      if (!isSenderTrustNetwork) {
+        this.logger.debug(`association-service: Sender is not part of trust network`);
+        return;
+      }
+    }
 
     if (transaction.type === 16) {
-      return this.createAssocIndex(transaction);
+      this.logger.debug(`association-service: Saving association`);
+      return this.storage.saveAssociation(transaction);
     } else if (transaction.type === 17) {
-      return this.removeAssocIndex(transaction);
-    }
-  }
-
-  async createAssocIndex(transaction: Transaction) {
-
-    const {sender, associationType} = transaction;
-
-    if (this.config.getAssociationTypes().indexOf(associationType) === -1) {
-      this.logger.debug(`Ingoring association because unknown type ${associationType}`);
-      return;
-    }
-
-    const associations = await this.storage.getAssociations(sender);
-    if (sender === this.config.getAssociationsRoot() || associations.parents.length > 0) {
-      this.storage.saveAssociation(transaction);
-    } else {
-      this.logger.debug(`association-service: Ignoring because sender not root or unregistered provider`);
-    }
-  }
-
-  async removeAssocIndex(transaction: Transaction) {
-    const {sender, associationType} = transaction;
-
-    if (this.config.getAssociationTypes().indexOf(associationType) === -1) {
-      this.logger.debug(`Ingoring association because unknown type ${associationType}`);
-      return;
-    }
-
-    const associations = await this.storage.getAssociations(sender);
-    if (sender === this.config.getAssociationsRoot() || associations.parents.length > 0) {
-      this.storage.removeAssociation(transaction);
-    } else {
-      this.logger.debug(`association-service: Ignoring because sender not root or unregistered provider`);
+      this.logger.debug(`association-service: Removing association`);
+      return this.storage.removeAssociation(transaction);
     }
   }
 

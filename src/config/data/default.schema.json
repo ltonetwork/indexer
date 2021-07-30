@@ -15,28 +15,6 @@
     "default": 80,
     "env": "PORT"
   },
-  "associations": {
-    "root": {
-      "doc": "Root association address",
-      "default": "",
-      "env": "ASSOCIATIONS_ROOT"
-    },
-    "types": {
-      "doc": "Provider AssoctionType",
-      "default": "10,100,200",
-      "env": "ASSOCIATIONS_PROVIDER_TYPE"
-    },
-    "provider_type": {
-      "doc": "Provider AssoctionType",
-      "default": 10,
-      "env": "ASSOCIATIONS_PROVIDER_TYPE"
-    },
-    "domain_type": {
-      "doc": "Domain AssoctionType",
-      "default": 100,
-      "env": "ASSOCIATIONS_DOMAIN_TYPE"
-    }
-  },
   "roles": {
     "doc": "Configuration for roles on trust network",
     "format": "Object",
@@ -47,22 +25,29 @@
     },
     "env": "TRUST_NETWORK_ROLES"
   },
+  "association": {
+    "indexing": {
+      "default": "none",
+      "format": ["none", "trust", "all"],
+      "env": "ASSOCIATION_INDEXING"
+    }
+  },
   "stats": {
     "operations": {
       "doc": "Statistics for operations in the blockchain",
-      "default": true,
+      "default": false,
       "format": "Boolean",
       "env": "STATS_OPERATIONS"
     },
     "transactions": {
       "doc": "Statistics for transactions in the blockchain",
-      "default": true,
+      "default": false,
       "format": "Boolean",
       "env": "STATS_TRANSACTIONS"
     },
     "supply": {
       "doc": "Statistics for token supply",
-      "default": true,
+      "default": false,
       "format": "Boolean",
       "env": "STATS_SUPPLY"
     }
@@ -96,7 +81,7 @@
       "env": "ANCHOR_LEVELDB"
     },
     "indexing": {
-      "default": "all",
+      "default": "none",
       "format": ["none", "trust", "all"],
       "env": "ANCHOR_INDEXING"
     },
@@ -167,28 +152,20 @@
   "index": {
     "processor": {
       "doc": "Configure which processor should be enabled",
-      "anchor": {
-        "default": 1,
-        "env": "INDEX_PROCESSOR_ANCHOR"
-      },
       "transaction": {
-        "default": 1,
+        "default": 0,
         "env": "INDEX_PROCESSOR_TRANSACTION"
       },
-      "association": {
-        "default": 1,
-        "env": "INDEX_PROCESSOR_ASSOCIATION"
-      },
       "verification_method": {
-        "default": 1,
+        "default": 0,
         "env": "INDEX_PROCESSOR_VERIFICATION_METHOD"
       },
       "trust_network": {
-        "default": 1,
+        "default": 0,
         "env": "INDEX_PROCESSOR_TRUST_NETWORK"
       },
       "stats": {
-        "default": 1,
+        "default": 0,
         "env": "INDEX_PROCESSOR_STATS"
       }
     }

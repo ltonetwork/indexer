@@ -2,13 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AnchorModuleConfig } from './anchor.module';
 import { AnchorService } from './anchor.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from '../config/config.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('AnchorService', () => {
   let module: TestingModule;
   let anchorService: AnchorService;
-  let configService: ConfigService;
   let storageService: StorageService;
 
   function spy() {
@@ -17,11 +15,7 @@ describe('AnchorService', () => {
       getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => { return {} }),
     };
 
-    const config = {
-      getAnchorIndexing: jest.spyOn(configService, 'getAnchorIndexing').mockImplementation(() => 'all'),
-    };
-
-    return { storage, config };
+    return { storage };
   }
 
   beforeEach(async () => {
@@ -29,7 +23,6 @@ describe('AnchorService', () => {
     await module.init();
 
     anchorService = module.get<AnchorService>(AnchorService);
-    configService = module.get<ConfigService>(ConfigService);
     storageService = module.get<StorageService>(StorageService);
   });
 
@@ -56,8 +49,9 @@ describe('AnchorService', () => {
         ],
       } as Transaction;
 
-      await anchorService.index({transaction, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0}, 'all');
 
+      expect(spies.storage.getRolesFor.mock.calls.length).toBe(0);
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
         .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
@@ -76,8 +70,9 @@ describe('AnchorService', () => {
         ],
       } as Transaction;
 
-      await anchorService.index({transaction, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0}, 'all');
 
+      expect(spies.storage.getRolesFor.mock.calls.length).toBe(0);
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0])
         .toBe('2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08');
@@ -85,28 +80,9 @@ describe('AnchorService', () => {
         .toMatchObject({ id: 'fake_transaction', blockHeight: 1, position: 0 });
     });
 
-    test('should not process when config says "none"', async () => {
-      const spies = spy();
-
-      spies.config.getAnchorIndexing = jest.spyOn(configService, 'getAnchorIndexing').mockImplementation(() => 'none');
-
-      const transaction = {
-        id: 'fake_transaction',
-        type: 15,
-        anchors: [
-          '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
-        ],
-      } as Transaction;
-
-      await anchorService.index({transaction, blockHeight: 1, position: 0});
-
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
-    });
-
     test('should process "trust" anchor if sender is trusted', async () => {
       const spies = spy();
 
-      spies.config.getAnchorIndexing = jest.spyOn(configService, 'getAnchorIndexing').mockImplementation(() => 'trust');
       spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
         return { root: { description: 'The root role' } };
       });
@@ -120,15 +96,16 @@ describe('AnchorService', () => {
         ],
       } as Transaction;
 
-      await anchorService.index({transaction, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0}, 'trust');
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.getRolesFor.mock.calls.length).toBe(1);
+      expect(spies.storage.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
     });
 
     test('should not process "trust" anchors if sender is not trusted', async () => {
       const spies = spy();
 
-      spies.config.getAnchorIndexing = jest.spyOn(configService, 'getAnchorIndexing').mockImplementation(() => 'trust');
       spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => { return {} });
 
       const transaction = {
@@ -140,9 +117,11 @@ describe('AnchorService', () => {
         ],
       } as Transaction;
 
-      await anchorService.index({transaction, blockHeight: 1, position: 0});
+      await anchorService.index({transaction, blockHeight: 1, position: 0}, 'trust');
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
+      expect(spies.storage.getRolesFor.mock.calls.length).toBe(1);
+      expect(spies.storage.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
     });
   });
 
