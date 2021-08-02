@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  redis:
+    container_name: redis
+    image: redis
+    volumes:
+      - /tmp/redis:/data
+    ports:
+      - 6379:6379
+    networks:
+      - lto-indexer
+
+  graph:
+    container_name: graph
+    image: redislabs/redisgraph
+    volumes:
+      - /tmp/redis-graph:/data
+    ports:
+      - 6380:6379
+    networks:
+      - lto-indexer
+
+  lto-indexer:
+    container_name: indexer
+    build: .
+    image: lto/indexer
+    environment:
+      - LOG_LEVEL=debug
+      - STORAGE_TYPE=redis
+      - REDIS_URL=redis://redis:6379
+      - REDIS_GRAPH_HOST=graph
+      - REDIS_GRAPH_PORT=6379
+      - LTO_NODE_URL=http://testnet.lto.network
+      - INDEX_PROCESSOR_TRANSACTION=1
+      - INDEX_PROCESSOR_VERIFICATION_METHOD=1
+      - INDEX_PROCESSOR_TRUST_NETWORK=1
+      - INDEX_PROCESSOR_STATS=1
+      - ANCHOR_INDEXING=all
+      - ASSOCIATION_INDEXING=all
+      - STATS_OPERATIONS=true
+      - STATS_TRANSACTIONS=true
+      - STATS_SUPPLY=true
+    ports:
+      - 3000:80
+    networks:
+      - lto-indexer
+    depends_on:
+      - redis
+      - graph
+
+networks:
+  lto-indexer:
+    driver: bridge
