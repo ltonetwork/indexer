@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
 import toBoolean from 'boolean';
-import { RoleConfig } from 'trust-network/interfaces/trust-network.interface';
+import { RoleConfig } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {
@@ -65,15 +65,22 @@ export class ConfigService {
   }
 
   getRedisUrl(): string {
-    return this.config.get('anchor.redis.url');
+    return this.config.get('redis.url');
   }
 
   getRedisCluster(): string {
-    return this.config.get('anchor.redis.cluster');
+    return this.config.get('redis.cluster');
+  }
+
+  getRedisGraph(): { host: string, port: string } {
+    return {
+      host: this.config.get('redis.graph.host'),
+      port: this.config.get('redis.graph.port'),
+    };
   }
 
   getLevelDb(): string {
-    return this.config.get('anchor.leveldb');
+    return this.config.get('leveldb');
   }
 
   getMonitorInterval(): number {

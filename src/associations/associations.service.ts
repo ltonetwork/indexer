@@ -3,7 +3,7 @@ import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { AssociationsGraphService } from './graph/associations-graph.service';
 
 @Injectable()
 export class AssociationsService {
@@ -14,6 +14,7 @@ export class AssociationsService {
     readonly logger: LoggerService,
     readonly config: ConfigService,
     readonly storage: StorageService,
+    readonly associationsGraph: AssociationsGraphService,
   ) {
     this.transactionTypes = [16, 17];
   }
@@ -46,7 +47,9 @@ export class AssociationsService {
     }
   }
 
-  getAssociations(address: string): Promise<any> {
+  async getAssociations(address: string): Promise<any> {
+    await this.associationsGraph.execute();
+
     return this.storage.getAssociations(address);
   }
 }
