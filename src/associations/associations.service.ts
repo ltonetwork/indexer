@@ -40,6 +40,10 @@ export class AssociationsService {
 
     if (transaction.type === 16) {
       this.logger.debug(`association-service: Saving association`);
+
+      // @todo: check for graph in config
+      await this.associationsGraph.saveAssociation(transaction.sender, transaction.party);
+
       return this.storage.saveAssociation(transaction);
     } else if (transaction.type === 17) {
       this.logger.debug(`association-service: Removing association`);
@@ -48,8 +52,8 @@ export class AssociationsService {
   }
 
   async getAssociations(address: string): Promise<any> {
-    await this.associationsGraph.execute();
-
-    return this.storage.getAssociations(address);
+    // @todo: check for graph in config
+    return this.associationsGraph.getAssociations(address);
+    // return this.storage.getAssociations(address);
   }
 }

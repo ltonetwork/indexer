@@ -37,6 +37,7 @@ export class IndexMonitorService {
         await this.node.getLastBlockHeight() :
         this.config.getNodeStartingBlock() as number;
       if (this.config.getNodeRestartSync()) {
+        // @todo: perhaps need to clean entire database? redis + leveldb
         await this.storage.clearProcessHeight();
       }
       await this.process();
@@ -99,7 +100,8 @@ export class IndexMonitorService {
   }
 
   async processBlock(block: Block) {
-    this.logger.debug(`index-monitor: processing block ${block.height}`);
+    // @todo: remove comment
+    // this.logger.debug(`index-monitor: processing block ${block.height}`);
 
     let position = 0;
 

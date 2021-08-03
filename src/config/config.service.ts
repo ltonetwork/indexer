@@ -31,15 +31,15 @@ export class ConfigService {
       return config;
     }
 
-    return this.config.get('anchor.node.url');
+    return this.config.get('node.url');
   }
 
   getNodeStartingBlock(): number | string {
-    return this.config.get('anchor.node.starting_block');
+    return this.config.get('node.starting_block');
   }
 
   getNodeRestartSync(): boolean {
-    return this.config.get('anchor.node.restart_sync');
+    return this.config.get('node.restart_sync');
   }
 
   getAuthToken(): string {
@@ -57,7 +57,7 @@ export class ConfigService {
   }
 
   getAnchorFee(): number {
-    return Number(this.config.get('anchor.node.anchor_fee'));
+    return Number(this.config.get('anchor.fee'));
   }
 
   getRedisClient(): string | string[] {

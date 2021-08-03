@@ -1,7 +1,8 @@
+import { Graph, ResultSet } from 'redisgraph.js';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '../../config/config.service';
 
-import { Graph } from 'redisgraph.js';
+import { ConfigService } from '../../config/config.service';
+import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()
 export class AssociationsGraphService {
@@ -10,41 +11,58 @@ export class AssociationsGraphService {
 
   constructor(
     private readonly config: ConfigService,
+    private readonly logger: LoggerService,
   ) { }
 
-  // @todo: add logging
+  // @todo: tests for this whole file
+
   async init(): Promise<void> {
     if (!this.graph) {
-      const options = this.config.getRedisGraph();
+      this.logger.debug(`associations-graph: connecting to redis-graph`);
 
+      const options = this.config.getRedisGraph();
       this.graph = new Graph('associations', options.host, options.port);
     }
   }
 
-  // @todo: temporary method to test the connection
-  async execute(): Promise<void> {
+  async saveAssociation(sender: string, party: string): Promise<void> {
     await this.init();
 
-    await this.graph.query(`CREATE (:person{name:'roi',age:32})`);
-    await this.graph.query(`CREATE (:person{name:'amit',age:30})`);
-    await this.graph.query(`MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit') CREATE (a)-[:knows]->(b)`);
+    this.logger.debug(`associations-graph: indexing association: ${sender} and ${party}`);
 
-    let response = await this.graph.query(`MATCH (a:person)-[:knows]->(:person) RETURN a.name, a.age`);
+    const result = await this.graph.query(`MERGE (s:sender {address:'${sender}'} )-[:ASSOCIATION]->(p:party {address:'${party}'} )`);
 
-    console.log('response: ', response);
+    console.log('result: ', result);
     console.log('==============================================');
 
-    while (response.hasNext()) {
-      let record = response.next();
+    return;
+  }
 
-      console.log('record: ', record);
-      console.log('==============================================');
+  async getAssociations(address: string): Promise<{ children: string[], parents: string[] }> {
+    await this.init();
 
-      console.log('record.get(a.name): ', record.get('a.name'));
-      console.log('==============================================');
+    this.logger.debug(`associations-graph: retrieving associations: ${address}`);
 
-      console.log('record.get(a.age): ', record.get('a.age'));
-      console.log('==============================================');
+    const childrenResultSet = await this.graph.query(`MATCH (s:sender { address: '${address}' })-[:ASSOCIATION]->(p:party) RETURN p.address as child`);
+    const children = this.extractGraphData(childrenResultSet, 'child');
+
+    const parentsResultSet = await this.graph.query(`MATCH (s:sender)-[:ASSOCIATION]->(p:party { address: '${address}' }) RETURN s.address as parent`);
+    const parents = this.extractGraphData(parentsResultSet, 'parent');
+
+    return {
+      children,
+      parents
+    };
+  }
+
+  private extractGraphData(data: ResultSet, attribute: string): any[] {
+    const response = [];
+
+    while (data.hasNext()) {
+      const record = data.next();
+      response.push(record.get(attribute));
     }
+
+    return response;
   }
 }
