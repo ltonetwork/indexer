@@ -5,7 +5,7 @@ import { ConfigService } from '../../config/config.service';
 import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()
-export class AssociationsGraphService {
+export class RedisGraphService {
 
   private graph: Graph;
 
@@ -15,33 +15,34 @@ export class AssociationsGraphService {
   ) { }
 
   // @todo: tests for this whole file
+  // @todo: removeAssociation
+  // @todo: remove recurring association? is it needed?
 
   async init(): Promise<void> {
+    // @todo: try to fail the connect (see how to handle it)
     if (!this.graph) {
-      this.logger.debug(`associations-graph: connecting to redis-graph`);
+      this.logger.debug(`redis-graph: connecting to redis-graph`);
 
       const options = this.config.getRedisGraph();
-      this.graph = new Graph('associations', options.host, options.port);
+      this.graph = new Graph('indexer', options.host, options.port);
     }
   }
 
   async saveAssociation(sender: string, party: string): Promise<void> {
+    // @todo: try to fail the query (see how to handle it)
     await this.init();
 
-    this.logger.debug(`associations-graph: indexing association: ${sender} and ${party}`);
+    this.logger.debug(`redis-graph: indexing association: ${sender} and ${party}`);
 
-    const result = await this.graph.query(`MERGE (s:sender {address:'${sender}'} )-[:ASSOCIATION]->(p:party {address:'${party}'} )`);
-
-    console.log('result: ', result);
-    console.log('==============================================');
-
+    await this.graph.query(`MERGE (s:sender {address:'${sender}'} )-[:ASSOCIATION]->(p:party {address:'${party}'} )`);
     return;
   }
 
   async getAssociations(address: string): Promise<{ children: string[], parents: string[] }> {
+    // @todo: try to fail the query (see how to handle it)
     await this.init();
 
-    this.logger.debug(`associations-graph: retrieving associations: ${address}`);
+    this.logger.debug(`redis-graph: retrieving associations: ${address}`);
 
     const childrenResultSet = await this.graph.query(`MATCH (s:sender { address: '${address}' })-[:ASSOCIATION]->(p:party) RETURN p.address as child`);
     const children = this.extractGraphData(childrenResultSet, 'child');

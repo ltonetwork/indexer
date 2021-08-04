@@ -7,12 +7,11 @@ import { AuthModule } from '../auth/auth.module';
 import { AssociationsListenerService } from './associations-listener.service';
 import { StorageModule } from '../storage/storage.module';
 import { EmitterModule } from '../emitter/emitter.module';
-import { AssociationsGraphService } from './graph/associations-graph.service';
 
 export const AssociationsModuleConfig = {
   imports: [ConfigModule, LoggerModule, AuthModule, StorageModule, EmitterModule],
   controllers: [AssociationsController],
-  providers: [AssociationsService, AssociationsListenerService, AssociationsGraphService],
+  providers: [AssociationsService, AssociationsListenerService],
 };
 
 @Module(AssociationsModuleConfig)

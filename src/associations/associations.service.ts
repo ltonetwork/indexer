@@ -1,9 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { AssociationsGraphService } from './graph/associations-graph.service';
 
 @Injectable()
 export class AssociationsService {
@@ -14,7 +13,6 @@ export class AssociationsService {
     readonly logger: LoggerService,
     readonly config: ConfigService,
     readonly storage: StorageService,
-    readonly associationsGraph: AssociationsGraphService,
   ) {
     this.transactionTypes = [16, 17];
   }
@@ -40,10 +38,6 @@ export class AssociationsService {
 
     if (transaction.type === 16) {
       this.logger.debug(`association-service: Saving association`);
-
-      // @todo: check for graph in config
-      await this.associationsGraph.saveAssociation(transaction.sender, transaction.party);
-
       return this.storage.saveAssociation(transaction);
     } else if (transaction.type === 17) {
       this.logger.debug(`association-service: Removing association`);
@@ -52,8 +46,6 @@ export class AssociationsService {
   }
 
   async getAssociations(address: string): Promise<any> {
-    // @todo: check for graph in config
-    return this.associationsGraph.getAssociations(address);
-    // return this.storage.getAssociations(address);
+    return this.storage.getAssociations(address);
   }
 }

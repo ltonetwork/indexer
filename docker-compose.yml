@@ -28,10 +28,10 @@ services:
     environment:
       - STORAGE_TYPE=redis
       - REDIS_URL=redis://redis:6379
-      - REDIS_GRAPH_HOST=graph
-      - REDIS_GRAPH_PORT=6379
       # @todo: remove below this before PR
       - LOG_LEVEL=debug
+      - REDIS_GRAPH_HOST=graph
+      - REDIS_GRAPH_PORT=6379
       - LTO_NODE_URL=http://testnet.lto.network
       - INDEX_PROCESSOR_TRANSACTION=1
       - ASSOCIATION_INDEXING=all
@@ -43,6 +43,7 @@ services:
       - lto-indexer
     depends_on:
       - redis
+      # @todo: remove below this before PR
       - graph
 
 networks:

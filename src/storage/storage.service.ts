@@ -9,6 +9,7 @@ import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
 import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
 import { Role } from '../trust-network/interfaces/trust-network.interface';
+import { RedisGraphService } from './redis-graph/redis-graph.service';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -17,6 +18,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
+    private readonly redisGraph: RedisGraphService,
     private readonly moduleRef: ModuleRef,
   ) { }
 
@@ -80,20 +82,29 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async saveRoleAssociation(party: string, sender: string, data: Role): Promise<void> {
     const roles = await this.storage.getObject(`lto:roles:${party}`).catch(() => { return {} });
-    
+
     roles[data.role] = { sender, type: data.type };
 
     return this.storage.setObject(`lto:roles:${party}`, roles);
   }
 
-  async saveAssociation(transaction: Transaction) {
+  async saveAssociation(transaction: Transaction): Promise<void> {
+    if (this.config.isAssociationGraphEnabled()) {
+      return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);
+    }
+
     await this.storage.sadd(`lto:assoc:${transaction.sender}:childs`, transaction.party);
     await this.storage.sadd(`lto:assoc:${transaction.party}:parents`, transaction.sender);
 
     this.logger.debug(`storage-service: Add assoc for ${transaction.sender} child ${transaction.party}`);
   }
 
-  async removeAssociation(transaction: Transaction) {
+  async removeAssociation(transaction: Transaction): Promise<void> {
+    if (this.config.isAssociationGraphEnabled()) {
+      // @todo: use remove association
+      // return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);
+    }
+
     await this.storage.srem(`lto:assoc:${transaction.sender}:childs`, transaction.party);
     await this.storage.srem(`lto:assoc:${transaction.party}:parents`, transaction.sender);
 
@@ -102,6 +113,12 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async recurRemoveAssociation(address: string) {
+    if (this.config.isAssociationGraphEnabled()) {
+      // @todo: use remove association
+      // @todo: check if necessary for graph
+      // return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);
+    }
+
     const childAssocs = await this.storage.getArray(`lto:assoc:${address}:childs`);
     for (const child of childAssocs) {
       await this.storage.srem(`lto:assoc:${address}:childs`, child);
@@ -112,6 +129,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getAssociations(address: string): Promise<any> {
+    if (this.config.isAssociationGraphEnabled()) {
+      return await this.redisGraph.getAssociations(address);
+    }
+
     return {
       children: await this.storage.getArray(`lto:assoc:${address}:childs`),
       parents: await this.storage.getArray(`lto:assoc:${address}:parents`),

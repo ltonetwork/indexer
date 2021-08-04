@@ -139,4 +139,8 @@ export class ConfigService {
   getAnchorIndexing(): 'none' | 'trust' | 'all' {
     return this.config.get('anchor.indexing');
   }
+
+  isAssociationGraphEnabled(): boolean {
+    return !!this.config.get('association.use_graph');
+  }
 }
