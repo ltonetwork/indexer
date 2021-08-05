@@ -56,8 +56,8 @@ describe('RedisService', () => {
 
       expect(Object.keys(redisService.connections).length).toBe(2);
 
-      const spyFirst = jest.spyOn(first, 'close');
-      const spySecond = jest.spyOn(second, 'close');
+      const spyFirst = jest.spyOn(first, 'quit');
+      const spySecond = jest.spyOn(second, 'quit');
 
       await redisService.close();
 

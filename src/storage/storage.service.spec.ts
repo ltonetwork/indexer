@@ -20,7 +20,8 @@ describe('StorageService', () => {
 
   function spy() {
     const redisConnection = {
-      close: jest.fn(),
+      quit: jest.fn(),
+      smembers: jest.fn(),
     };
 
     const redis = {
@@ -483,6 +484,47 @@ describe('StorageService', () => {
         expect(redisGet.mock.calls[1][0]).toBe(`lto:assoc:${address}:parents`);
 
         expect(result).toEqual({ children: [], parents: [] });
+      });
+    });
+
+    describe('removeAssociation()', () => {
+      test('should remove associations using redis graph', async () => {
+        const isGraphEnabled = jest.spyOn(configService, 'isAssociationGraphEnabled').mockImplementation(() => true);
+        const redisRemove = jest.spyOn(redisStorageService, 'srem').mockImplementation(async () => {});
+        const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
+
+        const transaction = {
+          sender: 'some-sender',
+          party: 'some-party'
+        } as Transaction;
+
+        await storageService.removeAssociation(transaction);
+
+        expect(redisRemove.mock.calls.length).toBe(0);
+        expect(graphRemove.mock.calls.length).toBe(1);
+        expect(isGraphEnabled.mock.calls.length).toBe(1);
+
+        expect(graphRemove.mock.calls[0]).toEqual(['some-sender', 'some-party']);
+      });
+
+      test('should remove associations using regular storage', async () => {
+        jest.spyOn(configService, 'isAssociationGraphEnabled').mockImplementation(() => false);
+
+        const redisRemove = jest.spyOn(redisStorageService, 'srem').mockImplementation(async () => {});
+        const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
+
+        const transaction = {
+          sender: 'some-sender',
+          party: 'some-party'
+        } as Transaction;
+
+        await storageService.removeAssociation(transaction);
+
+        expect(graphRemove.mock.calls.length).toBe(0);
+        expect(redisRemove.mock.calls.length).toBe(2);
+
+        expect(redisRemove.mock.calls[0]).toEqual([`lto:assoc:${transaction.sender}:childs`, transaction.party]);
+        expect(redisRemove.mock.calls[1]).toEqual([`lto:assoc:${transaction.party}:parents`, transaction.sender]);
       });
     });
   });

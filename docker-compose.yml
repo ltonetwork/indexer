@@ -25,26 +25,10 @@ services:
     container_name: indexer
     build: .
     image: lto/indexer
-    environment:
-      - STORAGE_TYPE=redis
-      - REDIS_URL=redis://redis:6379
-      # @todo: remove below this before PR
-      - LOG_LEVEL=debug
-      - REDIS_GRAPH_HOST=graph
-      - REDIS_GRAPH_PORT=6379
-      - LTO_NODE_URL=http://testnet.lto.network
-      - INDEX_PROCESSOR_TRANSACTION=1
-      - ASSOCIATION_INDEXING=all
-      - NODE_RESTART_SYNC=true
-      - NODE_STARTING_BLOCK=1507309
     ports:
       - 3000:80
     networks:
       - lto-indexer
-    depends_on:
-      - redis
-      # @todo: remove below this before PR
-      - graph
 
 networks:
   lto-indexer:

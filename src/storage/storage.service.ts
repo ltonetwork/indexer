@@ -101,8 +101,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async removeAssociation(transaction: Transaction): Promise<void> {
     if (this.config.isAssociationGraphEnabled()) {
-      // @todo: use remove association
-      // return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);
+      return await this.redisGraph.removeAssociation(transaction.sender, transaction.party);
     }
 
     await this.storage.srem(`lto:assoc:${transaction.sender}:childs`, transaction.party);
@@ -113,12 +112,6 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async recurRemoveAssociation(address: string) {
-    if (this.config.isAssociationGraphEnabled()) {
-      // @todo: use remove association
-      // @todo: check if necessary for graph
-      // return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);
-    }
-
     const childAssocs = await this.storage.getArray(`lto:assoc:${address}:childs`);
     for (const child of childAssocs) {
       await this.storage.srem(`lto:assoc:${address}:childs`, child);
