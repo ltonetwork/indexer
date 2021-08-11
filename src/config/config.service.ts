@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
 import toBoolean from 'boolean';
-import { RoleConfig } from 'trust-network/interfaces/trust-network.interface';
+import { RawRole } from 'trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {
@@ -57,7 +57,11 @@ export class ConfigService {
   }
 
   getAnchorFee(): number {
-    return Number(this.config.get('anchor.node.anchor_fee'));
+    return Number(this.config.get('fees.anchor'));
+  }
+
+  getSponsorFee(): number {
+    return Number(this.config.get('fees.sponsor'));
   }
 
   getRedisClient(): string | string[] {
@@ -121,7 +125,7 @@ export class ConfigService {
     return !!this.config.get(`stats.${token}`);
   }
 
-  getRoles(): RoleConfig {
+  getRoles(): RawRole {
     return this.config.get('roles');
   }
 

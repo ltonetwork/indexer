@@ -4,12 +4,16 @@ import { NodeService } from './node.service';
 import { NodeApiService } from './node-api.service';
 import { StorageService } from '../storage/storage.service';
 import { AxiosResponse } from 'axios';
+import { ConfigService } from '../config/config.service';
 
 describe('NodeService', () => {
   let module: TestingModule;
   let nodeService: NodeService;
+  let configService: ConfigService;
   let nodeApiService: NodeApiService;
   let storageService: StorageService;
+
+  const mockTimestamp: number = 1623162267;
 
   function spy() {
     const fakeTransaction = {
@@ -39,16 +43,25 @@ describe('NodeService', () => {
       sendTransaction: jest.spyOn(nodeApiService, 'sendTransaction'),
       getNodeStatus: jest.spyOn(nodeApiService, 'getNodeStatus'),
       getActivationStatus: jest.spyOn(nodeApiService, 'getActivationStatus'),
+      signTransaction: jest.spyOn(nodeApiService, 'signTransaction').mockImplementation(async () => { return { status: 200 }  as AxiosResponse }),
     };
 
-    return { api, node, storage };
+    const config = {
+      getSponsorFee: jest.spyOn(configService, 'getSponsorFee').mockImplementation(() => 5000),
+    };
+
+    return { api, node, storage, config };
   }
 
   beforeEach(async () => {
+    jest.useFakeTimers('modern');
+    jest.setSystemTime(mockTimestamp);
+
     module = await Test.createTestingModule(NodeModuleConfig).compile();
     await module.init();
 
     nodeService = module.get<NodeService>(NodeService);
+    configService = module.get<ConfigService>(ConfigService);
     nodeApiService = module.get<NodeApiService>(NodeApiService);
     storageService = module.get<StorageService>(StorageService);
   });
@@ -336,6 +349,42 @@ describe('NodeService', () => {
 
       expect(result).toBe(mockResponse.data);
       expect(spies.api.getActivationStatus.mock.calls.length).toBe(1);
+    });
+  });
+
+  describe('signSponsorTransaction()', () => {
+    test('should send a sign sponsor transaction to the api', async () => {
+      const spies = spy();
+
+      await nodeService.signSponsorTransaction('some-sender', 'some-party');
+
+      expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
+      expect(spies.api.signTransaction).toHaveBeenCalledWith({
+        version: 1,
+        type: 18,
+        sender: 'some-sender',
+        party: 'some-party',
+        fee: 5000,
+        timestamp: mockTimestamp,
+      })
+    });
+  });
+
+  describe('signCancelSponsorTransaction()', () => {
+    test('should send a sign cancel sponsor transaction to the api', async () => {
+      const spies = spy();
+
+      await nodeService.signCancelSponsorTransaction('some-sender', 'some-party');
+
+      expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
+      expect(spies.api.signTransaction).toHaveBeenCalledWith({
+        version: 1,
+        type: 19,
+        sender: 'some-sender',
+        party: 'some-party',
+        fee: 5000,
+        timestamp: mockTimestamp,
+      })
     });
   });
 });

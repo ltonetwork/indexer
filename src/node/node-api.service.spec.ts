@@ -136,4 +136,26 @@ describe('NodeApiService', () => {
       expect(spies.request.get.mock.calls[0][0]).toBe('http://localhost:6869/activation/status');
     });
   });
+
+  describe('signTransaction()', () => {
+    test('should send a sign transaction request', async () => {
+      const spies = spy();
+
+      const response = { status: 200 } as AxiosResponse;
+
+      spies.request.post.mockImplementation(() => Promise.resolve(response));
+
+      const transaction = { foo: 'bar' };
+
+      expect(await nodeApiService.signTransaction(transaction)).toBe(response);
+      expect(spies.request.post.mock.calls.length).toBe(1);
+      expect(spies.request.post.mock.calls[0][0]).toBe('http://localhost:6869/transactions/sign');
+      expect(spies.request.post.mock.calls[0][1]).toBe(transaction);
+      expect(spies.request.post.mock.calls[0][2]).toEqual({
+        headers: {
+          'X-Api-Key': 'lt1secretapikey!',
+        },
+      });
+    });
+  });
 });

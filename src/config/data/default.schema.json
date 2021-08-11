@@ -52,6 +52,16 @@
       "env": "STATS_SUPPLY"
     }
   },
+  "fees": {
+    "anchor": {
+      "default": 35000000,
+      "env": "FEES_ANCHOR"
+    },
+    "sponsor": {
+      "default": 500000000,
+      "env": "FEES_SPONSOR"
+    }
+  },
   "anchor": {
     "doc": "The config of this application, with a namespace so it can be merged into larger configs",
     "api": {
@@ -91,11 +101,7 @@
         "env": "ANCHOR_NODE_URL"
       },
       "starting_block": 1,
-      "restart_sync": false,
-      "anchor_fee": {
-        "default": 35000000,
-        "env": "ANCHOR_NODE_ANCHOR_FEE"
-      }
+      "restart_sync": false
     },
     "monitor": {
       "interval": {

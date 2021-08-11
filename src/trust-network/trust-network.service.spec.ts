@@ -28,6 +28,7 @@ describe('TrustNetworkService', () => {
 
     const node = {
       getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet').mockImplementation(async () => 'node-address'),
+      signSponsorTransaction: jest.spyOn(nodeService, 'signSponsorTransaction').mockImplementation(async () => {}),
     };
 
     const config = {
@@ -40,15 +41,15 @@ describe('TrustNetworkService', () => {
           authority: {
             description: 'The authority',
             issues: [{ type: 100, role: 'university' }, { type: 101, role: 'sub_authority' }],
-            authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+            authorization: ['https://www.w3.org/2018/credentials/examples/v1'],
           },
           sub_authority: {
             description: 'The sub authority',
-            issues: [{ type: 100, role: 'university' }]
+            issues: [{ type: 100, role: 'university' }],
           },
           university: {
             description: 'The university',
-            authorization: ['https://www.w3.org/2018/credentials/examples/v1']
+            authorization: ['https://www.w3.org/2018/credentials/examples/v1'],
           }
         };
       }),
@@ -89,6 +90,7 @@ describe('TrustNetworkService', () => {
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveRoleAssociation.mock.calls.length).toBe(1);
+      expect(spies.node.signSponsorTransaction.mock.calls.length).toBe(0);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][0])
         .toBe(transaction.party);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][1])
@@ -138,6 +140,28 @@ describe('TrustNetworkService', () => {
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveRoleAssociation.mock.calls.length).toBe(0);
+    });
+
+    test('should send a sponsor transaction to the node if the party will be given a sponsored role', async () => {
+      const spies = spy();
+
+      spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+        return {
+          authority: {
+            description: 'The authority',
+            issues: [{ type: 101, role: 'university' }],
+          },
+          university: {
+            description: 'University',
+            sponsored: true,
+          }
+        };
+      });
+
+      await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+      expect(spies.node.signSponsorTransaction.mock.calls.length).toBe(1);
+      expect(spies.node.signSponsorTransaction).toHaveBeenNthCalledWith(1, transaction.sender, transaction.party);
     });
   });
 

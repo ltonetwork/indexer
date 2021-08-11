@@ -50,6 +50,15 @@ export class NodeApiService {
     });
   }
 
+  async signTransaction(data: any): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return await this.request.post(`${url}/transactions/sign`, data, {
+      headers: {
+        'X-Api-Key': this.config.getApiSecret(),
+      },
+    });
+  }
+
   async sendAssociation(data: any): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/addresses/association`, data, {

@@ -65,23 +65,6 @@ describe('StatsService', () => {
     await module.close();
   });
 
-  // expect(spies.storage.incrTxStats.mock.calls.length).toBe(3);
-
-  // expect(spies.storage.incrTxStats.mock.calls[0][0]).toBe('transfer');
-  // expect(spies.storage.incrTxStats.mock.calls[0][1]).toBe(18696);
-
-  // expect(spies.storage.incrTxStats.mock.calls[1][0]).toBe('all_transfers');
-  // expect(spies.storage.incrTxStats.mock.calls[1][1]).toBe(18696);
-
-  // expect(spies.storage.incrTxStats.mock.calls[2][0]).toBe('all');
-  // expect(spies.storage.incrTxStats.mock.calls[2][1]).toBe(18696);
-
-  // expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(3);
-
-  // expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1);
-
-  // @todo: redo all of these tests
-
   describe('index()', () => {
     test('should check for each stat config and call the appropriate service', async () => {
       const spies = spy();

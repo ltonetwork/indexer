@@ -3,7 +3,6 @@ import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class AssociationsService {

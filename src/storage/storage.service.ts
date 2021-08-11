@@ -8,7 +8,7 @@ import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
 import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
-import { Role } from '../trust-network/interfaces/trust-network.interface';
+import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -74,7 +74,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setObject(`lto:verification:${address}`, data);
   }
 
-  async getRolesFor(address: string): Promise<object> {
+  async getRolesFor(address: string): Promise<RawRole | {}> {
     return this.storage.getObject(`lto:roles:${address}`).catch(() => { return {} });
   }
 

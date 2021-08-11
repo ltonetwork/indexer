@@ -166,6 +166,40 @@ export class NodeService {
     return response.data.id;
   }
 
+  async signSponsorTransaction(sender: string, party: string): Promise<any> {
+    const response = await this.api.signTransaction({
+      version: 1,
+      type: 18,
+      sender,
+      party,
+      fee: this.config.getSponsorFee(),
+      timestamp: Date.now(),
+    });
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
+  }
+
+  async signCancelSponsorTransaction(sender: string, party: string): Promise<any> {
+    const response = await this.api.signTransaction({
+      version: 1,
+      type: 19,
+      sender,
+      party,
+      fee: this.config.getSponsorFee(),
+      timestamp: Date.now(),
+    });
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
+  }
+
   async anchor(hash: string, encoding: string): Promise<{
     '@context', type, targetHash, anchors,
   } | null> {

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
-import { Role, RoleData } from './interfaces/trust-network.interface';
+import { RawRole, Role, RoleData } from './interfaces/trust-network.interface';
 import { ConfigService } from '../config/config.service';
 import { NodeService } from '../node/node.service';
 
@@ -21,12 +21,12 @@ export class TrustNetworkService {
     const { id, sender, party, associationType } = transaction;
     
     if (!party) {
-      this.logger.debug(`trustNetwork: transaction ${id} didn't have a party address, skipped indexing`);
+      this.logger.debug(`trust-network: transaction ${id} didn't have a party address, skipped indexing`);
       return;
     }
 
     if (!associationType) {
-      this.logger.debug(`trustNetwork: transaction ${id} didn't have an association type, skipped indexing`);
+      this.logger.debug(`trust-network: transaction ${id} didn't have an association type, skipped indexing`);
       return;
     }
 
@@ -40,6 +40,24 @@ export class TrustNetworkService {
         this.storage.saveRoleAssociation(party, sender, eachRole);
       }
     });
+
+    if (savedRoles.length === 0) {
+      return;
+    }
+
+    const hasSponsoredRole = savedRoles.reduce((previous, current, index) => {
+      const each = savedRoles[index];
+      const configRoles = this.config.getRoles();
+
+      return !!configRoles[each.role]?.sponsored;
+    }, false);
+
+    if (!hasSponsoredRole) {
+      return;
+    }
+
+    this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
+    await this.node.signSponsorTransaction(sender, party);
   }
 
   async getRolesFor(address: string): Promise<RoleData> {
