@@ -166,14 +166,13 @@ export class NodeService {
     return response.data.id;
   }
 
-  async signSponsorTransaction(sender: string, party: string): Promise<any> {
+  async signSponsorTransaction(sender: string, recipient: string): Promise<any> {
     const response = await this.api.signTransaction({
       version: 1,
       type: 18,
       sender,
-      party,
+      recipient,
       fee: this.config.getSponsorFee(),
-      timestamp: Date.now(),
     });
 
     if (response instanceof Error) {
@@ -183,14 +182,13 @@ export class NodeService {
     return response.data;
   }
 
-  async signCancelSponsorTransaction(sender: string, party: string): Promise<any> {
+  async signCancelSponsorTransaction(sender: string, recipient: string): Promise<any> {
     const response = await this.api.signTransaction({
       version: 1,
       type: 19,
       sender,
-      party,
+      recipient,
       fee: this.config.getSponsorFee(),
-      timestamp: Date.now(),
     });
 
     if (response instanceof Error) {

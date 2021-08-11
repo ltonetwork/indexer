@@ -34,10 +34,10 @@ export class TrustNetworkService {
 
     const savedRoles: Role[] = [];
 
-    senderRoles.issues_roles.forEach(eachRole => {
+    senderRoles.issues_roles.forEach(async eachRole => {
       if (eachRole.type === associationType && !savedRoles.includes(eachRole)) {
         savedRoles.push(eachRole);
-        this.storage.saveRoleAssociation(party, sender, eachRole);
+        await this.storage.saveRoleAssociation(party, sender, eachRole);
       }
     });
 
@@ -56,8 +56,12 @@ export class TrustNetworkService {
       return;
     }
 
-    this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
-    await this.node.signSponsorTransaction(sender, party);
+    try {
+      this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
+      await this.node.signSponsorTransaction(sender, party);
+    } catch(error) {
+      this.logger.error(`trust-network: error sending a transaction to the node: "${error}"`);
+    }
   }
 
   async getRolesFor(address: string): Promise<RoleData> {

@@ -13,8 +13,6 @@ describe('NodeService', () => {
   let nodeApiService: NodeApiService;
   let storageService: StorageService;
 
-  const mockTimestamp: number = 1623162267;
-
   function spy() {
     const fakeTransaction = {
       id: 'fake_transaction',
@@ -54,9 +52,6 @@ describe('NodeService', () => {
   }
 
   beforeEach(async () => {
-    jest.useFakeTimers('modern');
-    jest.setSystemTime(mockTimestamp);
-
     module = await Test.createTestingModule(NodeModuleConfig).compile();
     await module.init();
 
@@ -356,16 +351,15 @@ describe('NodeService', () => {
     test('should send a sign sponsor transaction to the api', async () => {
       const spies = spy();
 
-      await nodeService.signSponsorTransaction('some-sender', 'some-party');
+      await nodeService.signSponsorTransaction('some-sender', 'some-recipient');
 
       expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
       expect(spies.api.signTransaction).toHaveBeenCalledWith({
         version: 1,
         type: 18,
         sender: 'some-sender',
-        party: 'some-party',
+        recipient: 'some-recipient',
         fee: 5000,
-        timestamp: mockTimestamp,
       })
     });
   });
@@ -374,16 +368,15 @@ describe('NodeService', () => {
     test('should send a sign cancel sponsor transaction to the api', async () => {
       const spies = spy();
 
-      await nodeService.signCancelSponsorTransaction('some-sender', 'some-party');
+      await nodeService.signCancelSponsorTransaction('some-sender', 'some-recipient');
 
       expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
       expect(spies.api.signTransaction).toHaveBeenCalledWith({
         version: 1,
         type: 19,
         sender: 'some-sender',
-        party: 'some-party',
+        recipient: 'some-recipient',
         fee: 5000,
-        timestamp: mockTimestamp,
       })
     });
   });
