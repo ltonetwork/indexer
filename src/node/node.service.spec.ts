@@ -41,7 +41,15 @@ describe('NodeService', () => {
       sendTransaction: jest.spyOn(nodeApiService, 'sendTransaction'),
       getNodeStatus: jest.spyOn(nodeApiService, 'getNodeStatus'),
       getActivationStatus: jest.spyOn(nodeApiService, 'getActivationStatus'),
-      signTransaction: jest.spyOn(nodeApiService, 'signTransaction').mockImplementation(async () => { return { status: 200 }  as AxiosResponse }),
+      broadcastTransaction: jest.spyOn(nodeApiService, 'broadcastTransaction').mockImplementation(async () => { return { status: 200 }  as AxiosResponse }),
+      signTransaction: jest.spyOn(nodeApiService, 'signTransaction').mockImplementation(async () => {
+        return {
+          status: 200,
+          data: {
+            some: 'data'
+          }
+        }  as AxiosResponse
+      }),
     };
 
     const config = {
@@ -347,37 +355,41 @@ describe('NodeService', () => {
     });
   });
 
-  describe('signSponsorTransaction()', () => {
-    test('should send a sign sponsor transaction to the api', async () => {
+  describe('sponsorAccount()', () => {
+    test('should send a sign sponsor transaction and broadcast to the api', async () => {
       const spies = spy();
 
-      await nodeService.signSponsorTransaction('some-sender', 'some-recipient');
+      await nodeService.sponsorAccount('some-recipient');
 
       expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
       expect(spies.api.signTransaction).toHaveBeenCalledWith({
         version: 1,
         type: 18,
-        sender: 'some-sender',
         recipient: 'some-recipient',
         fee: 5000,
-      })
+      });
+
+      expect(spies.api.broadcastTransaction).toHaveBeenCalledTimes(1);
+      expect(spies.api.broadcastTransaction).toHaveBeenCalledWith({ some: 'data' });
     });
   });
 
-  describe('signCancelSponsorTransaction()', () => {
-    test('should send a sign cancel sponsor transaction to the api', async () => {
+  describe('cancelSponsor()', () => {
+    test('should send a sign cancel sponsor transaction and broadcast to the api', async () => {
       const spies = spy();
 
-      await nodeService.signCancelSponsorTransaction('some-sender', 'some-recipient');
+      await nodeService.cancelSponsor('some-recipient');
 
       expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
       expect(spies.api.signTransaction).toHaveBeenCalledWith({
         version: 1,
         type: 19,
-        sender: 'some-sender',
         recipient: 'some-recipient',
         fee: 5000,
-      })
+      });
+
+      expect(spies.api.broadcastTransaction).toHaveBeenCalledTimes(1);
+      expect(spies.api.broadcastTransaction).toHaveBeenCalledWith({ some: 'data' });
     });
   });
 });

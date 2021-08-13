@@ -16,6 +16,47 @@ export class TrustNetworkService {
     private readonly node: NodeService
   ) { }
 
+  private async checkIsAlreadySponsored(address: string): Promise<boolean> {
+    const configRoles = this.config.getRoles();
+    const roles = await this.storage.getRolesFor(address);
+    let result = false;
+
+    for (const role in roles) {
+      if (!!configRoles[role]?.sponsored) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  private async checkSponsoredRoles(savedRoles: Role[], recipient: string) {
+    const isAlreadySponsored = await this.checkIsAlreadySponsored(recipient);
+
+    if (isAlreadySponsored) {
+      return;
+    }
+
+    const isGettingSponsored = savedRoles.reduce((previous, current, index) => {
+      const each = savedRoles[index];
+      const configRoles = this.config.getRoles();
+
+      return !!configRoles[each.role]?.sponsored;
+    }, false);
+
+    if (!isGettingSponsored) {
+      return;
+    }
+
+    try {
+      this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
+      await this.node.sponsorAccount(recipient);
+    } catch(error) {
+      this.logger.error(`trust-network: error sending a transaction to the node: "${error}"`);
+    }
+  }
+
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
     const { id, sender, party, associationType } = transaction;
@@ -45,23 +86,7 @@ export class TrustNetworkService {
       return;
     }
 
-    const hasSponsoredRole = savedRoles.reduce((previous, current, index) => {
-      const each = savedRoles[index];
-      const configRoles = this.config.getRoles();
-
-      return !!configRoles[each.role]?.sponsored;
-    }, false);
-
-    if (!hasSponsoredRole) {
-      return;
-    }
-
-    try {
-      this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
-      await this.node.signSponsorTransaction(sender, party);
-    } catch(error) {
-      this.logger.error(`trust-network: error sending a transaction to the node: "${error}"`);
-    }
+    await this.checkSponsoredRoles(savedRoles, party);
   }
 
   async getRolesFor(address: string): Promise<RoleData> {

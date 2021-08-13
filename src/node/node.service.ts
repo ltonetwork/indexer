@@ -36,6 +36,35 @@ export class NodeService {
     private readonly config: ConfigService,
   ) { }
 
+  private async signAndBroadcastSponsor(type: 18 | 19, recipient: string): Promise<any> {
+    const signResponse = await this.api.signTransaction({
+      version: 1,
+      type,
+      recipient,
+      fee: this.config.getSponsorFee(),
+    });
+
+    if (signResponse instanceof Error) {
+      throw signResponse;
+    }
+
+    const broadcastResponse = await this.api.broadcastTransaction(signResponse.data);
+
+    if (broadcastResponse instanceof Error) {
+      throw broadcastResponse;
+    }
+
+    return broadcastResponse.data;
+  }
+
+  async sponsorAccount(recipient: string): Promise<any> {
+    return this.signAndBroadcastSponsor(18, recipient);
+  }
+
+  async cancelSponsor(recipient: string): Promise<any> {
+    return this.signAndBroadcastSponsor(19, recipient);
+  }
+
   async getNodeWallet(): Promise<string> {
     const response = await this.api.getNodeAddresses();
 
@@ -164,38 +193,6 @@ export class NodeService {
     }
 
     return response.data.id;
-  }
-
-  async signSponsorTransaction(sender: string, recipient: string): Promise<any> {
-    const response = await this.api.signTransaction({
-      version: 1,
-      type: 18,
-      sender,
-      recipient,
-      fee: this.config.getSponsorFee(),
-    });
-
-    if (response instanceof Error) {
-      throw response;
-    }
-
-    return response.data;
-  }
-
-  async signCancelSponsorTransaction(sender: string, recipient: string): Promise<any> {
-    const response = await this.api.signTransaction({
-      version: 1,
-      type: 19,
-      sender,
-      recipient,
-      fee: this.config.getSponsorFee(),
-    });
-
-    if (response instanceof Error) {
-      throw response;
-    }
-
-    return response.data;
   }
 
   async anchor(hash: string, encoding: string): Promise<{

@@ -21,16 +21,18 @@ describe('TrustNetworkService', () => {
   function spy() {
     const storage = {
       saveRoleAssociation: jest.spyOn(storageService, 'saveRoleAssociation').mockImplementation(async () => {}),
-      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async (address: string) => {
+        if (address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ') return {};
+
         return {
           authority: { sender: 'mock-sender', type: 100 }
-        }
+        };
       }),
     };
 
     const node = {
       getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet').mockImplementation(async () => 'node-address'),
-      signSponsorTransaction: jest.spyOn(nodeService, 'signSponsorTransaction').mockImplementation(async () => {}),
+      sponsorAccount: jest.spyOn(nodeService, 'sponsorAccount').mockImplementation(async () => {}),
     };
 
     const config = {
@@ -98,7 +100,7 @@ describe('TrustNetworkService', () => {
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveRoleAssociation.mock.calls.length).toBe(1);
-      expect(spies.node.signSponsorTransaction.mock.calls.length).toBe(0);
+      expect(spies.node.sponsorAccount.mock.calls.length).toBe(0);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][0])
         .toBe(transaction.party);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][1])
@@ -168,11 +170,43 @@ describe('TrustNetworkService', () => {
 
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
-      expect(spies.node.signSponsorTransaction.mock.calls.length).toBe(1);
-      expect(spies.node.signSponsorTransaction).toHaveBeenNthCalledWith(1, transaction.sender, transaction.party);
+      expect(spies.node.sponsorAccount.mock.calls.length).toBe(1);
+      expect(spies.node.sponsorAccount).toHaveBeenNthCalledWith(1, transaction.party);
 
       expect(spies.logger.debug).toHaveBeenCalledTimes(1);
       expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: party is being given a sponsored role, sending a transaction to the node');
+    });
+
+    test('should not send a sponsor transaction if the party already has a sponsored role', async () => {
+      const spies = spy();
+
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async (address: string) => {
+        if (address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ') {
+          return {
+            university: { sender: 'mock-sender', type: 101 }
+          };
+        }
+
+        return {
+          authority: { sender: 'mock-sender', type: 100 }
+        };
+      });
+      spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+        return {
+          authority: {
+            description: 'The authority',
+            issues: [{ type: 101, role: 'university' }],
+          },
+          university: {
+            description: 'University',
+            sponsored: true,
+          }
+        };
+      });
+
+      await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+
+      expect(spies.node.sponsorAccount.mock.calls.length).toBe(0);
     });
 
     test('should log error if sponsor transaction request fails', async () => {
@@ -191,7 +225,7 @@ describe('TrustNetworkService', () => {
         };
       });
 
-      spies.node.signSponsorTransaction = jest.spyOn(nodeService, 'signSponsorTransaction').mockRejectedValue(new Error('Something wrong'));
+      spies.node.sponsorAccount = jest.spyOn(nodeService, 'sponsorAccount').mockRejectedValue(new Error('Something wrong'));
 
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
