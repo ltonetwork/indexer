@@ -74,8 +74,8 @@ export class ConfigService {
 
   getRedisGraph(): { host: string, port: string } {
     return {
-      host: this.config.get('redis.graph.host'),
-      port: this.config.get('redis.graph.port'),
+      host: this.config.get('redis_graph.host'),
+      port: this.config.get('redis_graph.port'),
     };
   }
 

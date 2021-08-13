@@ -14,6 +14,7 @@ import { RedisGraphService } from './redis-graph/redis-graph.service';
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
   private storage: StorageInterface;
+  private graphEnabled: boolean;
 
   constructor(
     private readonly config: ConfigService,
@@ -30,6 +31,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       const name = PascalCase(`${StorageTypeEnum.LevelDB}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     }
+
+    this.graphEnabled = this.config.isAssociationGraphEnabled();
   }
 
   async onModuleDestroy() {}
@@ -89,7 +92,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async saveAssociation(transaction: Transaction): Promise<void> {
-    if (this.config.isAssociationGraphEnabled()) {
+    if (this.graphEnabled) {
       return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);
     }
 
@@ -100,7 +103,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async removeAssociation(transaction: Transaction): Promise<void> {
-    if (this.config.isAssociationGraphEnabled()) {
+    if (this.graphEnabled) {
       return await this.redisGraph.removeAssociation(transaction.sender, transaction.party);
     }
 
@@ -122,7 +125,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getAssociations(address: string): Promise<any> {
-    if (this.config.isAssociationGraphEnabled()) {
+    if (this.graphEnabled) {
       return await this.redisGraph.getAssociations(address);
     }
 

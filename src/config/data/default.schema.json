@@ -65,16 +65,16 @@
     "cluster": {
       "default": "",
       "env": "REDIS_CLUSTER"
+    }
+  },
+  "redis_graph": {
+    "host": {
+      "default": "localhost",
+      "env": "REDIS_GRAPH_HOST"
     },
-    "graph": {
-      "host": {
-        "default": "localhost",
-        "env": "REDIS_GRAPH_HOST"
-      },
-      "port": {
-        "default": "6379",
-        "env": "REDIS_GRAPH_PORT"
-      }
+    "port": {
+      "default": "6379",
+      "env": "REDIS_GRAPH_PORT"
     }
   },
   "leveldb": {
