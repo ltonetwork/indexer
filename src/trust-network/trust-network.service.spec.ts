@@ -32,7 +32,7 @@ describe('TrustNetworkService', () => {
 
     const node = {
       getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet').mockImplementation(async () => 'node-address'),
-      sponsorAccount: jest.spyOn(nodeService, 'sponsorAccount').mockImplementation(async () => {}),
+      sponsor: jest.spyOn(nodeService, 'sponsor').mockImplementation(async () => {}),
     };
 
     const config = {
@@ -100,7 +100,7 @@ describe('TrustNetworkService', () => {
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.storage.saveRoleAssociation.mock.calls.length).toBe(1);
-      expect(spies.node.sponsorAccount.mock.calls.length).toBe(0);
+      expect(spies.node.sponsor.mock.calls.length).toBe(0);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][0])
         .toBe(transaction.party);
       expect(spies.storage.saveRoleAssociation.mock.calls[0][1])
@@ -170,8 +170,8 @@ describe('TrustNetworkService', () => {
 
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
-      expect(spies.node.sponsorAccount.mock.calls.length).toBe(1);
-      expect(spies.node.sponsorAccount).toHaveBeenNthCalledWith(1, transaction.party);
+      expect(spies.node.sponsor.mock.calls.length).toBe(1);
+      expect(spies.node.sponsor).toHaveBeenNthCalledWith(1, transaction.party);
 
       expect(spies.logger.debug).toHaveBeenCalledTimes(1);
       expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: party is being given a sponsored role, sending a transaction to the node');
@@ -206,7 +206,7 @@ describe('TrustNetworkService', () => {
 
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 
-      expect(spies.node.sponsorAccount.mock.calls.length).toBe(0);
+      expect(spies.node.sponsor.mock.calls.length).toBe(0);
     });
 
     test('should log error if sponsor transaction request fails', async () => {
@@ -225,7 +225,7 @@ describe('TrustNetworkService', () => {
         };
       });
 
-      spies.node.sponsorAccount = jest.spyOn(nodeService, 'sponsorAccount').mockRejectedValue(new Error('Something wrong'));
+      spies.node.sponsor = jest.spyOn(nodeService, 'sponsor').mockRejectedValue(new Error('Something wrong'));
 
       await trustNetworkService.index({transaction: transaction as any, blockHeight: 1, position: 0});
 

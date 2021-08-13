@@ -355,11 +355,11 @@ describe('NodeService', () => {
     });
   });
 
-  describe('sponsorAccount()', () => {
+  describe('sponsor()', () => {
     test('should send a sign sponsor transaction and broadcast to the api', async () => {
       const spies = spy();
 
-      await nodeService.sponsorAccount('some-recipient');
+      await nodeService.sponsor('some-recipient');
 
       expect(spies.api.signTransaction).toHaveBeenCalledTimes(1);
       expect(spies.api.signTransaction).toHaveBeenCalledWith({

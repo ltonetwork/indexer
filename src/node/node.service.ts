@@ -57,7 +57,7 @@ export class NodeService {
     return broadcastResponse.data;
   }
 
-  async sponsorAccount(recipient: string): Promise<any> {
+  async sponsor(recipient: string): Promise<any> {
     return this.signAndBroadcastSponsor(18, recipient);
   }
 

@@ -51,7 +51,7 @@ export class TrustNetworkService {
 
     try {
       this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
-      await this.node.sponsorAccount(recipient);
+      await this.node.sponsor(recipient);
     } catch(error) {
       this.logger.error(`trust-network: error sending a transaction to the node: "${error}"`);
     }
