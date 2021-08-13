@@ -20,11 +20,12 @@ describe('RedisStorageService', () => {
       hgetall: jest.fn(),
       hset: jest.fn(),
       hsetnx: jest.fn(),
-      zaddWithScore: jest.fn(),
-      zrevrangePaginate: jest.fn(),
+      zadd: jest.fn(),
+      zrevrange: jest.fn(),
       zcard: jest.fn(),
-      close: jest.fn(),
+      quit: jest.fn(),
     };
+
     const redis = {
       connect: jest.spyOn(redisService, 'connect')
         // @ts-ignore
@@ -209,11 +210,11 @@ describe('RedisStorageService', () => {
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.zaddWithScore.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zaddWithScore.mock.calls[0][0])
+      expect(spies.redisConnection.zadd.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zadd.mock.calls[0][0])
         .toBe(`lto:tx:${type}:${address}`);
-      expect(spies.redisConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(timestamp));
-      expect(spies.redisConnection.zaddWithScore.mock.calls[0][2]).toEqual(transaction);
+      expect(spies.redisConnection.zadd.mock.calls[0][1]).toEqual(String(timestamp));
+      expect(spies.redisConnection.zadd.mock.calls[0][2]).toEqual(transaction);
     });
   });
 
@@ -222,22 +223,25 @@ describe('RedisStorageService', () => {
       const spies = spy();
 
       const transactions = ['fake_transaction'];
-      spies.redisConnection.zrevrangePaginate.mockImplementation(() => transactions);
+      spies.redisConnection.zrevrange.mockImplementation(() => transactions);
 
       const type = 'anchor';
       const address = 'fake_address';
       const limit = 25;
       const offset = 0;
+      const start = Number(offset);
+      const stop = (Number(limit) - 1) + start;
+
       expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
-      expect(spies.redisConnection.zrevrangePaginate.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][0])
+      expect(spies.redisConnection.zrevrange.mock.calls.length).toBe(1);
+      expect(spies.redisConnection.zrevrange.mock.calls[0][0])
         .toBe(`lto:tx:${type}:${address}`);
-      expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][1]).toBe(limit);
-      expect(spies.redisConnection.zrevrangePaginate.mock.calls[0][2]).toBe(offset);
+      expect(spies.redisConnection.zrevrange.mock.calls[0][1]).toBe(start);
+      expect(spies.redisConnection.zrevrange.mock.calls[0][2]).toBe(stop);
     });
   });
 

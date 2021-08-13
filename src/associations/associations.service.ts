@@ -1,9 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class AssociationsService {
@@ -46,7 +45,7 @@ export class AssociationsService {
     }
   }
 
-  getAssociations(address: string): Promise<any> {
+  async getAssociations(address: string): Promise<any> {
     return this.storage.getAssociations(address);
   }
 }

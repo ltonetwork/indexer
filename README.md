@@ -11,6 +11,14 @@ It can be launched via `nmp start`. It will run the index service, that will acc
 
 Expolore all API endpoint using the swagger interface.
 
+## Docker
+
+A `Dockerfile` is available on the root, along with a `docker-compose.yml` for making it easy to deploy as a Docker container. 
+
+The `docker-compose` file also creates a `redis` and `redis-graph` container, and enables the `indexer` to work with a Redis database.
+
+You can use the environment variables on the `indexer` to enable/disable features or use LevelDB (default) instead of Redis. See more on **Configuration** below.
+
 ## Anchoring
 
 Data, that can be anchored through UI, is either a text data, or a file.
