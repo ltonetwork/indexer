@@ -379,6 +379,25 @@ describe('StorageService', () => {
             });
         });
       });
+
+      describe('removeRoleAssociation()', () => {
+        const mockRole = { type: 100, role: 'authority' };
+  
+        test('should remove a trust network role association', async () => {
+          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
+          const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
+            return { 'authority': { sender: 'mock-sender', type: mockRole.type } };
+          });
+  
+          await storageService.removeRoleAssociation('mock-recipient', mockRole);
+
+          expect(getObject).toHaveBeenCalledTimes(1);
+          expect(getObject).toHaveBeenNthCalledWith(1, 'lto:roles:mock-recipient');
+
+          expect(setObject).toHaveBeenCalledTimes(1);
+          expect(setObject).toHaveBeenNthCalledWith(1, 'lto:roles:mock-recipient', {});
+        });
+      });
     });
   
     describe('operation stats', () => {

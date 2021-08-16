@@ -133,7 +133,11 @@ export class ConfigService {
   }
 
   getRoles(): RawRole {
-    return this.config.get('roles');
+    return this.config.get('trust_network.roles');
+  }
+
+  isTrustNetworkEnabled(): boolean {
+    return !!this.config.get('trust_network.indexing');
   }
 
   getAssociationIndexing(): 'none' | 'trust' | 'all' {

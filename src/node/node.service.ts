@@ -65,6 +65,16 @@ export class NodeService {
     return this.signAndBroadcastSponsor(19, recipient);
   }
 
+  async getSponsorsOf(address: string): Promise<string[]> {
+    const sponsorshipResponse = await this.api.getSponsorshipStatus(address);
+
+    if (sponsorshipResponse instanceof Error) {
+      throw sponsorshipResponse;
+    }
+
+    return sponsorshipResponse.data?.sponsor || [];
+  }
+
   async getNodeWallet(): Promise<string> {
     const response = await this.api.getNodeAddresses();
 

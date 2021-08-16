@@ -91,6 +91,14 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setObject(`lto:roles:${party}`, roles);
   }
 
+  async removeRoleAssociation(party: string, data: Role): Promise<void> {
+    const roles = await this.storage.getObject(`lto:roles:${party}`).catch(() => { return {} });
+
+    delete roles[data.role];
+
+    return this.storage.setObject(`lto:roles:${party}`, roles);
+  }
+
   async saveAssociation(transaction: Transaction): Promise<void> {
     if (this.graphEnabled) {
       return await this.redisGraph.saveAssociation(transaction.sender, transaction.party);

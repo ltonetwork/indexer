@@ -68,6 +68,15 @@ export class NodeApiService {
     });
   }
 
+  async getSponsorshipStatus(address: string): Promise<AxiosResponse<{sponsor: string[]}> | Error> {
+    const url = this.config.getNodeUrl();
+    return await this.request.get(`${url}/sponsorship/status/${address}`, {
+      headers: {
+        'X-Api-Key': this.config.getApiSecret(),
+      },
+    });
+  }
+
   async sendAssociation(data: any): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/addresses/association`, data, {

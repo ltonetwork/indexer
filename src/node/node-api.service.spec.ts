@@ -180,4 +180,27 @@ describe('NodeApiService', () => {
       });
     });
   });
+
+  describe('getSponsorshipStatus()', () => {
+    test('should retrieve the sponsorship status from the node api', async () => {
+      const spies = spy();
+
+      const response = { status: 200 } as AxiosResponse;
+
+      spies.request.get.mockImplementation(() => Promise.resolve(response));
+
+      const address = 'some-address';
+      const options = {
+        headers: {
+          'X-Api-Key': 'lt1secretapikey!',
+        },
+      };
+
+      const result = await nodeApiService.getSponsorshipStatus(address);
+
+      expect(result).toBe(response);
+      expect(spies.request.get).toHaveBeenCalledTimes(1);
+      expect(spies.request.get).toHaveBeenNthCalledWith(1, `http://localhost:6869/sponsorship/status/${address}`, options);
+    });
+  });
 });

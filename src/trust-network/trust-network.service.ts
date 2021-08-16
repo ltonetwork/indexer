@@ -2,91 +2,50 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
-import { RawRole, Role, RoleData } from './interfaces/trust-network.interface';
+import { Role, RoleData } from './interfaces/trust-network.interface';
 import { ConfigService } from '../config/config.service';
 import { NodeService } from '../node/node.service';
+import { Transaction } from 'transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class TrustNetworkService {
+
+  private transactionTypes: number[];
 
   constructor(
     private readonly logger: LoggerService,
     private readonly storage: StorageService,
     private readonly config: ConfigService,
     private readonly node: NodeService
-  ) { }
-
-  private async checkIsAlreadySponsored(address: string): Promise<boolean> {
-    const configRoles = this.config.getRoles();
-    const roles = await this.storage.getRolesFor(address);
-    let result = false;
-
-    for (const role in roles) {
-      if (!!configRoles[role]?.sponsored) {
-        result = true;
-        break;
-      }
-    }
-
-    return result;
-  }
-
-  private async checkSponsoredRoles(savedRoles: Role[], recipient: string) {
-    const isAlreadySponsored = await this.checkIsAlreadySponsored(recipient);
-
-    if (isAlreadySponsored) {
-      return;
-    }
-
-    const isGettingSponsored = savedRoles.reduce((previous, current, index) => {
-      const each = savedRoles[index];
-      const configRoles = this.config.getRoles();
-
-      return !!configRoles[each.role]?.sponsored;
-    }, false);
-
-    if (!isGettingSponsored) {
-      return;
-    }
-
-    try {
-      this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
-      await this.node.sponsor(recipient);
-    } catch(error) {
-      this.logger.error(`trust-network: error sending a transaction to the node: "${error}"`);
-    }
+  ) {
+    this.transactionTypes = [16, 17];
   }
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
-    const { id, sender, party, associationType } = transaction;
-    
-    if (!party) {
-      this.logger.debug(`trust-network: transaction ${id} didn't have a party address, skipped indexing`);
+
+    if (this.transactionTypes.indexOf(transaction.type) === -1){
+      this.logger.debug(`trust-network: unknown transaction type`);
       return;
     }
 
-    if (!associationType) {
-      this.logger.debug(`trust-network: transaction ${id} didn't have an association type, skipped indexing`);
+    if (!transaction.party) {
+      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have a party address, skipped indexing`);
       return;
     }
 
-    const senderRoles = await this.getRolesFor(sender);
-
-    const savedRoles: Role[] = [];
-
-    senderRoles.issues_roles.forEach(async eachRole => {
-      if (eachRole.type === associationType && !savedRoles.includes(eachRole)) {
-        savedRoles.push(eachRole);
-        await this.storage.saveRoleAssociation(party, sender, eachRole);
-      }
-    });
-
-    if (savedRoles.length === 0) {
+    if (!transaction.associationType) {
+      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have an association type, skipped indexing`);
       return;
     }
 
-    await this.checkSponsoredRoles(savedRoles, party);
+    if (transaction.type === 16) {
+      this.logger.debug(`trust-network: saving role association`);
+      return this.saveRoleAssociation(transaction);
+    } else if (transaction.type === 17) {
+      this.logger.debug(`trust-network: removing role association`);
+      return this.removeRoleAssociation(transaction);
+    }
   }
 
   async getRolesFor(address: string): Promise<RoleData> {
@@ -128,5 +87,76 @@ export class TrustNetworkService {
     }
 
     return result;
+  }
+
+  private async saveRoleAssociation(transaction: Transaction): Promise<void> {
+    try {
+      const savedRoles: Role[] = [];
+      const senderRoleData = await this.getRolesFor(transaction.sender);
+  
+      senderRoleData.issues_roles.forEach(async eachRole => {
+        if (eachRole.type === transaction.associationType && !savedRoles.includes(eachRole)) {
+          savedRoles.push(eachRole);
+          await this.storage.saveRoleAssociation(transaction.party, transaction.sender, eachRole);
+        }
+      });
+  
+      if (savedRoles.length === 0) {
+        return;
+      }
+  
+      const isGettingSponsored = await this.checkForSponsoredRoles(savedRoles.map(each => each.role));
+  
+      if (isGettingSponsored) {
+        const isAlreadySponsored = await this.checkIsAlreadySponsored(transaction.party);
+  
+        if (isAlreadySponsored) {
+          return;
+        }
+  
+        this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
+        await this.node.sponsor(transaction.party);
+      }
+    } catch(error) {
+      this.logger.error(`trust-network: error saving a role association: "${error}"`);
+    }
+  }
+
+  private async removeRoleAssociation(transaction: Transaction): Promise<void> {
+    const removedRoles: Role[] = [];
+    const senderRoleData = await this.getRolesFor(transaction.sender);
+
+    senderRoleData.issues_roles.forEach(async eachRole => {
+      if (eachRole.type === transaction.associationType && !removedRoles.includes(eachRole)) {
+        removedRoles.push(eachRole);
+        await this.storage.removeRoleAssociation(transaction.party, eachRole);
+      }
+    });
+
+    if (removedRoles.length === 0) {
+      return;
+    }
+
+    const partyRoleData = await this.getRolesFor(transaction.party);
+    const hasSponsoredRolesLeft = this.checkForSponsoredRoles(partyRoleData.roles);
+    
+    if (!hasSponsoredRolesLeft) {
+      this.logger.debug(`trust-network: party has no more sponsored roles, sending a transaction to the node`);
+      await this.node.cancelSponsor(transaction.party);
+    }
+  }
+
+  private async checkIsAlreadySponsored(address: string): Promise<boolean> {
+    const sponsors = await this.node.getSponsorsOf(address);
+    return sponsors.length > 0;
+  }
+
+  private checkForSponsoredRoles(roles: string[]): boolean {
+    return roles.reduce((previous, current, index) => {
+      const each = roles[index];
+      const configRoles = this.config.getRoles();
+
+      return !!configRoles[each]?.sponsored;
+    }, false);
   }
 }
