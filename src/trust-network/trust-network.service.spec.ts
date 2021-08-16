@@ -161,10 +161,10 @@ describe('TrustNetworkService', () => {
         expect(spies.logger.debug).toHaveBeenNthCalledWith(2, 'trust-network: party is being given a sponsored role, sending a transaction to the node');
       });
 
-      test('should not send a sponsor transaction if the party already has a sponsored role', async () => {
+      test('should not send a sponsor transaction if the sponsor is the node', async () => {
         const spies = spy();
 
-        spies.node.getSponsorsOf = jest.spyOn(nodeService, 'getSponsorsOf').mockImplementation(async () => ['already-sponsored']),
+        spies.node.getSponsorsOf = jest.spyOn(nodeService, 'getSponsorsOf').mockImplementation(async () => ['node-address']),
         spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
           return {
             authority: {
@@ -181,6 +181,28 @@ describe('TrustNetworkService', () => {
         await trustNetworkService.index({transaction, blockHeight: 1, position: 0});
 
         expect(spies.node.sponsor).toHaveBeenCalledTimes(0);
+      });
+
+      test('should send a sponsor transaction if the sponsor is not the node', async () => {
+        const spies = spy();
+
+        spies.node.getSponsorsOf = jest.spyOn(nodeService, 'getSponsorsOf').mockImplementation(async () => ['some-other-address']),
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: [{ type: 101, role: 'university' }],
+            },
+            university: {
+              description: 'University',
+              sponsored: true,
+            }
+          };
+        });
+
+        await trustNetworkService.index({transaction, blockHeight: 1, position: 0});
+
+        expect(spies.node.sponsor).toHaveBeenCalledTimes(1);
       });
 
       test('should log error if something fails', async () => {

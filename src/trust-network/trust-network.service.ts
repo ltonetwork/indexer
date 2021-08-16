@@ -68,7 +68,7 @@ export class TrustNetworkService {
 
     for (const role in roles) {
       const configData = configRoles[role];
-      
+
       if (configData) {
         result.roles.push(role);
 
@@ -93,27 +93,25 @@ export class TrustNetworkService {
     try {
       const savedRoles: Role[] = [];
       const senderRoleData = await this.getRolesFor(transaction.sender);
-  
+
       senderRoleData.issues_roles.forEach(async eachRole => {
         if (eachRole.type === transaction.associationType && !savedRoles.includes(eachRole)) {
           savedRoles.push(eachRole);
           await this.storage.saveRoleAssociation(transaction.party, transaction.sender, eachRole);
         }
       });
-  
+
       if (savedRoles.length === 0) {
         return;
       }
-  
-      const isGettingSponsored = await this.checkForSponsoredRoles(savedRoles.map(each => each.role));
-  
+
+      const isGettingSponsored = await this.hasSponsoredRoles(savedRoles.map(each => each.role));
+
       if (isGettingSponsored) {
-        const isAlreadySponsored = await this.checkIsAlreadySponsored(transaction.party);
-  
-        if (isAlreadySponsored) {
+        if (await this.isSponsoredByNode(transaction.party)) {
           return;
         }
-  
+
         this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
         await this.node.sponsor(transaction.party);
       }
@@ -138,20 +136,22 @@ export class TrustNetworkService {
     }
 
     const partyRoleData = await this.getRolesFor(transaction.party);
-    const hasSponsoredRolesLeft = this.checkForSponsoredRoles(partyRoleData.roles);
-    
+    const hasSponsoredRolesLeft = this.hasSponsoredRoles(partyRoleData.roles);
+
     if (!hasSponsoredRolesLeft) {
       this.logger.debug(`trust-network: party has no more sponsored roles, sending a transaction to the node`);
       await this.node.cancelSponsor(transaction.party);
     }
   }
 
-  private async checkIsAlreadySponsored(address: string): Promise<boolean> {
+  private async isSponsoredByNode(address: string): Promise<boolean> {
+    const nodeAddress = await this.node.getNodeWallet();
     const sponsors = await this.node.getSponsorsOf(address);
-    return sponsors.length > 0;
+
+    return sponsors.includes(nodeAddress);
   }
 
-  private checkForSponsoredRoles(roles: string[]): boolean {
+  private hasSponsoredRoles(roles: string[]): boolean {
     return roles.reduce((previous, current, index) => {
       const each = roles[index];
       const configRoles = this.config.getRoles();
