@@ -1,13 +1,12 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
-import { RedisConnection } from './classes/redis.connection';
 import { REDIS } from '../constants';
 import redis from 'ioredis';
 import delay from 'delay';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
-  public readonly connections: { [key: string]: RedisConnection } = {};
+  public readonly connections: { [key: string]: redis.Redis | redis.Cluster } = {};
 
   constructor(
     private readonly logger: LoggerService,
@@ -20,7 +19,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.close();
   }
 
-  async connect(config: string | string[]): Promise<RedisConnection> {
+  async connect(config: string | string[]): Promise<redis.Redis | redis.Cluster> {
     const key = Array.isArray(config) ? config.join(';') : config;
 
     if (this.connections[key] && this.connections[key]) {
@@ -31,7 +30,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     try {
       const connection = Array.isArray(config) ? new this._redis.Cluster(config) : new this._redis(config);
-      this.connections[key] = new RedisConnection(connection);
+      this.connections[key] = connection;
       this.logger.info(`redis: successfully connected ${key}`);
       return this.connections[key];
     } catch (e) {
@@ -45,7 +44,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     for (const key in this.connections) {
       if (this.connections.hasOwnProperty(key)) {
         this.logger.info(`redis: closing connection ${key}`);
-        this.connections[key].close();
+        this.connections[key].quit();
         delete this.connections[key];
       }
     }

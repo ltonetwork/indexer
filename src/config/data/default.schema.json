@@ -30,6 +30,11 @@
       "default": "none",
       "format": ["none", "trust", "all"],
       "env": "ASSOCIATION_INDEXING"
+    },
+    "use_graph": {
+      "default": false,
+      "format": "Boolean",
+      "env": "ASSOCIATION_USE_GRAPH"
     }
   },
   "stats": {
@@ -62,6 +67,44 @@
       "env": "FEES_SPONSOR"
     }
   },
+  "redis": {
+    "url": {
+      "default": "redis://localhost",
+      "env": "REDIS_URL"
+    },
+    "cluster": {
+      "default": "",
+      "env": "REDIS_CLUSTER"
+    }
+  },
+  "redis_graph": {
+    "host": {
+      "default": "localhost",
+      "env": "REDIS_GRAPH_HOST"
+    },
+    "port": {
+      "default": "6379",
+      "env": "REDIS_GRAPH_PORT"
+    }
+  },
+  "leveldb": {
+    "default": "lto-index",
+    "env": "LEVELDB"
+  },
+  "node": {
+    "url": {
+      "default": "",
+      "env": "NODE_URL"
+    },
+    "starting_block": {
+      "default": 1,
+      "env": "NODE_STARTING_BLOCK"
+    },
+    "restart_sync": {
+      "default": false,
+      "env": "NODE_RESTART_SYNC"
+    }
+  },
   "anchor": {
     "doc": "The config of this application, with a namespace so it can be merged into larger configs",
     "api": {
@@ -76,20 +119,6 @@
         "env": "ANCHOR_AUTH_TOKEN"
       }
     },
-    "redis": {
-      "url": {
-        "default": "redis://localhost",
-        "env": "ANCHOR_REDIS_URL"
-      },
-      "cluster": {
-        "default": "",
-        "env": "ANCHOR_REDIS_CLUSTER"
-      }
-    },
-    "leveldb": {
-      "default": "lto-index",
-      "env": "ANCHOR_LEVELDB"
-    },
     "indexing": {
       "default": "none",
       "format": ["none", "trust", "all"],
@@ -99,9 +128,7 @@
       "url": {
         "default": "",
         "env": "ANCHOR_NODE_URL"
-      },
-      "starting_block": 1,
-      "restart_sync": false
+      }
     },
     "monitor": {
       "interval": {

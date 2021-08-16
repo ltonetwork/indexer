@@ -323,7 +323,7 @@ describe('NodeService', () => {
     });
   });
 
-  describe('getActivationStatus()', async () => {
+  describe('getActivationStatus()', () => {
     test('should return activation status', async () => {
       const spies = spy();
 

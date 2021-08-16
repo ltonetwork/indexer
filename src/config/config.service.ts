@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
 import toBoolean from 'boolean';
-import { RawRole } from 'trust-network/interfaces/trust-network.interface';
+import { RawRole } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {
@@ -31,15 +31,15 @@ export class ConfigService {
       return config;
     }
 
-    return this.config.get('anchor.node.url');
+    return this.config.get('node.url');
   }
 
   getNodeStartingBlock(): number | string {
-    return this.config.get('anchor.node.starting_block');
+    return this.config.get('node.starting_block');
   }
 
   getNodeRestartSync(): boolean {
-    return this.config.get('anchor.node.restart_sync');
+    return this.config.get('node.restart_sync');
   }
 
   getAuthToken(): string {
@@ -69,15 +69,22 @@ export class ConfigService {
   }
 
   getRedisUrl(): string {
-    return this.config.get('anchor.redis.url');
+    return this.config.get('redis.url');
   }
 
   getRedisCluster(): string {
-    return this.config.get('anchor.redis.cluster');
+    return this.config.get('redis.cluster');
+  }
+
+  getRedisGraph(): { host: string, port: string } {
+    return {
+      host: this.config.get('redis_graph.host'),
+      port: this.config.get('redis_graph.port'),
+    };
   }
 
   getLevelDb(): string {
-    return this.config.get('anchor.leveldb');
+    return this.config.get('leveldb');
   }
 
   getMonitorInterval(): number {
@@ -135,5 +142,9 @@ export class ConfigService {
 
   getAnchorIndexing(): 'none' | 'trust' | 'all' {
     return this.config.get('anchor.indexing');
+  }
+
+  isAssociationGraphEnabled(): boolean {
+    return !!this.config.get('association.use_graph');
   }
 }

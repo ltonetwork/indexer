@@ -1,12 +1,12 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '../../config/config.service';
 import { RedisService } from '../../redis/redis.service';
-import { RedisConnection } from '../../redis/classes/redis.connection';
 import { StorageInterface } from '../interfaces/storage.interface';
+import { Redis, Cluster } from 'ioredis';
 
 @Injectable()
 export class RedisStorageService implements StorageInterface, OnModuleInit, OnModuleDestroy {
-  private connection: RedisConnection;
+  private connection: Redis | Cluster;
 
   constructor(
     private readonly config: ConfigService,
@@ -27,7 +27,7 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
   private async close() {
     if (this.connection) {
-      await this.connection.close();
+      await this.connection.quit();
       delete this.connection;
     }
   }
@@ -100,11 +100,15 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     await this.init();
-    await this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
+    await this.connection.zadd(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
   }
 
   async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     await this.init();
-    return this.connection.zrevrangePaginate(`lto:tx:${type}:${address}`, limit, offset);
+
+    const start = Number(offset);
+    const stop = (Number(limit) - 1) + start;
+
+    return this.connection.zrevrange(`lto:tx:${type}:${address}`, start, stop);
   }
 }

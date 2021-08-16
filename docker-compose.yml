@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  redis:
+    container_name: redis
+    image: redis
+    volumes:
+      - /tmp/redis:/data
+    ports:
+      - 6379:6379
+    networks:
+      - lto-indexer
+
+  graph:
+    container_name: graph
+    image: redislabs/redisgraph
+    volumes:
+      - /tmp/redis-graph:/data
+    ports:
+      - 6380:6379
+    networks:
+      - lto-indexer
+
+  lto-indexer:
+    container_name: indexer
+    build: .
+    image: lto/indexer
+    ports:
+      - 3000:80
+    networks:
+      - lto-indexer
+
+networks:
+  lto-indexer:
+    driver: bridge
