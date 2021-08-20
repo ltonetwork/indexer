@@ -36,6 +36,45 @@ export class NodeService {
     private readonly config: ConfigService,
   ) { }
 
+  private async signAndBroadcastSponsor(type: 18 | 19, recipient: string): Promise<any> {
+    const signResponse = await this.api.signTransaction({
+      version: 1,
+      type,
+      recipient,
+      fee: this.config.getSponsorFee(),
+    });
+
+    if (signResponse instanceof Error) {
+      throw signResponse;
+    }
+
+    const broadcastResponse = await this.api.broadcastTransaction(signResponse.data);
+
+    if (broadcastResponse instanceof Error) {
+      throw broadcastResponse;
+    }
+
+    return broadcastResponse.data;
+  }
+
+  async sponsor(recipient: string): Promise<any> {
+    return this.signAndBroadcastSponsor(18, recipient);
+  }
+
+  async cancelSponsor(recipient: string): Promise<any> {
+    return this.signAndBroadcastSponsor(19, recipient);
+  }
+
+  async getSponsorsOf(address: string): Promise<string[]> {
+    const sponsorshipResponse = await this.api.getSponsorshipStatus(address);
+
+    if (sponsorshipResponse instanceof Error) {
+      throw sponsorshipResponse;
+    }
+
+    return sponsorshipResponse.data?.sponsor || [];
+  }
+
   async getNodeWallet(): Promise<string> {
     const response = await this.api.getNodeAddresses();
 

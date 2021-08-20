@@ -7,9 +7,9 @@ import { AxiosResponse } from 'axios';
 
 describe('NodeApiService', () => {
   let module: TestingModule;
+  let configService: ConfigService;
   let nodeApiService: NodeApiService;
   let requestService: RequestService;
-  let configService: ConfigService;
 
   function spy() {
     const request = {
@@ -24,9 +24,9 @@ describe('NodeApiService', () => {
     module = await Test.createTestingModule(NodeModuleConfig).compile();
     await module.init();
 
+    configService = module.get<ConfigService>(ConfigService);
     nodeApiService = module.get<NodeApiService>(NodeApiService);
     requestService = module.get<RequestService>(RequestService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(async () => {
@@ -134,6 +134,73 @@ describe('NodeApiService', () => {
 
       expect(spies.request.get.mock.calls.length).toBe(1);
       expect(spies.request.get.mock.calls[0][0]).toBe('http://localhost:6869/activation/status');
+    });
+  });
+
+  describe('signTransaction()', () => {
+    test('should send a sign transaction request', async () => {
+      const spies = spy();
+
+      const response = { status: 200 } as AxiosResponse;
+
+      spies.request.post.mockImplementation(() => Promise.resolve(response));
+
+      const transaction = { foo: 'bar' };
+
+      expect(await nodeApiService.signTransaction(transaction)).toBe(response);
+      expect(spies.request.post.mock.calls.length).toBe(1);
+      expect(spies.request.post.mock.calls[0][0]).toBe('http://localhost:6869/transactions/sign');
+      expect(spies.request.post.mock.calls[0][1]).toBe(transaction);
+      expect(spies.request.post.mock.calls[0][2]).toEqual({
+        headers: {
+          'X-Api-Key': 'lt1secretapikey!',
+        },
+      });
+    });
+  });
+
+  describe('broadcastTransaction()', () => {
+    test('should send a broadcast transaction request', async () => {
+      const spies = spy();
+
+      const response = { status: 200 } as AxiosResponse;
+
+      spies.request.post.mockImplementation(() => Promise.resolve(response));
+
+      const transaction = { foo: 'bar' };
+
+      expect(await nodeApiService.broadcastTransaction(transaction)).toBe(response);
+      expect(spies.request.post.mock.calls.length).toBe(1);
+      expect(spies.request.post.mock.calls[0][0]).toBe('http://localhost:6869/transactions/broadcast');
+      expect(spies.request.post.mock.calls[0][1]).toBe(transaction);
+      expect(spies.request.post.mock.calls[0][2]).toEqual({
+        headers: {
+          'X-Api-Key': 'lt1secretapikey!',
+        },
+      });
+    });
+  });
+
+  describe('getSponsorshipStatus()', () => {
+    test('should retrieve the sponsorship status from the node api', async () => {
+      const spies = spy();
+
+      const response = { status: 200 } as AxiosResponse;
+
+      spies.request.get.mockImplementation(() => Promise.resolve(response));
+
+      const address = 'some-address';
+      const options = {
+        headers: {
+          'X-Api-Key': 'lt1secretapikey!',
+        },
+      };
+
+      const result = await nodeApiService.getSponsorshipStatus(address);
+
+      expect(result).toBe(response);
+      expect(spies.request.get).toHaveBeenCalledTimes(1);
+      expect(spies.request.get).toHaveBeenNthCalledWith(1, `http://localhost:6869/sponsorship/status/${address}`, options);
     });
   });
 });

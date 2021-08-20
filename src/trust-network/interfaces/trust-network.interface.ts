@@ -9,10 +9,11 @@ export interface RoleData {
   issues_authorization: string[];
 }
 
-export interface RoleConfig {
+export interface RawRole {
   [key: string]: {
     description: string;
     issues?: Role[];
     authorization?: string[];
+    sponsored?: boolean;
   }
 }

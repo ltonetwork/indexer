@@ -8,7 +8,7 @@ import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
 import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
-import { Role } from '../trust-network/interfaces/trust-network.interface';
+import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
 
 @Injectable()
@@ -79,7 +79,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.setObject(`lto:verification:${address}`, data);
   }
 
-  async getRolesFor(address: string): Promise<object> {
+  async getRolesFor(address: string): Promise<RawRole | {}> {
     return this.storage.getObject(`lto:roles:${address}`).catch(() => { return {} });
   }
 
@@ -87,6 +87,14 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     const roles = await this.storage.getObject(`lto:roles:${party}`).catch(() => { return {} });
 
     roles[data.role] = { sender, type: data.type };
+
+    return this.storage.setObject(`lto:roles:${party}`, roles);
+  }
+
+  async removeRoleAssociation(party: string, data: Role): Promise<void> {
+    const roles = await this.storage.getObject(`lto:roles:${party}`).catch(() => { return {} });
+
+    delete roles[data.role];
 
     return this.storage.setObject(`lto:roles:${party}`, roles);
   }

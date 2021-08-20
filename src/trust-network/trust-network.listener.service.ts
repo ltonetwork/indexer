@@ -16,10 +16,11 @@ export class TrustNetworkListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('trust_network')) {
+    if (!this.config.isTrustNetworkEnabled()) {
       this.logger.debug(`transaction-listener: Not processing trust network`);
       return;
     }
+
     this.onIndexTransaction();
   }
   async onIndexTransaction() {
