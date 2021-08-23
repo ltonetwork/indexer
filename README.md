@@ -230,22 +230,55 @@ Verification is performed not on blockchain, but on anchors, uploaded from block
 
 ## Configuration
 
+You can run container with predefined environment variables:
 
-**You can run container with predefined environment variables:**
+|variable name            |description                                              |format                                       |default value                               |extra information                                                                                                                        |
+|-------------------------|---------------------------------------------------------|---------------------------------------------|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+|`NODE_ENV`               |The application environment                              |`production`, `development`, `test`, `lto`   |`"development"`                             |                                                                                                                                         |
+|`PORT`                   |The port the application runs on                         |number                                       |`80`                                        |                                                                                                                                         |
+|`TRUST_NETWORK_INDEXING` |Indexing of role associations of the trust network       |boolean                                      |`false`                                     |                                                                                                                                         |
+|`TRUST_NETWORK_ROLES`    |Configuration for roles on trust network                 |object                                       |`"root": {"description": "The root role" }` |                                                                                                                                         |
+|`ASSOCIATION_INDEXING`   |Indexing of association transactions                     |`none`, `trust`, `all`                       |`"none"`                                    |                                                                                                                                         |
+|`ASSOCIATION_USE_GRAPH`  |Whether to use Redis Graph to store associations         |boolean                                      |`false`                                     |Requires `redis_graph` to be set                                                                                                         |
+|`IDENTITY_INDEXING`      |Indexing of identities (verification methods)            |boolean                                      |`false`                                     |                                                                                                                                         |
+|`TRANSACTION_INDEXING`   |Indexing of transactions                                 |boolean                                      |`false`                                     |                                                                                                                                         |
+|`STATS_INDEXING`         |Indexing of blockchain statistics                        |boolean                                      |`false`                                     |Enables `operations`, `transactions` and `supply` stats                                                                                  |
+|`FEES_ANCHOR`            |Fees for anchor transactions                             |number                                       |`35000000`                                  |Should have 8 digits (`value * 10 ^ 8`). [About fees](https://docs.ltonetwork.com/protocol/public/transactions#transaction-fees)         |
+|`FEES_SPONSOR`           |Fees for sponsor transactions                            |number                                       |`500000000`                                 |Should have 8 digits (`value * 10 ^ 8`). [About fees](https://docs.ltonetwork.com/protocol/public/transactions#transaction-fees)         |
+|`REDIS_URL`              |Redis database connection string                         |string                                       |`"redis://localhost"`                       |                                                                                                                                         |
+|`REDIS_CLUSTER`          |Redis cluster connection string                          |string                                       |`""`                                        |                                                                                                                                         |
+|`REDIS_GRAPH_HOST`       |Redis graph host                                         |string                                       |`"localhost"`                               |                                                                                                                                         |
+|`REDIS_GRAPH_PORT`       |Redis graph port                                         |string                                       |`"6379"`                                    |                                                                                                                                         |
+|`LEVELDB_NAME`           |LevelDB database name                                    |string                                       |`"lto-index"`                               |                                                                                                                                         |
+|`NODE_URL`               |Node URL                                                 |string                                       |`""`                                        |                                                                                                                                         |
+|`NODE_API_KEY`           |Node API key                                             |string                                       |`""`                                        |                                                                                                                                         |
+|`STARTING_BLOCK`         |Block number to start processing from                    |number                                       |`1`                                         |                                                                                                                                         |
+|`RESTART_SYNC`           |Whether or not to restart processing from starting block |boolean                                      |`false`                                     |If this is enabled, the indexer will process ALL blocks again, from starting block. It WILL take some time to process. Use with caution. |
+|`AUTH_TOKEN`             |Authentication token                                     |string                                       |`""`                                        |                                                                                                                                         |
+|`ANCHOR_INDEXING`        |Indexing of anchor transactions                          |`none`, `trust`, `all`                       |`"none"`                                    |                                                                                                                                         |
+|`MONITOR_INTERVAL`       |Monitor interval                                         |number                                       |`5000`                                      |Value in miliseconds                                                                                                                     |
+|`LOG_LEVEL`              |Log level for the application                            |`OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`      |`OFF`                                       |                                                                                                                                         |
+|`STORAGE_TYPE`           |Storage type                                             |`redis`, `leveldb`                           |`leveldb`                                   |If `redis`, requires `redis_url` or `redis_cluster` to be set                                                                            |
 
-|env variable     |description                                        |values                                   |
-|-----------------|---------------------------------------------------|-----------------------------------------|
-|`LTO_API_KEY`    | ApiKey used in communication with the public node | `some_api_string`                       |
-|`LOG_LEVEL`      | Node logging level                                | `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG` |
-|`PORT`           | Port number the service should use                | `80`                                    |
-|`LTO_NODE_URL`   | URL of the LTO public node                        | `https://testnet.lto.network`           |
-|`ANCHOR_INDEXING`| Whether or not the indexer should process anchors | `none`, `trust`, `all`                  |
+The indexing configurations have the values of `none`, `trust` or `all`.
 
-A list of all available variables can be found on (./src/config/data/default.schema.json)[./src/config/data/default.schema.json] (see the `env` property of each variable).
+- `none`: no transactions will be indexed
+- `trust`: only transactions from someone in your configured trust network will be indexed (see [configuring a trust network](https://docs.ltonetwork.com/v/edge/identity-node/configuration-1/configuration))
+- `all`: all transactions will be indexed
+
+*Note*: Keep in mind that if you change a configuration after the indexer has already processed blocks, you will need to restart the synchronization, basically making
+the indexer process blocks all over again. This WILL take some time to complete, as it needs to process all of the blocks again. Be sure to set `restart_sync` to `false` after you're done.
+
+```json
+{
+  "starting_block": 1,
+  "restart_sync": true
+}
+```
 
 ### Changing values on the config file
 
-An option to change the configuration is by changing the config file, found in (./src/config/data/default.config.json)[./src/config/data/default.config.json].
+An alternative to changing the configuration is by changing the config file, found in `src/config/data/default.config.json`.
 
 *Do not mistake this file with `default.SCHEMA.json`. The `schema` file contains only information on what variables are available, and what are their possible values. This should NOT be changed.*
 
@@ -259,23 +292,4 @@ By default, `default.config.json` should be empty. You can set any variable you'
 }
 ```
 
-The indexing configurations have the values of `none`, `trust` or `all`.
-
-- `none`: no transactions will be indexed
-- `trust`: only transactions from someone in your configured trust network will be indexed (see [configuring a trust network](https://docs.ltonetwork.com/v/edge/identity-node/configuration-1/configuration))
-- `all`: all transactions will be indexed
-
-*Note*: Keep in mind that if you change a configuration after the indexer has already processed blocks, you will need to restart the synchronization, basically making
-the indexer process blocks all over again. This WILL take some time to complete, if you choose to start from the genesis block.
-
-```json
-{
-  "anchor": {
-    "node": {
-      "starting_block": 1,
-      "restart_sync": true
-    }
-  }
-}
-```
-
+Any changes made to thye config file or the environment variables will require a restart of the application in order to take effect.

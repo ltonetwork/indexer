@@ -16,44 +16,24 @@ export class ConfigService {
     return this.config.get('port');
   }
 
-  getLtoApiKey(): string {
-    return this.config.get('lto.api.key');
-  }
-
-  getLtoNodeUrl(): string {
-    return this.config.get('lto.node.url');
-  }
-
   getNodeUrl(): string {
-    const config = this.getLtoNodeUrl();
-
-    if (config) {
-      return config;
-    }
-
     return this.config.get('node.url');
   }
 
-  getNodeStartingBlock(): number | string {
-    return this.config.get('node.starting_block');
+  getNodeApiKey(): string {
+    return this.config.get('node.api_key');
   }
 
-  getNodeRestartSync(): boolean {
-    return this.config.get('node.restart_sync');
+  getStartingBlock(): number | string {
+    return this.config.get('starting_block');
+  }
+
+  getRestartSync(): boolean {
+    return this.config.get('restart_sync');
   }
 
   getAuthToken(): string {
-    return this.config.get('anchor.auth.token');
-  }
-
-  getApiSecret(): string {
-    const config = this.getLtoApiKey();
-
-    if (config) {
-      return config;
-    }
-
-    return this.config.get('anchor.api.secret');
+    return this.config.get('auth.token');
   }
 
   getAnchorFee(): number {
@@ -83,36 +63,16 @@ export class ConfigService {
     };
   }
 
-  getLevelDb(): string {
-    return this.config.get('leveldb');
+  getLevelDbName(): string {
+    return this.config.get('leveldb.name');
   }
 
   getMonitorInterval(): number {
     return Number(this.config.get('anchor.monitor.interval'));
   }
 
-  getLoggerGlobal(): { level } {
-    return this.config.get('log');
-  }
-
-  getLoggerConsole(): { level } {
-    const config = this.getLoggerGlobal();
-
-    if (config.level) {
-      return config;
-    }
-
-    return this.config.get('anchor.logger.console');
-  }
-
-  getLoggerCombined(): { level } {
-    const config = this.getLoggerGlobal();
-
-    if (config.level) {
-      return config;
-    }
-
-    return this.config.get('anchor.logger.combined');
+  getLoggerLevel(): string {
+    return this.config.get('log.level');
   }
 
   getStorageType(): StorageTypeEnum {
