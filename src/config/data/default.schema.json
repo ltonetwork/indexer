@@ -183,13 +183,13 @@
   "log": {
     "level": {
       "doc": "Log level for the application",
-      "default": "OFF",
+      "default": "info",
       "format": [
-        "OFF",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG"
+        "off",
+        "error",
+        "warn",
+        "info",
+        "debug"
       ],
       "env": "LOG_LEVEL"
     }

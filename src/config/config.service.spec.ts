@@ -55,7 +55,7 @@ describe('ConfigService', () => {
     });
 
     test('getLoggerLevel()', async () => {
-      expect(configService.getLoggerLevel()).toEqual('OFF');
+      expect(configService.getLoggerLevel()).toEqual('info');
     });
 
     test('getRoles()', () => {
