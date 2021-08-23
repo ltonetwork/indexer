@@ -16,10 +16,11 @@ export class VerificationMethodListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('verification_method')) {
+    if (!this.config.isIdentityIndexingEnabled()) {
       this.logger.debug(`transaction-listener: Not processing verification method`);
       return;
     }
+
     this.onIndexTransaction();
   }
   async onIndexTransaction() {

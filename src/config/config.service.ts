@@ -68,7 +68,7 @@ export class ConfigService {
   }
 
   getMonitorInterval(): number {
-    return Number(this.config.get('anchor.monitor.interval'));
+    return Number(this.config.get('monitor.interval'));
   }
 
   getLoggerLevel(): string {
@@ -79,13 +79,16 @@ export class ConfigService {
     return this.config.get('storage.type');
   }
 
-  isProcessorEnabled(token: string): boolean {
-    if (!this.config.has(`index.processor.${token}`)) {
-      return true;
-    }
+  isIdentityIndexingEnabled(): boolean {
+    return !!this.config.get('identity.indexing');
+  }
 
-    const flag = this.config.get(`index.processor.${token}`);
-    return toBoolean(flag);
+  isTransactionIndexingEnabled(): boolean {
+    return !!this.config.get('transaction.indexing');
+  }
+
+  isPublicKeyIndexingEnabled(): boolean {
+    return !!this.config.get('public_key.indexing');
   }
 
   isStatsEnabled(token: 'operations' | 'transactions' | 'supply'): boolean {
@@ -96,7 +99,7 @@ export class ConfigService {
     return this.config.get('trust_network.roles');
   }
 
-  isTrustNetworkEnabled(): boolean {
+  isTrustNetworkIndexingEnabled(): boolean {
     return !!this.config.get('trust_network.indexing');
   }
 

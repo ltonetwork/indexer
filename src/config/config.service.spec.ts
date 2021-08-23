@@ -22,27 +22,20 @@ describe('ConfigService', () => {
       expect(configService.getEnv()).toBe('test');
     });
 
-    test('getLtoApiKey()', async () => {
-      expect(configService.getLtoApiKey()).toBe('');
+    test('getNodeApiKey()', async () => {
+      expect(configService.getNodeApiKey()).toBe('lt1secretapikey!');
     });
 
     test('getNodeUrl()', async () => {
       expect(configService.getNodeUrl()).toBe('http://localhost:6869');
     });
 
-    test('getNodeStartingBlock()', async () => {
-      expect(configService.getNodeStartingBlock()).toBe(1);
+    test('getStartingBlock()', async () => {
+      expect(configService.getStartingBlock()).toBe(1);
     });
 
-    test('getNodeRestartSync()', () => {
-      expect(configService.getNodeRestartSync()).toBeFalsy();
-    });
-
-    test('getApiSecret()', async () => {
-      expect(configService.getApiSecret()).toBe('lt1secretapikey!');
-
-      configService.getLtoApiKey = jest.fn(() => 'global');
-      expect(configService.getApiSecret()).toBe('global');
+    test('getRestartSync()', () => {
+      expect(configService.getRestartSync()).toBeFalsy();
     });
 
     test('getRedisClient()', async () => {
@@ -61,22 +54,8 @@ describe('ConfigService', () => {
       expect(configService.getMonitorInterval()).toBe(5000);
     });
 
-    test('getLoggerConsole()', async () => {
-      // @ts-ignore
-      configService.getLoggerGlobal = jest.fn(() => '');
-      expect(configService.getLoggerConsole()).toEqual({ level: 'info' });
-
-      configService.getLoggerGlobal = jest.fn(() => ({ level: 'debug' }));
-      expect(configService.getLoggerConsole()).toEqual({ level: 'debug' });
-    });
-
-    test('getLoggerCombined()', async () => {
-      // @ts-ignore
-      configService.getLoggerGlobal = jest.fn(() => '');
-      expect(configService.getLoggerCombined()).toEqual({ level: 'info' });
-
-      configService.getLoggerGlobal = jest.fn(() => ({ level: 'debug' }));
-      expect(configService.getLoggerCombined()).toEqual({ level: 'debug' });
+    test('getLoggerLevel()', async () => {
+      expect(configService.getLoggerLevel()).toEqual('OFF');
     });
 
     test('getRoles()', () => {

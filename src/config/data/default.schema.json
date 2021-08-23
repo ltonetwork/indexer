@@ -64,6 +64,22 @@
       "env": "TRANSACTION_INDEXING"
     }
   },
+  "public_key": {
+    "indexing": {
+      "doc": "Indexing of public keys",
+      "default": false,
+      "format": "Boolean",
+      "env": "PUBLIC_KEY_INDEXING"
+    }
+  },
+  "anchor": {
+    "indexing": {
+      "doc": "Indexing of anchor transactions",
+      "default": "none",
+      "format": ["none", "trust", "all"],
+      "env": "ANCHOR_INDEXING"
+    }
+  },
   "stats": {
     "doc": "Indexing of blockchain statistics",
     "operations": {
@@ -131,12 +147,12 @@
   "node": {
     "url": {
       "doc": "Node URL",
-      "default": "",
+      "default": "http://localhost:6869",
       "env": "NODE_URL"
     },
     "api_key": {
       "doc": "Node API key",
-      "default": "",
+      "default": "lt1secretapikey!",
       "env": "NODE_API_KEY"
     }
   },
@@ -155,14 +171,6 @@
       "doc":"Authentication token",
       "default": "",
       "env": "AUTH_TOKEN"
-    }
-  },
-  "anchor": {
-    "indexing": {
-      "doc": "Indexing of anchor transactions",
-      "default": "none",
-      "format": ["none", "trust", "all"],
-      "env": "ANCHOR_INDEXING"
     }
   },
   "monitor": {
