@@ -21,7 +21,7 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   private async init() {
     if (!this.connection) {
-      this.connection = await this.leveldb.connect(this.config.getLevelDb());
+      this.connection = await this.leveldb.connect(this.config.getLevelDbName());
     }
   }
 

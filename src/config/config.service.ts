@@ -16,44 +16,24 @@ export class ConfigService {
     return this.config.get('port');
   }
 
-  getLtoApiKey(): string {
-    return this.config.get('lto.api.key');
-  }
-
-  getLtoNodeUrl(): string {
-    return this.config.get('lto.node.url');
-  }
-
   getNodeUrl(): string {
-    const config = this.getLtoNodeUrl();
-
-    if (config) {
-      return config;
-    }
-
     return this.config.get('node.url');
   }
 
-  getNodeStartingBlock(): number | string {
-    return this.config.get('node.starting_block');
+  getNodeApiKey(): string {
+    return this.config.get('node.api_key');
   }
 
-  getNodeRestartSync(): boolean {
-    return this.config.get('node.restart_sync');
+  getStartingBlock(): number | string {
+    return this.config.get('starting_block');
+  }
+
+  getRestartSync(): boolean {
+    return this.config.get('restart_sync');
   }
 
   getAuthToken(): string {
-    return this.config.get('anchor.auth.token');
-  }
-
-  getApiSecret(): string {
-    const config = this.getLtoApiKey();
-
-    if (config) {
-      return config;
-    }
-
-    return this.config.get('anchor.api.secret');
+    return this.config.get('auth.token');
   }
 
   getAnchorFee(): number {
@@ -83,49 +63,32 @@ export class ConfigService {
     };
   }
 
-  getLevelDb(): string {
-    return this.config.get('leveldb');
+  getLevelDbName(): string {
+    return this.config.get('leveldb.name');
   }
 
   getMonitorInterval(): number {
-    return Number(this.config.get('anchor.monitor.interval'));
+    return Number(this.config.get('monitor.interval'));
   }
 
-  getLoggerGlobal(): { level } {
-    return this.config.get('log');
-  }
-
-  getLoggerConsole(): { level } {
-    const config = this.getLoggerGlobal();
-
-    if (config.level) {
-      return config;
-    }
-
-    return this.config.get('anchor.logger.console');
-  }
-
-  getLoggerCombined(): { level } {
-    const config = this.getLoggerGlobal();
-
-    if (config.level) {
-      return config;
-    }
-
-    return this.config.get('anchor.logger.combined');
+  getLoggerLevel(): string {
+    return this.config.get('log.level');
   }
 
   getStorageType(): StorageTypeEnum {
     return this.config.get('storage.type');
   }
 
-  isProcessorEnabled(token: string): boolean {
-    if (!this.config.has(`index.processor.${token}`)) {
-      return true;
-    }
+  isIdentityIndexingEnabled(): boolean {
+    return !!this.config.get('identity.indexing');
+  }
 
-    const flag = this.config.get(`index.processor.${token}`);
-    return toBoolean(flag);
+  isTransactionIndexingEnabled(): boolean {
+    return !!this.config.get('transaction.indexing');
+  }
+
+  isPublicKeyIndexingEnabled(): boolean {
+    return !!this.config.get('public_key.indexing');
   }
 
   isStatsEnabled(token: 'operations' | 'transactions' | 'supply'): boolean {
@@ -136,7 +99,7 @@ export class ConfigService {
     return this.config.get('trust_network.roles');
   }
 
-  isTrustNetworkEnabled(): boolean {
+  isTrustNetworkIndexingEnabled(): boolean {
     return !!this.config.get('trust_network.indexing');
   }
 

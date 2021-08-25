@@ -33,10 +33,10 @@ export class IndexMonitorService {
         return this.logger.warn('index-monitor: monitor already running');
       }
 
-      this.lastBlock = this.config.getNodeStartingBlock() === 'last' ?
+      this.lastBlock = this.config.getStartingBlock() === 'last' ?
         await this.node.getLastBlockHeight() :
-        this.config.getNodeStartingBlock() as number;
-      if (this.config.getNodeRestartSync()) {
+        this.config.getStartingBlock() as number;
+      if (this.config.getRestartSync()) {
         await this.storage.clearProcessHeight();
       }
       await this.process();

@@ -16,7 +16,7 @@ export class TrustNetworkListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isTrustNetworkEnabled()) {
+    if (!this.config.isTrustNetworkIndexingEnabled()) {
       this.logger.debug(`transaction-listener: Not processing trust network`);
       return;
     }

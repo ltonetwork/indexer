@@ -38,7 +38,7 @@ export class LoggerService {
     return winston.createLogger({
       transports: [
         new winston.transports.Console({
-          level: (this.config.getLoggerConsole()).level,
+          level: this.config.getLoggerLevel(),
           format: winston.format.combine(
             ...[winston.format.colorize()],
             ...formats,

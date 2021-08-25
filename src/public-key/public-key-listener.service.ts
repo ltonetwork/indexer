@@ -16,10 +16,11 @@ export class PublicKeyListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('public-key')) {
+    if (!this.config.isPublicKeyIndexingEnabled()) {
       this.logger.debug(`transaction-listener: Not processing public keys`);
       return;
     }
+
     this.onIndexTransaction();
   }
 

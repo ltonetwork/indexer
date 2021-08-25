@@ -16,10 +16,11 @@ export class TransactionListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('transaction')) {
+    if (!this.config.isTransactionIndexingEnabled()) {
       this.logger.debug(`transaction-listener: Not processing transactions`);
       return;
     }
+
     this.onIndexTransaction();
   }
 

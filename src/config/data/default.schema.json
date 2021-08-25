@@ -1,6 +1,6 @@
 {
   "env": {
-    "doc": "The application environment.",
+    "doc": "The application environment",
     "format": [
       "production",
       "development",
@@ -11,14 +11,14 @@
     "env": "NODE_ENV"
   },
   "port": {
-    "doc": "The port the application runs on.",
+    "doc": "The port the application runs on",
     "default": 80,
     "env": "PORT"
   },
   "trust_network": {
     "doc": "Configuration for the trust network based on roles",
     "indexing": {
-      "doc": "Whether or not the role associations for the trust network should be indexed",
+      "doc": "Indexing of role associations of the trust network",
       "default": false,
       "format": "Boolean",
       "env": "TRUST_NETWORK_INDEXING"
@@ -36,176 +36,173 @@
   },
   "association": {
     "indexing": {
+      "doc": "Indexing of association transactions",
       "default": "none",
       "format": ["none", "trust", "all"],
       "env": "ASSOCIATION_INDEXING"
     },
     "use_graph": {
+      "doc": "Whether to use Redis Graph to store associations",
       "default": false,
       "format": "Boolean",
       "env": "ASSOCIATION_USE_GRAPH"
     }
   },
+  "identity": {
+    "indexing": {
+      "doc": "Indexing of identities (verification methods)",
+      "default": false,
+      "format": "Boolean",
+      "env": "IDENTITY_INDEXING"
+    }
+  },
+  "transaction": {
+    "indexing": {
+      "doc": "Indexing of transactions",
+      "default": false,
+      "format": "Boolean",
+      "env": "TRANSACTION_INDEXING"
+    }
+  },
+  "public_key": {
+    "indexing": {
+      "doc": "Indexing of public keys",
+      "default": false,
+      "format": "Boolean",
+      "env": "PUBLIC_KEY_INDEXING"
+    }
+  },
+  "anchor": {
+    "indexing": {
+      "doc": "Indexing of anchor transactions",
+      "default": "none",
+      "format": ["none", "trust", "all"],
+      "env": "ANCHOR_INDEXING"
+    }
+  },
   "stats": {
+    "doc": "Indexing of blockchain statistics",
     "operations": {
       "doc": "Statistics for operations in the blockchain",
       "default": false,
       "format": "Boolean",
-      "env": "STATS_OPERATIONS"
+      "env": "STATS_INDEXING"
     },
     "transactions": {
       "doc": "Statistics for transactions in the blockchain",
       "default": false,
       "format": "Boolean",
-      "env": "STATS_TRANSACTIONS"
+      "env": "STATS_INDEXING"
     },
     "supply": {
       "doc": "Statistics for token supply",
       "default": false,
       "format": "Boolean",
-      "env": "STATS_SUPPLY"
+      "env": "STATS_INDEXING"
     }
   },
   "fees": {
     "anchor": {
+      "doc": "Fees for anchor transactions",
       "default": 35000000,
       "env": "FEES_ANCHOR"
     },
     "sponsor": {
+      "doc": "Fees for sponsor transactions",
       "default": 500000000,
       "env": "FEES_SPONSOR"
     }
   },
   "redis": {
     "url": {
+      "doc": "Redis database connection string",
       "default": "redis://localhost",
       "env": "REDIS_URL"
     },
     "cluster": {
+      "doc": "Redis cluster connection string",
       "default": "",
       "env": "REDIS_CLUSTER"
     }
   },
   "redis_graph": {
     "host": {
+      "doc": "Redis graph host",
       "default": "localhost",
       "env": "REDIS_GRAPH_HOST"
     },
     "port": {
+      "doc": "Redis graph port",
       "default": "6379",
       "env": "REDIS_GRAPH_PORT"
     }
   },
   "leveldb": {
-    "default": "lto-index",
-    "env": "LEVELDB"
+    "name": {
+      "doc": "LevelDB database name",
+      "default": "lto-index",
+      "env": "LEVELDB_NAME"
+    }
   },
   "node": {
     "url": {
-      "default": "",
+      "doc": "Node URL",
+      "default": "http://localhost:6869",
       "env": "NODE_URL"
     },
-    "starting_block": {
-      "default": 1,
-      "env": "NODE_STARTING_BLOCK"
-    },
-    "restart_sync": {
-      "default": false,
-      "env": "NODE_RESTART_SYNC"
+    "api_key": {
+      "doc": "Node API key",
+      "default": "lt1secretapikey!",
+      "env": "NODE_API_KEY"
     }
   },
-  "anchor": {
-    "doc": "The config of this application, with a namespace so it can be merged into larger configs",
-    "api": {
-      "secret": {
-        "default": "lt1secretapikey!",
-        "env": "ANCHOR_API_SECRET"
-      }
-    },
-    "auth": {
-      "token": {
-        "default": "",
-        "env": "ANCHOR_AUTH_TOKEN"
-      }
-    },
-    "indexing": {
-      "default": "none",
-      "format": ["none", "trust", "all"],
-      "env": "ANCHOR_INDEXING"
-    },
-    "node": {
-      "url": {
-        "default": "",
-        "env": "ANCHOR_NODE_URL"
-      }
-    },
-    "monitor": {
-      "interval": {
-        "default": 5000,
-        "env": "ANCHOR_MONITOR_INTERVAL"
-      }
-    },
-    "logger": {
-      "console": {
-        "level": {
-          "default": "info",
-          "env": "ANCHOR_LOGGER_CONSOLE_LEVEL"
-        }
-      },
-      "combined": {
-        "level": {
-          "default": "info",
-          "env": "ANCHOR_LOGGER_COMBINED_LEVEL"
-        }
-      }
+  "starting_block": {
+    "doc": "Block number to start processing from",
+    "default": 1,
+    "env": "STARTING_BLOCK"
+  },
+  "restart_sync": {
+    "doc": "Whether or not to restart processing from starting block",
+    "default": false,
+    "env": "RESTART_SYNC"
+  },
+  "auth": {
+    "token": {
+      "doc":"Authentication token",
+      "default": "",
+      "env": "AUTH_TOKEN"
     }
   },
-  "lto": {
-    "doc": "Global config of the LTO node",
-    "api": {
-      "key": {
-        "default": "",
-        "env": "LTO_API_KEY"
-      }
-    },
-    "node": {
-      "url": {
-        "default": "http://localhost:6869",
-        "env": "LTO_NODE_URL"
-      }
+  "monitor": {
+    "interval": {
+      "doc": "Monitor interval",
+      "default": 5000,
+      "env": "MONITOR_INTERVAL"
     }
   },
   "log": {
     "level": {
-      "default": "",
+      "doc": "Log level for the application",
+      "default": "info",
+      "format": [
+        "off",
+        "error",
+        "warn",
+        "info",
+        "debug"
+      ],
       "env": "LOG_LEVEL"
     }
   },
   "storage": {
     "type": {
+      "doc": "Storage type",
       "default": "leveldb",
       "format": [
         "leveldb",
         "redis"
       ],
       "env": "STORAGE_TYPE"
-    }
-  },
-  "index": {
-    "processor": {
-      "doc": "Configure which processor should be enabled",
-      "transaction": {
-        "default": 0,
-        "env": "INDEX_PROCESSOR_TRANSACTION"
-      },
-      "verification_method": {
-        "default": 0,
-        "env": "INDEX_PROCESSOR_VERIFICATION_METHOD"
-      },
-      "stats": {
-        "default": 0,
-        "env": "INDEX_PROCESSOR_STATS"
-      }
     }
   }
 }

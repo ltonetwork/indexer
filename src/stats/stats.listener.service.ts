@@ -16,10 +16,15 @@ export class StatsListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    if (!this.config.isProcessorEnabled('stats')) {
+    const opsEnabled = this.config.isStatsEnabled('operations');
+    const txEnabled = this.config.isStatsEnabled('transactions');
+    const supplyEnabled = this.config.isStatsEnabled('supply');
+
+    if (!opsEnabled && !txEnabled && !supplyEnabled) {
       this.logger.debug(`transaction-listener: Not processing stats`);
       return;
     }
+
     this.onIndexTransaction();
   }
   async onIndexTransaction() {

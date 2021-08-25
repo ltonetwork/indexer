@@ -45,7 +45,7 @@ export class NodeApiService {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/addresses/anchor`, data, {
       headers: {
-        'X-Api-Key': this.config.getApiSecret(),
+        'X-Api-Key': this.config.getNodeApiKey(),
       },
     });
   }
@@ -54,7 +54,7 @@ export class NodeApiService {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/transactions/sign`, data, {
       headers: {
-        'X-Api-Key': this.config.getApiSecret(),
+        'X-Api-Key': this.config.getNodeApiKey(),
       },
     });
   }
@@ -63,7 +63,7 @@ export class NodeApiService {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/transactions/broadcast`, data, {
       headers: {
-        'X-Api-Key': this.config.getApiSecret(),
+        'X-Api-Key': this.config.getNodeApiKey(),
       },
     });
   }
@@ -72,7 +72,7 @@ export class NodeApiService {
     const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/sponsorship/status/${address}`, {
       headers: {
-        'X-Api-Key': this.config.getApiSecret(),
+        'X-Api-Key': this.config.getNodeApiKey(),
       },
     });
   }
@@ -81,7 +81,7 @@ export class NodeApiService {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/addresses/association`, data, {
       headers: {
-        'X-Api-Key': this.config.getApiSecret(),
+        'X-Api-Key': this.config.getNodeApiKey(),
       },
     });
   }
@@ -90,18 +90,18 @@ export class NodeApiService {
     const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/addresses/association/${address}`, {
       headers: {
-        'X-Api-Key': this.config.getApiSecret(),
+        'X-Api-Key': this.config.getNodeApiKey(),
       },
     });
   }
 
   async getNodeStatus(): Promise<AxiosResponse | Error> {
-    const url = this.config.getLtoNodeUrl();
+    const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/node/status`);
   }
 
   async getActivationStatus(): Promise<AxiosResponse | Error> {
-    const url = this.config.getLtoNodeUrl();
+    const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/activation/status`);
   }
 }
