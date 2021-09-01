@@ -3,8 +3,9 @@ import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { chainIdOf, deriveAddress, convertED2KeyToX2 } from '@lto-network/lto-crypto';
-import { VerificationMethodService } from '../verification-method/verification-method.service';
+import { VerificationMethodService } from './verification-method/verification-method.service';
 import { DIDDocument } from './interfaces/identity.interface';
+import { IndexDocumentType } from '../index/model/index.model';
 
 @Injectable()
 export class IdentityService {
@@ -14,7 +15,21 @@ export class IdentityService {
     readonly config: ConfigService,
     readonly storage: StorageService,
     readonly verificationMethodService: VerificationMethodService
-  ) {
+  ) {}
+
+  async index(index: IndexDocumentType): Promise<void> {
+    const { transaction } = index;
+
+    this.logger.debug(`identity: saving public key ${transaction.senderPublicKey} for address ${transaction.sender}`);
+
+    await this.storage.savePublicKey(transaction.sender, transaction.senderPublicKey);
+
+    if (!transaction.party || !transaction.associationType) {
+      this.logger.debug(`identity: transaction ${transaction.id} didn't have a party address or association type, skipped verification method indexing`);
+      return;
+    }
+
+    await this.verificationMethodService.save(transaction.associationType, transaction.sender, transaction.party);
   }
 
   async resolve(did: string): Promise<DIDDocument> {

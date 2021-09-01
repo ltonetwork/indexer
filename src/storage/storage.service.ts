@@ -7,7 +7,7 @@ import storageServices from './types';
 import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
-import { MethodObject, VerificationMethod } from '../verification-method/model/verification-method.model';
+import { MethodObject, VerificationMethod } from '../identity/verification-method/model/verification-method.model';
 import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
 

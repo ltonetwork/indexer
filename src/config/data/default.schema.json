@@ -50,7 +50,7 @@
   },
   "identity": {
     "indexing": {
-      "doc": "Indexing of identities (verification methods)",
+      "doc": "Indexing of identities",
       "default": false,
       "format": "Boolean",
       "env": "IDENTITY_INDEXING"
@@ -62,14 +62,6 @@
       "default": false,
       "format": "Boolean",
       "env": "TRANSACTION_INDEXING"
-    }
-  },
-  "public_key": {
-    "indexing": {
-      "doc": "Indexing of public keys",
-      "default": false,
-      "format": "Boolean",
-      "env": "PUBLIC_KEY_INDEXING"
     }
   },
   "anchor": {
