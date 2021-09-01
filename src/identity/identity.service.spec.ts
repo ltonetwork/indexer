@@ -1,15 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DidModuleConfig } from './identity.module';
+import { IdentityModuleConfig } from './identity.module';
 import { IdentityService } from './identity.service';
-import { VerificationMethodService } from '../verification-method/verification-method.service';
-import { VerificationMethod } from '../verification-method/model/verification-method.model';
+import { VerificationMethodService } from './verification-method/verification-method.service';
+import { VerificationMethod } from './verification-method/model/verification-method.model';
 import { StorageService } from '../storage/storage.service';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('IdentityService', () => {
   let module: TestingModule;
   let storageService: StorageService;
   let identityService: IdentityService;
   let verificationMethodService: VerificationMethodService;
+
+  let transaction: Transaction;
 
   const sender = {
     chainId: 'T',
@@ -33,10 +36,12 @@ describe('IdentityService', () => {
 
   function spy() {
     const verificationMethod = {
+      save: jest.spyOn(verificationMethodService, 'save').mockImplementation(async () => {}),
       getMethodsFor: jest.spyOn(verificationMethodService, 'getMethodsFor').mockImplementation(async () => []),
     };
 
     const storage = {
+      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation(async () => {}),
       getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async (address: string) => {
         if (address === sender.address) return sender.ed25519PublicKey;
         if (address === recipient.address) return recipient.ed25519PublicKey;
@@ -50,16 +55,52 @@ describe('IdentityService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(DidModuleConfig).compile();
-    await module.init();
+    module = await Test.createTestingModule(IdentityModuleConfig).compile();
 
     storageService = module.get<StorageService>(StorageService);
     identityService = module.get<IdentityService>(IdentityService);
     verificationMethodService = module.get<VerificationMethodService>(VerificationMethodService);
+
+    // @ts-ignore
+    transaction = {
+      id: 'fake_transaction',
+      type: 1,
+      sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+      senderPublicKey: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
+    };
+
+    await module.init();
   });
 
   afterEach(async () => {
     await module.close();
+  });
+
+  describe('index', () => {
+    test('should save public key of transaction sender', async () => {
+      const spies = spy();
+
+      await identityService.index({transaction, blockHeight: 1, position: 0});
+
+      expect(spies.verificationMethod.save).toHaveBeenCalledTimes(0);
+
+      expect(spies.storage.savePublicKey).toHaveBeenCalledTimes(1);
+      expect(spies.storage.savePublicKey).toHaveBeenNthCalledWith(1, transaction.sender, transaction.senderPublicKey);
+    });
+
+    test('should save verification method if transaction has "party" property', async () => {
+      const spies = spy();
+
+      // @ts-ignore
+      transaction.associationType = 0x0107;
+      // @ts-ignore
+      transaction.party = '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ';
+
+      await identityService.index({transaction, blockHeight: 1, position: 0});
+
+      expect(spies.verificationMethod.save).toHaveBeenCalledTimes(1);
+      expect(spies.verificationMethod.save).toHaveBeenNthCalledWith(1, transaction.associationType, transaction.sender, transaction.party);
+    });
   });
 
   describe('resolve()', () => {

@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { DidModuleConfig } from './identity.module';
+import { IdentityModuleConfig } from './identity.module';
 import { IdentityService } from './identity.service';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
@@ -30,7 +30,7 @@ describe('DidController', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(DidModuleConfig).compile();
+    module = await Test.createTestingModule(IdentityModuleConfig).compile();
     app = module.createNestApplication();
     await app.init();
 

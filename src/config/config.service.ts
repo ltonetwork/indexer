@@ -87,10 +87,6 @@ export class ConfigService {
     return !!this.config.get('transaction.indexing');
   }
 
-  isPublicKeyIndexingEnabled(): boolean {
-    return !!this.config.get('public_key.indexing');
-  }
-
   isStatsEnabled(token: 'operations' | 'transactions' | 'supply'): boolean {
     return !!this.config.get(`stats.${token}`);
   }

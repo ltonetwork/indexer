@@ -1,23 +1,24 @@
-import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
-import { EmitterService } from '../emitter/emitter.service';
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PublicKeyService } from './public-key.service';
+
+import { IdentityService } from './identity.service';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
+import { EmitterService } from '../emitter/emitter.service';
+import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 
 @Injectable()
-export class PublicKeyListenerService implements OnModuleInit {
+export class IdentityListenerService implements OnModuleInit {
 
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
-    private readonly publicKeyService: PublicKeyService,
+    private readonly identityService: IdentityService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
   ) { }
 
   onModuleInit() {
-    if (!this.config.isPublicKeyIndexingEnabled()) {
-      this.logger.debug(`transaction-listener: Not processing public keys`);
+    if (!this.config.isIdentityIndexingEnabled()) {
+      this.logger.debug(`transaction-listener: Not processing identities`);
       return;
     }
 
@@ -27,7 +28,7 @@ export class PublicKeyListenerService implements OnModuleInit {
   async onIndexTransaction() {
     this.indexEmitter.on(
       IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.publicKeyService.index(val),
+      (val: IndexEventsReturnType['IndexTransaction']) => this.identityService.index(val),
     );
   }
 }

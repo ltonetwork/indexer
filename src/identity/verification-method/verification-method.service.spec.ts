@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { VerificationMethodModuleConfig } from './verification-method.module';
+import { IdentityModuleConfig } from '../identity.module';
 import { VerificationMethodService } from './verification-method.service';
-import { StorageService } from '../storage/storage.service';
+import { StorageService } from '../../storage/storage.service';
 import { VerificationMethod } from './model/verification-method.model';
 
 describe('VerificationMethodService', () => {
@@ -27,7 +27,7 @@ describe('VerificationMethodService', () => {
     jest.useFakeTimers('modern');
     jest.setSystemTime(mockTimestamp);
 
-    module = await Test.createTestingModule(VerificationMethodModuleConfig).compile();
+    module = await Test.createTestingModule(IdentityModuleConfig).compile();
     await module.init();
 
     verificationMethodService = module.get<VerificationMethodService>(VerificationMethodService);
@@ -48,27 +48,14 @@ describe('VerificationMethodService', () => {
     await module.close();
   });
 
-  describe('index', () => {
-    test('should index a new verification method', async () => {
+  describe('save', () => {
+    test('should save a new verification method', async () => {
       const spies = spy();
 
-      await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      await verificationMethodService.save(transaction.associationType, transaction.sender, transaction.party);
 
-      expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(1);
-      expect(spies.storage.saveVerificationMethod.mock.calls[0][0])
-        .toBe(transaction.sender);
-      expect(spies.storage.saveVerificationMethod.mock.calls[0][1])
-        .toStrictEqual(expectedMethod);
-    });
-
-    test('should not index if party is unknown', async () => {
-      const spies = spy();
-
-      transaction.party = null;
-
-      await verificationMethodService.index({transaction: transaction as any, blockHeight: 1, position: 0});
-
-      expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(0);
+      expect(spies.storage.saveVerificationMethod).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveVerificationMethod).toHaveBeenNthCalledWith(1, transaction.sender, expectedMethod);
     });
   });
 

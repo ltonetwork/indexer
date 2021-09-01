@@ -1,7 +1,6 @@
 import { Controller, Req, Res, Get } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { base58decode } from '@lto-network/lto-crypto';
 import { LoggerService } from '../logger/logger.service';
 import { IdentityService } from './identity.service';
 

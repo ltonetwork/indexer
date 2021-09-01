@@ -4,13 +4,26 @@ import { IdentityService } from './identity.service';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
 import { StorageModule } from '../storage/storage.module';
-import { VerificationMethodModule } from '../verification-method/verification-method.module';
+import { VerificationMethodService } from './verification-method/verification-method.service';
 
-export const DidModuleConfig = {
-  imports: [LoggerModule, ConfigModule, StorageModule, VerificationMethodModule],
-  controllers: [IdentityController],
-  providers: [IdentityService],
+export const IdentityModuleConfig = {
+  imports: [
+    LoggerModule,
+    ConfigModule,
+    StorageModule
+  ],
+  controllers: [
+    IdentityController
+  ],
+  providers: [
+    IdentityService,
+    VerificationMethodService
+  ],
+  exports: [
+    IdentityService,
+    VerificationMethodService
+  ],
 };
 
-@Module(DidModuleConfig)
+@Module(IdentityModuleConfig)
 export class IdentityModule { }
