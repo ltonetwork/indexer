@@ -1,12 +1,7 @@
 {
   "env": {
     "doc": "The application environment",
-    "format": [
-      "production",
-      "development",
-      "test",
-      "lto"
-    ],
+    "format": ["production", "development", "test"],
     "default": "development",
     "env": "NODE_ENV"
   },
@@ -160,7 +155,7 @@
   },
   "auth": {
     "token": {
-      "doc":"Authentication token",
+      "doc": "Authentication token",
       "default": "",
       "env": "AUTH_TOKEN"
     }
@@ -176,13 +171,7 @@
     "level": {
       "doc": "Log level for the application",
       "default": "info",
-      "format": [
-        "off",
-        "error",
-        "warn",
-        "info",
-        "debug"
-      ],
+      "format": ["off", "error", "warn", "info", "debug"],
       "env": "LOG_LEVEL"
     }
   },
@@ -190,10 +179,7 @@
     "type": {
       "doc": "Storage type",
       "default": "leveldb",
-      "format": [
-        "leveldb",
-        "redis"
-      ],
+      "format": ["leveldb", "redis"],
       "env": "STORAGE_TYPE"
     }
   }
