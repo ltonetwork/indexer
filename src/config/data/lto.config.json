@@ -1,8 +1,0 @@
-{
-  "redis": {
-    "url": "redis://redis"
-  },
-  "node": {
-    "url": "http://public-node:6869"
-  }
-}
