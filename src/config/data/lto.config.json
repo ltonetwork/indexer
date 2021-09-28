@@ -1,12 +1,8 @@
 {
-  "anchor": {
-    "redis": {
-      "url": "redis://redis"
-    }
+  "redis": {
+    "url": "redis://redis"
   },
-  "lto": {
-    "node": {
-      "url": "http://public-node:6869"
-    }
+  "node": {
+    "url": "http://public-node:6869"
   }
 }
