@@ -187,7 +187,7 @@ export class NodeService {
   }
 
   async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
-    const response = await this.api.sendTransaction({
+    const signResponse = await this.api.signTransaction({
       version: 1,
       type: 15,
       sender: senderAddress,
@@ -197,12 +197,18 @@ export class NodeService {
       fee: this.config.getAnchorFee(),
       timestamp: Date.now(),
     });
-
-    if (response instanceof Error) {
-      throw response;
+    
+    if (signResponse instanceof Error) {
+      throw signResponse;
     }
 
-    return response.data.id;
+    const broadcastResponse = await this.api.broadcastTransaction(signResponse);
+
+    if (broadcastResponse instanceof Error) {
+      throw broadcastResponse;
+    }
+
+    return broadcastResponse.data.tx.id;
   }
 
   async anchor(hash: string, encoding: string): Promise<{

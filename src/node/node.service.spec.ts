@@ -38,10 +38,9 @@ describe('NodeService', () => {
       getLastBlock: jest.spyOn(nodeApiService, 'getLastBlock'),
       getBlock: jest.spyOn(nodeApiService, 'getBlock'),
       getBlocks: jest.spyOn(nodeApiService, 'getBlocks'),
-      sendTransaction: jest.spyOn(nodeApiService, 'sendTransaction'),
       getNodeStatus: jest.spyOn(nodeApiService, 'getNodeStatus'),
       getActivationStatus: jest.spyOn(nodeApiService, 'getActivationStatus'),
-      broadcastTransaction: jest.spyOn(nodeApiService, 'broadcastTransaction').mockImplementation(async () => { return { status: 200 }  as AxiosResponse }),
+      broadcastTransaction: jest.spyOn(nodeApiService, 'broadcastTransaction').mockImplementation(async () => { return { status: 200, data: { tx: { id: 'fake_id' } } }  as AxiosResponse }),
       signTransaction: jest.spyOn(nodeApiService, 'signTransaction').mockImplementation(async () => {
         return {
           status: 200,
@@ -163,11 +162,9 @@ describe('NodeService', () => {
     test('should create anchor transaction', async () => {
       const spies = spy();
 
-      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
-      spies.api.sendTransaction.mockImplementation(() => Promise.resolve(response));
-
       expect(await nodeService.createAnchorTransaction('fake_sender', 'fake_hash')).toEqual('fake_id');
-      expect(spies.api.sendTransaction.mock.calls.length).toBe(1);
+      expect(spies.api.signTransaction.mock.calls.length).toBe(1);
+      expect(spies.api.broadcastTransaction.mock.calls.length).toBe(1);
     });
   });
 
