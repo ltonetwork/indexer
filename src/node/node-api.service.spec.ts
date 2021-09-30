@@ -161,6 +161,26 @@ describe('NodeApiService', () => {
     });
   });
 
+  describe('signAndBroadcastTransaction()', () => {
+    test('should sign and broadcast a transaction request', async () => {
+      const spies = spy();
+
+      const response = { status: 200, data: { some: 'stuff' } } as AxiosResponse;
+
+      spies.request.post.mockImplementation(() => Promise.resolve(response));
+
+      const transaction = { foo: 'bar' };
+      const expectedHeaders = {
+        headers: { 'X-Api-Key': 'lt1secretapikey!', }
+      };
+
+      expect(await nodeApiService.signAndBroadcastTransaction(transaction)).toBe(response);
+      expect(spies.request.post).toHaveBeenCalledTimes(2);
+      expect(spies.request.post).toHaveBeenNthCalledWith(1, 'http://localhost:6869/transactions/sign', transaction, expectedHeaders);
+      expect(spies.request.post).toHaveBeenNthCalledWith(2, 'http://localhost:6869/transactions/broadcast', response.data, expectedHeaders);
+    });
+  });
+
   describe('getSponsorshipStatus()', () => {
     test('should retrieve the sponsorship status from the node api', async () => {
       const spies = spy();

@@ -59,6 +59,16 @@ export class NodeApiService {
     });
   }
 
+  async signAndBroadcastTransaction(data: any): Promise<AxiosResponse | Error> {
+    const signResponse = await this.signTransaction(data);
+
+    if (signResponse instanceof Error) {
+      throw signResponse;
+    }
+
+    return await this.broadcastTransaction(signResponse.data);
+  }
+
   async getSponsorshipStatus(address: string): Promise<AxiosResponse<{sponsor: string[]}> | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/sponsorship/status/${address}`, {

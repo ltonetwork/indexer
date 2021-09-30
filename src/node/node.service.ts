@@ -37,24 +37,18 @@ export class NodeService {
   ) { }
 
   private async signAndBroadcastSponsor(type: 18 | 19, recipient: string): Promise<any> {
-    const signResponse = await this.api.signTransaction({
+    const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type,
       recipient,
       fee: this.config.getSponsorFee(),
     });
 
-    if (signResponse instanceof Error) {
-      throw signResponse;
+    if (response instanceof Error) {
+      throw response;
     }
 
-    const broadcastResponse = await this.api.broadcastTransaction(signResponse.data);
-
-    if (broadcastResponse instanceof Error) {
-      throw broadcastResponse;
-    }
-
-    return broadcastResponse.data;
+    return response.data;
   }
 
   async sponsor(recipient: string): Promise<any> {
@@ -187,7 +181,7 @@ export class NodeService {
   }
 
   async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
-    const signResponse = await this.api.signTransaction({
+    const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type: 15,
       sender: senderAddress,
@@ -198,17 +192,11 @@ export class NodeService {
       timestamp: Date.now(),
     });
     
-    if (signResponse instanceof Error) {
-      throw signResponse;
+    if (response instanceof Error) {
+      throw response;
     }
 
-    const broadcastResponse = await this.api.broadcastTransaction(signResponse);
-
-    if (broadcastResponse instanceof Error) {
-      throw broadcastResponse;
-    }
-
-    return broadcastResponse.data.tx.id;
+    return response.data.tx.id;
   }
 
   async anchor(hash: string, encoding: string): Promise<{
