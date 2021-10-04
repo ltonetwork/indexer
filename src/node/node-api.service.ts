@@ -41,15 +41,6 @@ export class NodeApiService {
     return await this.request.get(`${url}/transactions/info/${id}`);
   }
 
-  async sendTransaction(data: any): Promise<AxiosResponse | Error> {
-    const url = this.config.getNodeUrl();
-    return await this.request.post(`${url}/addresses/anchor`, data, {
-      headers: {
-        'X-Api-Key': this.config.getNodeApiKey(),
-      },
-    });
-  }
-
   async signTransaction(data: any): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.post(`${url}/transactions/sign`, data, {
@@ -68,27 +59,19 @@ export class NodeApiService {
     });
   }
 
+  async signAndBroadcastTransaction(data: any): Promise<AxiosResponse | Error> {
+    const signResponse = await this.signTransaction(data);
+
+    if (signResponse instanceof Error) {
+      throw signResponse;
+    }
+
+    return await this.broadcastTransaction(signResponse.data);
+  }
+
   async getSponsorshipStatus(address: string): Promise<AxiosResponse<{sponsor: string[]}> | Error> {
     const url = this.config.getNodeUrl();
     return await this.request.get(`${url}/sponsorship/status/${address}`, {
-      headers: {
-        'X-Api-Key': this.config.getNodeApiKey(),
-      },
-    });
-  }
-
-  async sendAssociation(data: any): Promise<AxiosResponse | Error> {
-    const url = this.config.getNodeUrl();
-    return await this.request.post(`${url}/addresses/association`, data, {
-      headers: {
-        'X-Api-Key': this.config.getNodeApiKey(),
-      },
-    });
-  }
-
-  async getAssociation(address: string): Promise<AxiosResponse | Error> {
-    const url = this.config.getNodeUrl();
-    return await this.request.get(`${url}/addresses/association/${address}`, {
       headers: {
         'X-Api-Key': this.config.getNodeApiKey(),
       },

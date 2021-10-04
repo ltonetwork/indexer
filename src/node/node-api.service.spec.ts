@@ -101,26 +101,6 @@ describe('NodeApiService', () => {
     });
   });
 
-  describe('sendTransaction()', () => {
-    test('should send transaction', async () => {
-      const spies = spy();
-
-      const response = { status: 200, data: { id: 'fake_id' } } as AxiosResponse;
-      spies.request.post.mockImplementation(() => Promise.resolve(response));
-      const transaction = { foo: 'bar' };
-
-      expect(await nodeApiService.sendTransaction(transaction)).toBe(response);
-      expect(spies.request.post.mock.calls.length).toBe(1);
-      expect(spies.request.post.mock.calls[0][0]).toBe('http://localhost:6869/addresses/anchor');
-      expect(spies.request.post.mock.calls[0][1]).toBe(transaction);
-      expect(spies.request.post.mock.calls[0][2]).toEqual({
-        headers: {
-          'X-Api-Key': 'lt1secretapikey!',
-        },
-      });
-    });
-  });
-
   describe('getActivationStatus()', () => {
     test('should get the activation status', async () => {
       const spies = spy();
@@ -178,6 +158,26 @@ describe('NodeApiService', () => {
           'X-Api-Key': 'lt1secretapikey!',
         },
       });
+    });
+  });
+
+  describe('signAndBroadcastTransaction()', () => {
+    test('should sign and broadcast a transaction request', async () => {
+      const spies = spy();
+
+      const response = { status: 200, data: { some: 'stuff' } } as AxiosResponse;
+
+      spies.request.post.mockImplementation(() => Promise.resolve(response));
+
+      const transaction = { foo: 'bar' };
+      const expectedHeaders = {
+        headers: { 'X-Api-Key': 'lt1secretapikey!', }
+      };
+
+      expect(await nodeApiService.signAndBroadcastTransaction(transaction)).toBe(response);
+      expect(spies.request.post).toHaveBeenCalledTimes(2);
+      expect(spies.request.post).toHaveBeenNthCalledWith(1, 'http://localhost:6869/transactions/sign', transaction, expectedHeaders);
+      expect(spies.request.post).toHaveBeenNthCalledWith(2, 'http://localhost:6869/transactions/broadcast', response.data, expectedHeaders);
     });
   });
 
