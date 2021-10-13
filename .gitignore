@@ -46,4 +46,5 @@ logs
 # Front end
 .cache
 
-lto-index
+# Docker compose
+volumes

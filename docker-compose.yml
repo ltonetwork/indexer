@@ -5,31 +5,43 @@ services:
     container_name: redis
     image: redis
     volumes:
-      - /tmp/redis:/data
+      - ./volumes/redis:/lto
     ports:
       - 6379:6379
     networks:
-      - lto-indexer
+      - lto
 
   graph:
     container_name: graph
     image: redislabs/redisgraph
     volumes:
-      - /tmp/redis-graph:/data
+      - ./volumes/redis-graph:/lto
     ports:
       - 6380:6379
     networks:
-      - lto-indexer
+      - lto
 
-  lto-indexer:
+  indexer:
     container_name: indexer
     build: .
-    image: lto/indexer
+    image: lto/local-indexer
+    environment:
+      - NODE_ENV=production
+      - NODE_URL=https://testnet.lto.network
+      - STORAGE_TYPE=redis
+      - REDIS_URL=redis://redis
+      - REDIS_GRAPH_HOST=graph
+      - REDIS_GRAPH_PORT=6379
+      - TRANSACTION_INDEXING=true
+      - ASSOCIATION_INDEXING=all
+      - IDENTITY_INDEXING=true
+      - ANCHOR_INDEXING=all
+      - STATS_INDEXING=true
     ports:
-      - 3000:80
+      - 80:80
     networks:
-      - lto-indexer
+      - lto
 
 networks:
-  lto-indexer:
+  lto:
     driver: bridge
