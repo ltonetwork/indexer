@@ -14,12 +14,11 @@ export class HealthController {
 
   @Get()
   @ApiOperation({ summary: 'Health check' })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 200, description: 'Indexer is in sync' })
   @ApiResponse({
     status: 400,
     description: [
       'Blockchain height is higher than processing height',
-      'Indexer is in sync',
       'Node response is invalid',
       'Error with node response',
     ].join('<br>'),
