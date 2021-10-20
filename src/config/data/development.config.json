@@ -1,1 +1,6 @@
-{ }
+{
+  "env": "production",
+  "node": {
+    "url": "https://testnet.lto.network"
+  }
+}
