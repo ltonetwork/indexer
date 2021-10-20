@@ -11,7 +11,6 @@ import { IndexService } from './index.service';
 
 @Injectable()
 export class IndexMonitorService {
-
   public processing: boolean;
   public lastBlock: number;
   public started: boolean;
@@ -33,9 +32,10 @@ export class IndexMonitorService {
         return this.logger.warn('index-monitor: monitor already running');
       }
 
-      this.lastBlock = this.config.getStartingBlock() === 'last' ?
-        await this.node.getLastBlockHeight() :
-        this.config.getStartingBlock() as number;
+      this.lastBlock =
+        this.config.getStartingBlock() === 'last'
+          ? await this.node.getLastBlockHeight()
+          : (this.config.getStartingBlock() as number);
       if (this.config.getRestartSync()) {
         await this.storage.clearProcessHeight();
       }
@@ -60,18 +60,59 @@ export class IndexMonitorService {
     return this.process();
   }
 
-  async isSynced(): Promise<boolean> {
+  async syncStatus(): Promise<{
+    sync: boolean;
+    message:
+      | 'Blockchain height is higher than processing height'
+      | 'Indexer is in sync'
+      | 'Node response is invalid'
+      | 'Error with node response';
+    data: any;
+  }> {
     try {
       const resp = await this.node.getNodeStatus();
+
       if (resp && resp.blockchainHeight) {
         const processingHeight = await this.storage.getProcessingHeight();
-        return (resp.blockchainHeight - 1) <= processingHeight;
-      }
-    } catch (e) {
-      return false;
-    }
+        const isInSync = resp.blockchainHeight - 1 <= processingHeight;
 
-    return false;
+        if (!isInSync) {
+          return {
+            sync: false,
+            message: 'Blockchain height is higher than processing height',
+            data: {
+              nodeResponse: resp,
+              processingHeight: processingHeight,
+            },
+          };
+        }
+
+        return {
+          sync: true,
+          message: 'Indexer is in sync',
+          data: {
+            nodeResponse: resp,
+            processingHeight: processingHeight,
+          },
+        };
+      }
+
+      return {
+        sync: false,
+        message: 'Node response is invalid',
+        data: {
+          nodeResponse: resp,
+        },
+      };
+    } catch (error) {
+      return {
+        sync: false,
+        message: 'Error with node response',
+        data: {
+          nodeResponse: error,
+        },
+      };
+    }
   }
 
   async checkNewBlocks() {
@@ -114,6 +155,6 @@ export class IndexMonitorService {
     blockHeight: number,
     position: number,
   ) {
-    return this.indexer.index({transaction, blockHeight, position });
+    return this.indexer.index({ transaction, blockHeight, position });
   }
 }

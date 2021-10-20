@@ -10,17 +10,26 @@ export class HealthController {
   constructor(
     private readonly logger: LoggerService,
     private readonly health: HealthService,
-  ) { }
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Health check' })
-  @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 500, description: 'node is not healthy' })
+  @ApiResponse({ status: 200, description: 'Indexer is in sync' })
+  @ApiResponse({
+    status: 400,
+    description: [
+      'Blockchain height is higher than processing height',
+      'Node response is invalid',
+      'Error with node response',
+    ].join('<br>'),
+  })
   async check(@Req() req: Request, @Res() res: Response): Promise<Response> {
-    if (!await this.health.isNodeHealthy()) {
-      return res.status(500).send('node is not healthy');
+    const nodeStatus = await this.health.isNodeHealthy();
+
+    if (!nodeStatus.sync) {
+      return res.status(400).json(nodeStatus);
     }
 
-    return res.status(200).send();
+    return res.status(200).json(nodeStatus);
   }
 }
