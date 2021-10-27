@@ -60,6 +60,7 @@ describe('AssociationsService', () => {
         id: 'fake_transaction',
         type: 16,
         sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+        recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       };
 
       await associationsService.index(
@@ -75,9 +76,10 @@ describe('AssociationsService', () => {
       );
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(1);
-      expect(spies.storage.saveAssociation.mock.calls[0][0]).toEqual(
-        transaction,
-      );
+      expect(spies.storage.saveAssociation.mock.calls[0]).toEqual([
+        transaction.sender,
+        transaction.recipient,
+      ]);
 
       expect(spies.storage.removeAssociation.mock.calls.length).toBe(0);
     });
@@ -89,6 +91,7 @@ describe('AssociationsService', () => {
         id: 'fake_transaction',
         type: 17,
         sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+        recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       };
 
       await associationsService.index(
@@ -101,9 +104,10 @@ describe('AssociationsService', () => {
       );
 
       expect(spies.storage.removeAssociation.mock.calls.length).toBe(1);
-      expect(spies.storage.removeAssociation.mock.calls[0][0]).toEqual(
-        transaction,
-      );
+      expect(spies.storage.removeAssociation.mock.calls[0]).toEqual([
+        transaction.sender,
+        transaction.recipient,
+      ]);
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
     });
@@ -123,7 +127,7 @@ describe('AssociationsService', () => {
       );
 
       expect(spies.logger.debug.mock.calls[0][0]).toBe(
-        'association-service: Unknown transaction type: 12',
+        'association-service: Unknown transaction type',
       );
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
