@@ -10,7 +10,7 @@ export class IdentityController {
   constructor(
     private readonly logger: LoggerService,
     private readonly service: IdentityService,
-  ) { }
+  ) {}
 
   @Get(':did')
   @ApiOperation({ summary: 'Get a DID document' })
@@ -18,11 +18,17 @@ export class IdentityController {
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid DID' })
   @ApiResponse({ status: 404, description: 'DID not found' })
-  @ApiResponse({ status: 500, description: `failed to get DID document '[reason]'` })
-  async getIdentity(@Req() req: Request, @Res() res: Response): Promise<Response> {
+  @ApiResponse({
+    status: 500,
+    description: `failed to get DID document '[reason]'`,
+  })
+  async getIdentity(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<Response> {
     const did = req.params.did;
     if (!did) {
-      return res.status(400).json({error: 'invalidDid'});
+      return res.status(400).json({ error: 'invalidDid' });
     }
 
     try {
@@ -33,8 +39,13 @@ export class IdentityController {
       if (e.status === 404) {
         return res.status(404).json({ error: 'notFound' });
       } else {
-        this.logger.error(`identity-controller: failed to get DID document '${e}'`, { stack: e.stack });
-        return res.status(500).json({ error: `failed to get DID document '${e}'` });
+        this.logger.error(
+          `identity-controller: failed to get DID document '${e}'`,
+          { stack: e.stack },
+        );
+        return res
+          .status(500)
+          .json({ error: `failed to get DID document '${e}'` });
       }
     }
   }
