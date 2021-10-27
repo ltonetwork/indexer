@@ -6,7 +6,6 @@ import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class AssociationsService {
-
   private transactionTypes: number[];
 
   constructor(
@@ -17,11 +16,14 @@ export class AssociationsService {
     this.transactionTypes = [16, 17];
   }
 
-  async index(index: IndexDocumentType, associationIndexing: 'trust' | 'all'): Promise<void> {
+  async index(
+    index: IndexDocumentType,
+    associationIndexing: 'trust' | 'all',
+  ): Promise<void> {
     const { transaction } = index;
-    const { sender } = transaction;
+    const { sender, recipient } = transaction;
 
-    if (this.transactionTypes.indexOf(transaction.type) === -1){
+    if (this.transactionTypes.indexOf(transaction.type) === -1) {
       this.logger.debug(`association-service: Unknown transaction type`);
       return;
     }
@@ -31,17 +33,19 @@ export class AssociationsService {
       const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
 
       if (!isSenderTrustNetwork) {
-        this.logger.debug(`association-service: Sender is not part of trust network`);
+        this.logger.debug(
+          `association-service: Sender is not part of trust network`,
+        );
         return;
       }
     }
 
     if (transaction.type === 16) {
       this.logger.debug(`association-service: Saving association`);
-      return this.storage.saveAssociation(transaction);
+      return this.storage.saveAssociation(sender, recipient);
     } else if (transaction.type === 17) {
       this.logger.debug(`association-service: Removing association`);
-      return this.storage.removeAssociation(transaction);
+      return this.storage.removeAssociation(sender, recipient);
     }
   }
 

@@ -13,16 +13,24 @@ describe('AssociationsService', () => {
 
   function spy() {
     const storage = {
-      saveAssociation: jest.spyOn(storageService, 'saveAssociation').mockImplementation(async () => {}),
-      removeAssociation: jest.spyOn(storageService, 'removeAssociation').mockImplementation(async () => {}),
-      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
-        return { root: { description: 'The root role' } };
-      }),
-      getAssociations: jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
-        return {
-          parents: []
-        }
-      }),
+      saveAssociation: jest
+        .spyOn(storageService, 'saveAssociation')
+        .mockImplementation(async () => {}),
+      removeAssociation: jest
+        .spyOn(storageService, 'removeAssociation')
+        .mockImplementation(async () => {}),
+      getRolesFor: jest
+        .spyOn(storageService, 'getRolesFor')
+        .mockImplementation(async () => {
+          return { root: { description: 'The root role' } };
+        }),
+      getAssociations: jest
+        .spyOn(storageService, 'getAssociations')
+        .mockImplementation(async () => {
+          return {
+            parents: [],
+          };
+        }),
     };
 
     const logger = {
@@ -51,18 +59,27 @@ describe('AssociationsService', () => {
       const transaction = {
         id: 'fake_transaction',
         type: 16,
-        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'
+        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+        recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       };
 
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0}, 'all');
+      await associationsService.index(
+        { transaction: transaction as any, blockHeight: 1, position: 0 },
+        'all',
+      );
 
       expect(spies.storage.getRolesFor.mock.calls.length).toBe(0);
-      
+
       expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
+      expect(spies.logger.debug.mock.calls[0][0]).toBe(
+        'association-service: Saving association',
+      );
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(1);
-      expect(spies.storage.saveAssociation.mock.calls[0][0]).toEqual(transaction);
+      expect(spies.storage.saveAssociation.mock.calls[0]).toEqual([
+        transaction.sender,
+        transaction.recipient,
+      ]);
 
       expect(spies.storage.removeAssociation.mock.calls.length).toBe(0);
     });
@@ -73,15 +90,24 @@ describe('AssociationsService', () => {
       const transaction = {
         id: 'fake_transaction',
         type: 17,
-        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'
+        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+        recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       };
 
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0}, 'all');
+      await associationsService.index(
+        { transaction: transaction as any, blockHeight: 1, position: 0 },
+        'all',
+      );
 
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Removing association');
+      expect(spies.logger.debug.mock.calls[0][0]).toBe(
+        'association-service: Removing association',
+      );
 
       expect(spies.storage.removeAssociation.mock.calls.length).toBe(1);
-      expect(spies.storage.removeAssociation.mock.calls[0][0]).toEqual(transaction);
+      expect(spies.storage.removeAssociation.mock.calls[0]).toEqual([
+        transaction.sender,
+        transaction.recipient,
+      ]);
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
     });
@@ -92,12 +118,17 @@ describe('AssociationsService', () => {
       const transaction = {
         id: 'fake_transaction',
         type: 12,
-        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'
+        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
       };
 
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0}, 'all');
+      await associationsService.index(
+        { transaction: transaction as any, blockHeight: 1, position: 0 },
+        'all',
+      );
 
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Unknown transaction type');
+      expect(spies.logger.debug.mock.calls[0][0]).toBe(
+        'association-service: Unknown transaction type',
+      );
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
       expect(spies.storage.removeAssociation.mock.calls.length).toBe(0);
@@ -109,15 +140,22 @@ describe('AssociationsService', () => {
       const transaction = {
         id: 'fake_transaction',
         type: 16,
-        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'
+        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
       };
 
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0}, 'trust');
+      await associationsService.index(
+        { transaction: transaction as any, blockHeight: 1, position: 0 },
+        'trust',
+      );
 
       expect(spies.storage.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.storage.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      expect(spies.storage.getRolesFor.mock.calls[0][0]).toBe(
+        '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+      );
 
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
+      expect(spies.logger.debug.mock.calls[0][0]).toBe(
+        'association-service: Saving association',
+      );
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(1);
     });
@@ -125,17 +163,24 @@ describe('AssociationsService', () => {
     test('should not index config "trust" if sender is not trusted', async () => {
       const spies = spy();
 
-      spies.storage.getRolesFor.mockImplementation(async () => { return {} });
+      spies.storage.getRolesFor.mockImplementation(async () => {
+        return {};
+      });
 
       const transaction = {
         id: 'fake_transaction',
         type: 16,
-        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL'
+        sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
       };
 
-      await associationsService.index({transaction: transaction as any, blockHeight: 1, position: 0}, 'trust');
+      await associationsService.index(
+        { transaction: transaction as any, blockHeight: 1, position: 0 },
+        'trust',
+      );
 
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Sender is not part of trust network');
+      expect(spies.logger.debug.mock.calls[0][0]).toBe(
+        'association-service: Sender is not part of trust network',
+      );
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
     });
@@ -145,10 +190,14 @@ describe('AssociationsService', () => {
     test('should return from storage service', async () => {
       const spies = spy();
 
-      const result = await associationsService.getAssociations('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      const result = await associationsService.getAssociations(
+        '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+      );
 
       expect(spies.storage.getAssociations.mock.calls.length).toBe(1);
-      expect(spies.storage.getAssociations.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      expect(spies.storage.getAssociations.mock.calls[0][0]).toBe(
+        '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+      );
 
       expect(result).toEqual({ parents: [] });
     });

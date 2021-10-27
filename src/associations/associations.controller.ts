@@ -1,33 +1,36 @@
-import { BadRequestException, Controller, Get, Req, Res } from '@nestjs/common';
-import { ApiParam, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Req, Res } from '@nestjs/common';
+import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { AssociationsService } from './associations.service';
 
 @Controller('associations')
+@ApiTags('association')
 export class AssociationsController {
-
-  constructor(
-    readonly service: AssociationsService,
-  ) {
-  }
+  constructor(readonly service: AssociationsService) {}
 
   @Get('/:address')
   @ApiParam({ name: 'address' })
-  @ApiOperation({ summary: 'Add association to the blockchain' })
+  @ApiOperation({ summary: 'Get associations from address' })
   @ApiResponse({ status: 200 })
   @ApiResponse({
     status: 400,
-    description: ['invalid body given'].join('<br>'),
+    description: 'No address provided',
   })
-  @ApiResponse({ status: 500, description: `failed to anchor '[reason]'` })
+  @ApiResponse({ status: 500, description: 'Error retrieving associations' })
   async get(@Req() req: Request, @Res() res: Response): Promise<Response> {
-
     const address = req.params.address;
 
     if (!address) {
-      throw new BadRequestException('No address given');
+      return res.status(400).json({ error: 'No address provided' });
     }
 
-    return res.json(await this.service.getAssociations(address.trim()));
+    try {
+      const associations = await this.service.getAssociations(address.trim());
+      return res.status(200).json(associations);
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: 'Error retrieving associations', error });
+    }
   }
 }

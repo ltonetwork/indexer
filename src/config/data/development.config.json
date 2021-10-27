@@ -2,5 +2,27 @@
   "env": "production",
   "node": {
     "url": "https://testnet.lto.network"
+  },
+  "log": {
+    "level": "debug"
+  },
+  "starting_block": 1645900,
+  "restart_sync": true,
+  "transaction": {
+    "indexing": true
+  },
+  "association": {
+    "indexing": "all"
+  },
+  "identity": {
+    "indexing": true
+  },
+  "anchor": {
+    "indexing": "trust"
+  },
+  "stats": {
+    "operation": true,
+    "transactions": true,
+    "supply": true
   }
 }
