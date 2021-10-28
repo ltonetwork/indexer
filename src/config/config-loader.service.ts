@@ -37,13 +37,10 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     this.config = convict(`${dir}/default.schema.json`);
     this.config.loadFile(`${dir}/default.config.json`);
 
-    const env =
-      this.config.get('env') === 'lto' ? 'production' : this.config.get('env');
+    const env = `${dir}/${this.config.get('env')}.config.json`;
 
-    const envConfig = `${dir}/${env}.config.json`;
-
-    if (await util.promisify(fs.exists)(envConfig)) {
-      this.config.loadFile(envConfig);
+    if (await util.promisify(fs.exists)(env)) {
+      this.config.loadFile(env);
     }
 
     // @todo: determine based on config.provider where to load config from (e.g. dynamodb)
