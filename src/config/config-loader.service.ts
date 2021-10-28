@@ -10,7 +10,7 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
   private config_reload_interval: NodeJS.Timer;
 
-  constructor() { }
+  constructor() {}
 
   async onModuleInit() {
     if (!this.config) {
@@ -37,10 +37,13 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     this.config = convict(`${dir}/default.schema.json`);
     this.config.loadFile(`${dir}/default.config.json`);
 
-    const env = `${dir}/${this.config.get('env')}.config.json`;
+    const env =
+      this.config.get('env') === 'lto' ? 'production' : this.config.get('env');
 
-    if (await util.promisify(fs.exists)(env)) {
-      this.config.loadFile(env);
+    const envConfig = `${dir}/${env}.config.json`;
+
+    if (await util.promisify(fs.exists)(envConfig)) {
+      this.config.loadFile(envConfig);
     }
 
     // @todo: determine based on config.provider where to load config from (e.g. dynamodb)
