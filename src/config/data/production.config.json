@@ -1,0 +1,6 @@
+{
+  "env": "production",
+  "node": {
+    "url": "http://public-node:6869"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "env": "production",
+  "env": "development",
   "node": {
     "url": "https://testnet.lto.network"
   },
