@@ -10,7 +10,7 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
   private config_reload_interval: NodeJS.Timer;
 
-  constructor() {}
+  constructor() { }
 
   async onModuleInit() {
     if (!this.config) {
