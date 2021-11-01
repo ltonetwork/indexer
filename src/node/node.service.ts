@@ -34,9 +34,12 @@ export class NodeService {
     private readonly encoder: EncoderService,
     private readonly storage: StorageService,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
-  private async signAndBroadcastSponsor(type: 18 | 19, recipient: string): Promise<any> {
+  private async signAndBroadcastSponsor(
+    type: 18 | 19,
+    recipient: string,
+  ): Promise<any> {
     const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type,
@@ -90,12 +93,16 @@ export class NodeService {
       throw response;
     }
 
-    const unconfirmed = response.data.filter((transaction) => {
+    const unconfirmed = response.data.filter(transaction => {
       if (transaction.type !== 12) {
         return false;
       }
 
-      if (transaction.data.find((data) => data.value && data.value === `base64:${hash}`)) {
+      if (
+        transaction.data.find(
+          data => data.value && data.value === `base64:${hash}`,
+        )
+      ) {
         return true;
       }
 
@@ -119,7 +126,9 @@ export class NodeService {
     return response.data.height;
   }
 
-  async getBlock(id: string | number): Promise<{ height, transactions, timestamp }> {
+  async getBlock(
+    id: string | number,
+  ): Promise<{ height; transactions; timestamp }> {
     const response = await this.api.getBlock(id);
 
     if (response instanceof Error) {
@@ -129,9 +138,14 @@ export class NodeService {
     return response.data;
   }
 
-  async getBlocks(from: number, to: number): Promise<Array<{ height, transactions }>> {
+  async getBlocks(
+    from: number,
+    to: number,
+  ): Promise<Array<{ height; transactions }>> {
     const ranges = this.getBlockRanges(from, to);
-    const promises = ranges.map((range) => this.api.getBlocks(range.from, range.to));
+    const promises = ranges.map(range =>
+      this.api.getBlocks(range.from, range.to),
+    );
     const responses = await Promise.all(promises);
 
     for (const response of responses) {
@@ -142,12 +156,10 @@ export class NodeService {
 
     const data = responses.map((response: AxiosResponse) => response.data);
 
-    return []
-      .concat(...data)
-      .sort((a, b) => a.height - b.height);
+    return [].concat(...data).sort((a, b) => a.height - b.height);
   }
 
-  getBlockRanges(from: number, to: number): Array<{ from, to }> {
+  getBlockRanges(from: number, to: number): Array<{ from; to }> {
     const ranges = [];
 
     if (from === to) {
@@ -175,46 +187,62 @@ export class NodeService {
   }
 
   async getTransactions(id: string[]): Promise<Transaction[] | null> {
-    const promises = id.map((tx) => this.getTransaction(tx));
+    const promises = id.map(tx => this.getTransaction(tx));
     const results = await Promise.all(promises.map(p => p.catch(e => e)));
     return results.filter(result => !(result instanceof Error));
   }
 
-  async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
+  async createAnchorTransaction(
+    senderAddress: string,
+    hash: string,
+  ): Promise<string> {
     const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type: 15,
       sender: senderAddress,
-      anchors: [
-        hash,
-      ],
+      anchors: [hash],
       fee: this.config.getAnchorFee(),
       timestamp: Date.now(),
     });
-    
+
     if (response instanceof Error) {
       throw response;
     }
 
-    return response.data.tx.id;
+    return response.data.id;
   }
 
-  async anchor(hash: string, encoding: string): Promise<{
-    '@context', type, targetHash, anchors,
+  async anchor(
+    hash: string,
+    encoding: string,
+  ): Promise<{
+    '@context';
+    type;
+    targetHash;
+    anchors;
   } | null> {
     this.logger.debug(`hash: starting anchoring '${hash}' as '${encoding}'`);
 
     try {
       const senderAddress = await this.getNodeWallet();
-      const base58Hash = this.encoder.base58Encode(this.encoder.decode(hash, encoding));
-      const transactionId = await this.createAnchorTransaction(senderAddress, base58Hash);
+      const base58Hash = this.encoder.base58Encode(
+        this.encoder.decode(hash, encoding),
+      );
+      const transactionId = await this.createAnchorTransaction(
+        senderAddress,
+        base58Hash,
+      );
 
       if (!transactionId) {
-        this.logger.warn(`hash: anchoring '${hash}' as '${encoding}' resulted in no transaction id`);
+        this.logger.warn(
+          `hash: anchoring '${hash}' as '${encoding}' resulted in no transaction id`,
+        );
         return null;
       }
 
-      this.logger.debug(`hash: successfully anchored '${hash}' as '${encoding}' in transaction '${transactionId}'`);
+      this.logger.debug(
+        `hash: successfully anchored '${hash}' as '${encoding}' in transaction '${transactionId}'`,
+      );
       return this.asChainPoint(hash, transactionId);
     } catch (e) {
       this.logger.error(`hash: failed anchoring '${hash}' as '${encoding}'`);
@@ -222,17 +250,32 @@ export class NodeService {
     }
   }
 
-  async getTransactionByHash(hash: string, encoding?: string): Promise<{
-    '@context', type, targetHash, anchors,
+  async getTransactionByHash(
+    hash: string,
+    encoding?: string,
+  ): Promise<{
+    '@context';
+    type;
+    targetHash;
+    anchors;
   } | null> {
-    const hashEncoded = encoding ? this.encoder.hexEncode(this.encoder.decode(hash, encoding)) : hash;
+    const hashEncoded = encoding
+      ? this.encoder.hexEncode(this.encoder.decode(hash, encoding))
+      : hash;
     const transaction = await this.storage.getAnchor(hashEncoded);
     let transactionId: string;
 
     if (transaction && transaction.id) {
-      return this.asChainPoint(hash, transaction.id, transaction.blockHeight, transaction.position);
+      return this.asChainPoint(
+        hash,
+        transaction.id,
+        transaction.blockHeight,
+        transaction.position,
+      );
     } else {
-      const encoded = this.encoder.base64Encode(this.encoder.decode(hash, 'hex'));
+      const encoded = this.encoder.base64Encode(
+        this.encoder.decode(hash, 'hex'),
+      );
       transactionId = await this.getUnconfirmedAnchor(encoded);
     }
 
@@ -259,15 +302,22 @@ export class NodeService {
     return await this.storage.countTx(type, address);
   }
 
-  asChainPoint(hash: string, transactionId: string, blockHeight?: number, position?: number) {
+  asChainPoint(
+    hash: string,
+    transactionId: string,
+    blockHeight?: number,
+    position?: number,
+  ) {
     const result = {
       '@context': 'https://w3id.org/chainpoint/v2',
-      'type': 'ChainpointSHA256v2',
-      'targetHash': hash,
-      'anchors': [{
-        type: 'LTODataTransaction',
-        sourceId: transactionId,
-      }],
+      type: 'ChainpointSHA256v2',
+      targetHash: hash,
+      anchors: [
+        {
+          type: 'LTODataTransaction',
+          sourceId: transactionId,
+        },
+      ],
     } as any;
 
     if (blockHeight) {
@@ -284,7 +334,12 @@ export class NodeService {
     return result;
   }
 
-  async getNodeStatus(): Promise<{ blockchainHeight, stateHeight, updatedTimestamp, updatedDate }> {
+  async getNodeStatus(): Promise<{
+    blockchainHeight;
+    stateHeight;
+    updatedTimestamp;
+    updatedDate;
+  }> {
     const response = await this.api.getNodeStatus();
 
     if (response instanceof Error) {
@@ -304,7 +359,7 @@ export class NodeService {
     }
   }
 
-  async getNodeInfo(): Promise<{ status, address }> {
+  async getNodeInfo(): Promise<{ status; address }> {
     const status = await this.getNodeStatus();
     const address = await this.getNodeWallet();
 
