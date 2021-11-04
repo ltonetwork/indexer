@@ -9,14 +9,13 @@ import { Transaction } from 'transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class TrustNetworkService {
-
   private transactionTypes: number[];
 
   constructor(
     private readonly logger: LoggerService,
     private readonly storage: StorageService,
     private readonly config: ConfigService,
-    private readonly node: NodeService
+    private readonly node: NodeService,
   ) {
     this.transactionTypes = [16, 17];
   }
@@ -24,7 +23,7 @@ export class TrustNetworkService {
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
 
-    if (this.transactionTypes.indexOf(transaction.type) === -1){
+    if (this.transactionTypes.indexOf(transaction.type) === -1) {
       this.logger.debug(`trust-network: unknown transaction type`);
       return;
     }
@@ -35,7 +34,9 @@ export class TrustNetworkService {
     }
 
     if (!transaction.associationType) {
-      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have an association type, skipped indexing`);
+      this.logger.debug(
+        `trust-network: transaction ${transaction.id} didn't have an association type, skipped indexing`,
+      );
       return;
     }
 
@@ -61,10 +62,15 @@ export class TrustNetworkService {
     const root = await this.node.getNodeWallet();
 
     if (root === address) {
-      roles = { root: { } };
-    } else {
-      roles = await this.storage.getRolesFor(address);
+      roles = { root: {} };
     }
+
+    const storageRoles = await this.storage.getRolesFor(address);
+
+    roles = {
+      ...roles,
+      ...storageRoles,
+    };
 
     for (const role in roles) {
       const configData = configRoles[role];
@@ -115,7 +121,7 @@ export class TrustNetworkService {
         this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
         await this.node.sponsor(transaction.party);
       }
-    } catch(error) {
+    } catch (error) {
       this.logger.error(`trust-network: error saving a role association: "${error}"`);
     }
   }

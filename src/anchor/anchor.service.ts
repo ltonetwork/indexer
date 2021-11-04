@@ -5,6 +5,7 @@ import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { ConfigService } from '../config/config.service';
+import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 @Injectable()
 export class AnchorService {
@@ -16,6 +17,7 @@ export class AnchorService {
     private readonly encoder: EncoderService,
     private readonly storage: StorageService,
     private readonly config: ConfigService,
+    private readonly trust: TrustNetworkService,
   ) {
     this.transactionTypes = [12, 15];
     this.anchorToken = '\u2693';
@@ -30,8 +32,8 @@ export class AnchorService {
     }
 
     if (anchorIndexing === 'trust') {
-      const senderRoles = await this.storage.getRolesFor(sender);
-      const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
+      const senderRoles = await this.trust.getRolesFor(sender);
+      const isSenderTrustNetwork = Object.keys(senderRoles.roles).length > 0;
 
       if (!isSenderTrustNetwork) {
         this.logger.debug(`anchor: Sender is not part of trust network`);
