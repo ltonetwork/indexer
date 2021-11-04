@@ -12,7 +12,7 @@ export class NodeApiService {
 
   async getNodeAddresses(): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
-    return this.request.get(`${url}/addresses`);
+    return this.request.get(`${url}/wallet/addresses`);
   }
 
   async getUnconfirmedTransactions(): Promise<AxiosResponse | Error> {

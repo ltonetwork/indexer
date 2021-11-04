@@ -42,7 +42,7 @@ describe('NodeApiService', () => {
 
       expect(await nodeApiService.getNodeAddresses()).toBe(response);
       expect(spies.request.get.mock.calls.length).toBe(1);
-      expect(spies.request.get.mock.calls[0][0]).toBe('http://localhost:6869/addresses');
+      expect(spies.request.get.mock.calls[0][0]).toBe('http://localhost:6869/wallet/addresses');
     });
   });
 
