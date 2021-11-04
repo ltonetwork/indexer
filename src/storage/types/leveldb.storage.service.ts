@@ -8,12 +8,9 @@ import { LeveldbService } from '../../leveldb/leveldb.service';
 export class LeveldbStorageService implements StorageInterface, OnModuleInit, OnModuleDestroy {
   private connection: LeveldbConnection;
 
-  constructor(
-    private readonly config: ConfigService,
-    private readonly leveldb: LeveldbService,
-  ) { }
+  constructor(private readonly config: ConfigService, private readonly leveldb: LeveldbService) {}
 
-  async onModuleInit() { }
+  async onModuleInit() {}
 
   async onModuleDestroy() {
     await this.close();
@@ -67,7 +64,14 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
   }
 
   async getObject(key: string): Promise<object> {
-    const res = await this.getValue(key);
+    const res = await this.getValue(key).catch(error => {
+      if (error.message?.toLowerCase().includes('key not found in database')) {
+        return null;
+      }
+
+      throw error;
+    });
+
     return res ? JSON.parse(res) : {};
   }
 

@@ -22,7 +22,8 @@ describe('LevelDbStorageService', () => {
       incrCount: jest.fn(),
     };
     const leveldb = {
-      connect: jest.spyOn(leveldbService, 'connect')
+      connect: jest
+        .spyOn(leveldbService, 'connect')
         // @ts-ignore
         .mockImplementation(async () => leveldbConnection),
     };
@@ -138,6 +139,48 @@ describe('LevelDbStorageService', () => {
       expect(spies.leveldbConnection.get.mock.calls.length).toBe(1);
       expect(spies.leveldbConnection.get.mock.calls[0][0]).toBe(hash);
     });
+
+    test('should catch "key not found in database" error and return empty object', async () => {
+      const spies = spy();
+
+      spies.leveldbConnection.get = jest.fn().mockImplementation(async () => {
+        throw new Error('NotFoundError: Key not found in database [lto:anchor:some-anchor]');
+      });
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+
+      const result = await storageService.getObject(hash);
+
+      expect(spies.leveldb.connect.mock.calls.length).toBe(1);
+      expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
+
+      expect(spies.leveldbConnection.get.mock.calls.length).toBe(1);
+      expect(spies.leveldbConnection.get.mock.calls[0][0]).toBe(hash);
+
+      expect(result).toEqual({});
+    });
+
+    test('should rethrow errors other than "key not found in database"', async () => {
+      const spies = spy();
+
+      spies.leveldbConnection.get = jest.fn().mockImplementation(async () => {
+        throw new Error('some really bad error here...');
+      });
+
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+
+      try {
+        await storageService.getObject(hash);
+      } catch (error) {
+        expect(error).toEqual(new Error('some really bad error here...'));
+
+        expect(spies.leveldb.connect.mock.calls.length).toBe(1);
+        expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
+
+        expect(spies.leveldbConnection.get.mock.calls.length).toBe(1);
+        expect(spies.leveldbConnection.get.mock.calls[0][0]).toBe(hash);
+      }
+    });
   });
 
   describe('setObject()', () => {
@@ -176,8 +219,7 @@ describe('LevelDbStorageService', () => {
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.zaddWithScore.mock.calls.length).toBe(1);
-      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][0])
-        .toBe(`lto:tx:${type}:${address}`);
+      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
       expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(timestamp));
       expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][2]).toEqual(transaction);
     });
@@ -200,8 +242,7 @@ describe('LevelDbStorageService', () => {
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.paginate.mock.calls.length).toBe(1);
-      expect(spies.leveldbConnection.paginate.mock.calls[0][0])
-        .toBe(`lto:tx:${type}:${address}`);
+      expect(spies.leveldbConnection.paginate.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
       expect(spies.leveldbConnection.paginate.mock.calls[0][1]).toBe(limit);
       expect(spies.leveldbConnection.paginate.mock.calls[0][2]).toBe(offset);
     });
@@ -221,8 +262,7 @@ describe('LevelDbStorageService', () => {
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.countTx.mock.calls.length).toBe(1);
-      expect(spies.leveldbConnection.countTx.mock.calls[0][0])
-        .toBe(`lto:tx:${type}:${address}`);
+      expect(spies.leveldbConnection.countTx.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
     });
   });
 });
