@@ -1,28 +1,11 @@
 {
   "env": "development",
   "node": {
-    "url": "https://testnet.lto.network"
+    "url": "http://127.0.0.1:3001"
   },
   "log": {
     "level": "debug"
   },
-  "starting_block": 1645900,
-  "restart_sync": true,
-  "transaction": {
-    "indexing": true
-  },
-  "association": {
-    "indexing": "all"
-  },
-  "identity": {
-    "indexing": true
-  },
-  "anchor": {
-    "indexing": "trust"
-  },
-  "stats": {
-    "operation": true,
-    "transactions": true,
-    "supply": true
-  }
+  "starting_block": 1659500,
+  "restart_sync": true
 }

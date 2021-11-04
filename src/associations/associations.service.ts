@@ -3,23 +3,22 @@ import { IndexDocumentType } from '../index/model/index.model';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
+import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 @Injectable()
 export class AssociationsService {
   private transactionTypes: number[];
 
   constructor(
-    readonly logger: LoggerService,
-    readonly config: ConfigService,
-    readonly storage: StorageService,
+    private readonly logger: LoggerService,
+    private readonly config: ConfigService,
+    private readonly storage: StorageService,
+    private readonly trust: TrustNetworkService,
   ) {
     this.transactionTypes = [16, 17];
   }
 
-  async index(
-    index: IndexDocumentType,
-    associationIndexing: 'trust' | 'all',
-  ): Promise<void> {
+  async index(index: IndexDocumentType, associationIndexing: 'trust' | 'all'): Promise<void> {
     const { transaction } = index;
     const { sender, recipient } = transaction;
 
@@ -29,13 +28,11 @@ export class AssociationsService {
     }
 
     if (associationIndexing === 'trust') {
-      const senderRoles = await this.storage.getRolesFor(sender);
-      const isSenderTrustNetwork = Object.keys(senderRoles).length > 0;
+      const senderRoles = await this.trust.getRolesFor(sender);
+      const isSenderTrustNetwork = Object.keys(senderRoles.roles).length > 0;
 
       if (!isSenderTrustNetwork) {
-        this.logger.debug(
-          `association-service: Sender is not part of trust network`,
-        );
+        this.logger.debug(`association-service: Sender is not part of trust network`);
         return;
       }
     }

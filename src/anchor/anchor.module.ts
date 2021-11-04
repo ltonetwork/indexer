@@ -10,6 +10,7 @@ import { EncoderModule } from '../encoder/encoder.module';
 import { TransactionModule } from '../transaction/transaction.module';
 import { AnchorListenerService } from './anchor-listener.service';
 import { EmitterModule } from '../emitter/emitter.module';
+import { TrustNetworkModule } from '../trust-network/trust-network.module';
 
 export const AnchorModuleConfig = {
   imports: [
@@ -20,19 +21,13 @@ export const AnchorModuleConfig = {
     RedisModule,
     StorageModule,
     TransactionModule,
+    TrustNetworkModule,
     EmitterModule,
   ],
   controllers: [],
-  providers: [
-    ...anchorProviders,
-    AnchorService,
-    AnchorListenerService,
-  ],
-  exports: [
-    ...anchorProviders,
-    AnchorService,
-  ],
+  providers: [...anchorProviders, AnchorService, AnchorListenerService],
+  exports: [...anchorProviders, AnchorService],
 };
 
 @Module(AnchorModuleConfig)
-export class AnchorModule { }
+export class AnchorModule {}
