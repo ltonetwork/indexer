@@ -44,7 +44,17 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {}
 
   getAnchor(hash: string): Promise<any> {
-    return this.storage.getObject(`lto:anchor:${hash.toLowerCase()}`);
+    return this.storage
+      .getObject(`lto:anchor:${hash.toLowerCase()}`)
+      .catch(error => {
+        if (
+          error.message?.toLowerCase().includes('key not found in database')
+        ) {
+          return null;
+        }
+
+        throw error;
+      });
   }
 
   saveAnchor(hash: string, transaction: object) {

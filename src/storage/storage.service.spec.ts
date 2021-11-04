@@ -88,6 +88,54 @@ describe('StorageService', () => {
       });
     });
 
+    describe('getAnchor()', () => {
+      test('should get the anchor from database', async () => {
+        const getObject = jest
+          .spyOn(redisStorageService, 'getObject')
+          .mockImplementation(() => Promise.resolve({ some: 'data' }));
+
+        const result = await storageService.getAnchor('some-anchor');
+
+        expect(getObject).toHaveBeenCalledTimes(1);
+        expect(getObject).toHaveBeenCalledWith('lto:anchor:some-anchor');
+        expect(result).toEqual({ some: 'data' });
+      });
+
+      test('should catch when key not found in database and return null', async () => {
+        const getObject = jest
+          .spyOn(redisStorageService, 'getObject')
+          .mockImplementation(() =>
+            Promise.reject(
+              new Error(
+                'NotFoundError: Key not found in database [lto:anchor:some-anchor]',
+              ),
+            ),
+          );
+
+        const result = await storageService.getAnchor('some-anchor');
+
+        expect(getObject).toHaveBeenCalledTimes(1);
+        expect(getObject).toHaveBeenCalledWith('lto:anchor:some-anchor');
+        expect(result).toEqual(null);
+      });
+
+      test('should rethrow errors other than key not found', async () => {
+        const getObject = jest
+          .spyOn(redisStorageService, 'getObject')
+          .mockImplementation(() =>
+            Promise.reject(new Error('some other error here!')),
+          );
+
+        try {
+          await storageService.getAnchor('some-anchor');
+        } catch (error) {
+          expect(error).toEqual(new Error('some other error here!'));
+          expect(getObject).toHaveBeenCalledTimes(1);
+          expect(getObject).toHaveBeenCalledWith('lto:anchor:some-anchor');
+        }
+      });
+    });
+
     describe('indexTx()', () => {
       test('should index transaction type for address', async () => {
         const transaction = 'fake_transaction';
