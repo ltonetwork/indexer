@@ -7,14 +7,8 @@ import storageServices from './types';
 import PascalCase from 'pascal-case';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
-import {
-  MethodObject,
-  VerificationMethod,
-} from '../identity/verification-method/model/verification-method.model';
-import {
-  Role,
-  RawRole,
-} from '../trust-network/interfaces/trust-network.interface';
+import { MethodObject, VerificationMethod } from '../identity/verification-method/model/verification-method.model';
+import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
 
 @Injectable()
@@ -48,10 +42,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   saveAnchor(hash: string, transaction: object) {
-    return this.storage.addObject(
-      `lto:anchor:${hash.toLowerCase()}`,
-      transaction,
-    );
+    return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
   }
 
   getPublicKey(address: string) {
@@ -64,22 +55,13 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
     const result: VerificationMethod[] = [];
-    const methods = await this.storage
-      .getObject(`lto:verification:${address}`)
-      .catch(() => {
-        return {};
-      });
+    const methods = await this.storage.getObject(`lto:verification:${address}`);
 
     for (const key in methods) {
       const data: MethodObject = methods[key];
 
       if (!data.revokedAt) {
-        const method = new VerificationMethod(
-          data.relationships,
-          data.sender,
-          data.recipient,
-          data.createdAt,
-        );
+        const method = new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt);
 
         result.push(method);
       }
@@ -88,15 +70,9 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return result;
   }
 
-  async saveVerificationMethod(
-    address: string,
-    verificationMethod: VerificationMethod,
-  ): Promise<void> {
-    const data = await this.storage
-      .getObject(`lto:verification:${address}`)
-      .catch(() => {
-        return {};
-      });
+  async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
+    const data = await this.storage.getObject(`lto:verification:${address}`);
+
     const newData = verificationMethod.json();
 
     data[newData.recipient] = newData;
@@ -105,37 +81,23 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getRolesFor(address: string): Promise<RawRole | {}> {
-    return this.storage.getObject(`lto:roles:${address}`).catch(() => {
-      return {};
-    });
+    return this.storage.getObject(`lto:roles:${address}`);
   }
 
-  async saveRoleAssociation(
-    party: string,
-    sender: string,
-    data: Role,
-  ): Promise<void> {
-    const roles = await this.storage
-      .getObject(`lto:roles:${party}`)
-      .catch(() => {
-        return {};
-      });
+  async saveRoleAssociation(recipient: string, sender: string, data: Role): Promise<void> {
+    const roles = await this.storage.getObject(`lto:roles:${recipient}`);
 
     roles[data.role] = { sender, type: data.type };
 
-    return this.storage.setObject(`lto:roles:${party}`, roles);
+    return this.storage.setObject(`lto:roles:${recipient}`, roles);
   }
 
-  async removeRoleAssociation(party: string, data: Role): Promise<void> {
-    const roles = await this.storage
-      .getObject(`lto:roles:${party}`)
-      .catch(() => {
-        return {};
-      });
+  async removeRoleAssociation(recipient: string, data: Role): Promise<void> {
+    const roles = await this.storage.getObject(`lto:roles:${recipient}`);
 
     delete roles[data.role];
 
-    return this.storage.setObject(`lto:roles:${party}`, roles);
+    return this.storage.setObject(`lto:roles:${recipient}`, roles);
   }
 
   async saveAssociation(sender: string, recipient: string): Promise<void> {
@@ -146,9 +108,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     await this.storage.sadd(`lto:assoc:${sender}:childs`, recipient);
     await this.storage.sadd(`lto:assoc:${recipient}:parents`, sender);
 
-    this.logger.debug(
-      `storage-service: Add assoc for ${sender} child ${recipient}`,
-    );
+    this.logger.debug(`storage-service: Add assoc for ${sender} child ${recipient}`);
   }
 
   async removeAssociation(sender: string, recipient: string): Promise<void> {
@@ -160,23 +120,17 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     await this.storage.srem(`lto:assoc:${recipient}:parents`, sender);
 
     await this.recurRemoveAssociation(recipient);
-    this.logger.debug(
-      `storage-service: removed assoc for ${sender} child ${recipient}`,
-    );
+    this.logger.debug(`storage-service: removed assoc for ${sender} child ${recipient}`);
   }
 
   async recurRemoveAssociation(address: string) {
-    const childAssocs = await this.storage.getArray(
-      `lto:assoc:${address}:childs`,
-    );
+    const childAssocs = await this.storage.getArray(`lto:assoc:${address}:childs`);
 
     for (const child of childAssocs) {
       await this.storage.srem(`lto:assoc:${address}:childs`, child);
       await this.storage.srem(`lto:assoc:${child}:parents`, address);
       await this.recurRemoveAssociation(child);
-      this.logger.debug(
-        `storage-service: Remove assoc for ${address} child ${child}`,
-      );
+      this.logger.debug(`storage-service: Remove assoc for ${address} child ${child}`);
     }
   }
 
@@ -206,22 +160,12 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.getValue(`lto:stats:operations`);
   }
 
-  async getTxStats(
-    type: string,
-    from: number,
-    to: number,
-  ): Promise<{ period: string; count: number }[]> {
+  async getTxStats(type: string, from: number, to: number): Promise<{ period: string; count: number }[]> {
     const length = to - from + 1;
-    const keys = Array.from(
-      { length },
-      (v, i) => `lto:stats:transactions:${type}:${from + i}`,
-    );
+    const keys = Array.from({ length }, (v, i) => `lto:stats:transactions:${type}:${from + i}`);
     const values = await this.storage.getMultipleValues(keys);
 
-    const periods = Array.from(
-      { length },
-      (v, i) => new Date((from + i) * 86400000),
-    );
+    const periods = Array.from({ length }, (v, i) => new Date((from + i) * 86400000));
     return periods.map((period: Date, index: number) => ({
       period: this.formatPeriod(period),
       count: Number(values[index]),
@@ -233,9 +177,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getTxFeeBurned(): Promise<number> {
-    const value = await this.storage
-      .getValue('lto:stats:supply:txfeeburned')
-      .catch(() => '0');
+    const value = await this.storage.getValue('lto:stats:supply:txfeeburned').catch(() => '0');
     return Number(value);
   }
 
@@ -260,21 +202,11 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.countTx(type, address);
   }
 
-  indexTx(
-    type: string,
-    address: string,
-    transactionId: string,
-    timestamp: number,
-  ): Promise<void> {
+  indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     return this.storage.indexTx(type, address, transactionId, timestamp);
   }
 
-  getTx(
-    type: string,
-    address: string,
-    limit: number,
-    offset: number,
-  ): Promise<string[]> {
+  getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
     return this.storage.getTx(type, address, limit, offset);
   }
 
