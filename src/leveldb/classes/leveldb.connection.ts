@@ -27,7 +27,7 @@ export class LeveldbConnection {
     return Promise.all(promises);
   }
 
-  async add(key: level.KeyType, value: string): Promise<void> {
+  async add(key: level.KeyType, value: string): Promise<string> {
     await this.incrLock.acquireAsync();
 
     try {
@@ -35,7 +35,8 @@ export class LeveldbConnection {
 
       if (existing) return existing;
 
-      await this.connection.put(key, value);
+      const result = await this.connection.put(key, value);
+      return result;
     } finally {
       this.incrLock.release();
     }
@@ -49,12 +50,13 @@ export class LeveldbConnection {
     return this.connection.del(key);
   }
 
-  async incr(key): Promise<void> {
+  async incr(key): Promise<string> {
     await this.incrLock.acquireAsync();
 
     try {
       const count = Number(await this.get(key));
-      await this.set(key, String(count + 1));
+      const result = await this.set(key, String(count + 1));
+      return result;
     } finally {
       this.incrLock.release();
     }
