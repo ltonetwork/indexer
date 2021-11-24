@@ -6,29 +6,26 @@ import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class TransactionService {
-  constructor(
-    private readonly logger: LoggerService,
-    private readonly storage: StorageService,
-  ) { }
+  constructor(private readonly logger: LoggerService, private readonly storage: StorageService) {}
 
-  getAllTypes(): Array<{ id: string, types: number[] }> {
-    return Object.keys(TransactionTypes).map((k) => TransactionTypes[k]);
+  getAllTypes(): Array<{ id: string; types: number[] }> {
+    return Object.keys(TransactionTypes).map(k => TransactionTypes[k]);
   }
 
   getIdentifiers(): string[] {
     const types = this.getAllTypes();
-    return types.map((tx) => tx.id);
+    return types.map(tx => tx.id);
   }
 
   getIdentifierByType(type: number): string | null {
     const types = this.getAllTypes();
-    const match = types.find((tx) => tx.types.indexOf(type) > -1);
+    const match = types.find(tx => tx.types.indexOf(type) > -1);
     return match ? match.id : null;
   }
 
   getIdentifiersByType(type: number): string[] {
     const types = this.getAllTypes();
-    return types.filter((tx) => tx.types.indexOf(type) > -1).map((match) => match.id);
+    return types.filter(tx => tx.types.indexOf(type) > -1).map(match => match.id);
   }
 
   hasIdentifier(identifier): boolean {
@@ -36,7 +33,7 @@ export class TransactionService {
     return identifiers.indexOf(identifier) > -1;
   }
 
-  async getStats(type: string, from: number, to: number): Promise<{period: string, count: number}[]> {
+  async getStats(type: string, from: number, to: number): Promise<{ period: string; count: number }[]> {
     return this.storage.getTxStats(type, from, to);
   }
 
