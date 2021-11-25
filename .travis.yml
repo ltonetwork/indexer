@@ -5,28 +5,10 @@ node_js:
 
 sudo: false
 
-# Add your branch here to have it tested and deployed
 branches:
   only:
   - master
 
-before_install:
-# Configure Git
-- openssl aes-256-cbc -K $encrypted_09bcffa25be0_key -iv $encrypted_09bcffa25be0_iv -in github_deploy_key.enc -out github_deploy_key -d
-- chmod 600 github_deploy_key
-- eval $(ssh-agent -s)
-- ssh-add github_deploy_key
-- git config --global user.email "travis-ci@ltonetwork.com"
-- git config --global user.name "Travis CI"
-- git remote add github git@github.com:ltonetwork/anchor.git
-
-# Get all tags of git repo
-- git fetch github 'refs/tags/*:refs/tags/*'
-
 script:
   npm run test:all
 
-after_success:
-# Bump version
-- npm install mversion -g
-- test "$TRAVIS_BRANCH" != 'master' -o "$TRAVIS_PULL_REQUEST" != "false" || test -n "$(git tag --contains)" || bin/bump-version
