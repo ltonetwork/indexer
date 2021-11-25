@@ -33,7 +33,7 @@ describe('LeveldbConnection', () => {
     test("should set a value to leveldb if it doesn't exist", async () => {
       const spies = spy();
 
-      spies.connection.get.mockRejectedValue('');
+      spies.connection.get.mockRejectedValue(new Error('key not found in database'));
       spies.connection.put.mockImplementation(async () => 'fake_value');
       const levelDBConnection = new LeveldbConnection(spies.connection as any);
 

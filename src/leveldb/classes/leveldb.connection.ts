@@ -23,7 +23,7 @@ export class LeveldbConnection {
   }
 
   mget(keys: level.KeyType[]): Promise<string[]> {
-    const promises = keys.map((key: string) => this.connection.get(key).catch(() => null));
+    const promises = keys.map((key: string) => this.get(key));
     return Promise.all(promises);
   }
 
@@ -31,7 +31,7 @@ export class LeveldbConnection {
     await this.incrLock.acquireAsync();
 
     try {
-      const existing = await this.connection.get(key).catch(() => null);
+      const existing = await this.get(key);
 
       if (existing) return existing;
 
