@@ -11,6 +11,8 @@ RUN npm i
 # Bundle app source
 COPY . .
 
+RUN echo $(git describe --tags) > ./version.txt
+
 RUN npm run build
 
 RUN rm -rf node_modules/
@@ -27,6 +29,7 @@ FROM node:dubnium-alpine
 # Move the build files from build folder to app folder
 WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
+COPY --from=build /usr/src/version.txt ./
 COPY --from=build /usr/src/node_modules ./node_modules/
 
 ADD package.json ./
