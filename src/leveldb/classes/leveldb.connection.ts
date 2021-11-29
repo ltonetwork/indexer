@@ -8,33 +8,38 @@ import AwaitLock from 'await-lock';
 export class LeveldbConnection {
   private incrLock: AwaitLock;
 
-  constructor(
-    private connection: level.Level,
-  ) {
+  constructor(private connection: level.Level) {
     this.incrLock = new AwaitLock();
   }
 
   get(key: level.KeyType): Promise<string> {
-    return this.connection.get(key);
+    return this.connection.get(key).catch(error => {
+      if (error.message?.toLowerCase().includes('key not found in database')) {
+        return null;
+      }
+
+      throw error;
+    });
   }
 
   mget(keys: level.KeyType[]): Promise<string[]> {
-    const promises = keys.map((key: string) => this.connection.get(key).catch(() => null));
+    const promises = keys.map((key: string) => this.get(key));
     return Promise.all(promises);
   }
 
   async add(key: level.KeyType, value: string): Promise<string> {
     await this.incrLock.acquireAsync();
 
-    const existing = await this.connection.get(key).catch(() => null);
+    try {
+      const existing = await this.get(key);
 
-    if (existing) return existing;
+      if (existing) return existing;
 
-    const result = await this.connection.put(key, value);
-
-    this.incrLock.release();
-
-    return result;
+      const result = await this.connection.put(key, value);
+      return result;
+    } finally {
+      this.incrLock.release();
+    }
   }
 
   set(key: level.KeyType, value: string): Promise<string> {
@@ -49,13 +54,9 @@ export class LeveldbConnection {
     await this.incrLock.acquireAsync();
 
     try {
-      let count = 0;
-      try {
-        count = Number(await this.get(key));
-      } catch (e) {
-      }
-
-      return this.set(key, String(count + 1));
+      const count = Number(await this.get(key));
+      const result = await this.set(key, String(count + 1));
+      return result;
     } finally {
       this.incrLock.release();
     }
@@ -67,8 +68,8 @@ export class LeveldbConnection {
     return this.set(newKey, value);
   }
 
-  async incrCount(key): Promise<any> {
-    return this.incr(`${key}:count`);
+  async incrCount(key): Promise<void> {
+    await this.incr(`${key}:count`);
   }
 
   async paginate(key: level.KeyType, limit: number, offset: number): Promise<any> {
@@ -77,15 +78,18 @@ export class LeveldbConnection {
       const start = Number(offset);
       const stop = Number(limit) + start;
 
-      return this.connection.createReadStream({
-        gte: key + '!',
-        lte: key + '~',
-        reverse: true,
-        limit: stop,
-      }).pipe(offsetStream(start)).on('data', (data) => {
-        _arr.push(data.value);
-      })
-        .on('error', (err) => {
+      return this.connection
+        .createReadStream({
+          gte: key + '!',
+          lte: key + '~',
+          reverse: true,
+          limit: stop,
+        })
+        .pipe(offsetStream(start))
+        .on('data', data => {
+          _arr.push(data.value);
+        })
+        .on('error', err => {
           reject(err);
         })
         .on('close', () => {
@@ -94,7 +98,6 @@ export class LeveldbConnection {
         .on('end', () => {
           resolve(_arr);
         });
-
     });
   }
 

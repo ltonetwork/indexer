@@ -6,6 +6,11 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": 1659500,
-  "restart_sync": true
+  "starting_block": 1600000,
+  "transaction": {
+    "indexing": true
+  },
+  "anchor": {
+    "indexing": "all"
+  }
 }

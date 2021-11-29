@@ -119,14 +119,11 @@ export class IndexMonitorService {
     this.processing = true;
 
     const blockHeight = await this.node.getLastBlockHeight();
-    const processingHeight =
-      (await this.storage.getProcessingHeight()) || this.lastBlock;
+    const processingHeight = (await this.storage.getProcessingHeight()) || this.lastBlock;
     const ranges = this.node.getBlockRanges(processingHeight, blockHeight);
 
     for (const range of ranges) {
-      this.logger.info(
-        `index-monitor: processing blocks ${range.from} to ${range.to}`,
-      );
+      this.logger.info(`index-monitor: processing blocks ${range.from} to ${range.to}`);
       const blocks = await this.node.getBlocks(range.from, range.to);
 
       for (const block of blocks) {
@@ -150,11 +147,7 @@ export class IndexMonitorService {
     }
   }
 
-  processTransaction(
-    transaction: Transaction,
-    blockHeight: number,
-    position: number,
-  ) {
+  processTransaction(transaction: Transaction, blockHeight: number, position: number) {
     return this.indexer.index({ transaction, blockHeight, position });
   }
 }

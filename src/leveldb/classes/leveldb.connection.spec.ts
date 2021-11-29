@@ -30,10 +30,10 @@ describe('LeveldbConnection', () => {
   });
 
   describe('add()', () => {
-    test('should set a value to leveldb if it doesn\'t exist', async () => {
+    test("should set a value to leveldb if it doesn't exist", async () => {
       const spies = spy();
 
-      spies.connection.get.mockRejectedValue('');
+      spies.connection.get.mockRejectedValue(new Error('key not found in database'));
       spies.connection.put.mockImplementation(async () => 'fake_value');
       const levelDBConnection = new LeveldbConnection(spies.connection as any);
 
@@ -73,6 +73,42 @@ describe('LeveldbConnection', () => {
       expect(spies.connection.get.mock.calls.length).toBe(1);
       expect(spies.connection.get.mock.calls[0]).toEqual(['fake_key']);
     });
+
+    test('should catch "key not found in database" error and return empty object', async () => {
+      const spies = spy();
+
+      spies.connection.get.mockImplementation(async () => {
+        throw new Error('NotFoundError: Key not found in database [lto:anchor:some-anchor]');
+      });
+
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      const result = await levelDBConnection.get('fake_key');
+
+      expect(spies.connection.get.mock.calls.length).toBe(1);
+      expect(spies.connection.get.mock.calls[0]).toEqual(['fake_key']);
+
+      expect(result).toEqual(null);
+    });
+
+    test('should rethrow errors other than "key not found in database"', async () => {
+      const spies = spy();
+
+      spies.connection.get.mockImplementation(async () => {
+        throw new Error('some really bad error here...');
+      });
+
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      try {
+        await levelDBConnection.get('fake_key');
+      } catch (error) {
+        expect(error).toEqual(new Error('some really bad error here...'));
+
+        expect(spies.connection.get.mock.calls.length).toBe(1);
+        expect(spies.connection.get.mock.calls[0]).toEqual(['fake_key']);
+      }
+    });
   });
 
   describe('mget()', () => {
@@ -83,8 +119,7 @@ describe('LeveldbConnection', () => {
       spies.connection.get.mockImplementation(async () => values.shift());
       const levelDBConnection = new LeveldbConnection(spies.connection as any);
 
-      expect(await levelDBConnection.mget(['fake_key1', 'fake_key2']))
-        .toEqual(['fake_value1', 'fake_value2']);
+      expect(await levelDBConnection.mget(['fake_key1', 'fake_key2'])).toEqual(['fake_value1', 'fake_value2']);
       expect(spies.connection.get.mock.calls.length).toBe(2);
       expect(spies.connection.get.mock.calls[0]).toEqual(['fake_key1']);
       expect(spies.connection.get.mock.calls[1]).toEqual(['fake_key2']);

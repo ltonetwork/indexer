@@ -64,14 +64,7 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
   }
 
   async getObject(key: string): Promise<object> {
-    const res = await this.getValue(key).catch(error => {
-      if (error.message?.toLowerCase().includes('key not found in database')) {
-        return null;
-      }
-
-      throw error;
-    });
-
+    const res = await this.getValue(key);
     return res ? JSON.parse(res) : {};
   }
 
