@@ -263,7 +263,7 @@ You can run container with predefined environment variables:
 The indexing configurations have the values of `none`, `trust` or `all`.
 
 - `none`: no transactions will be indexed
-- `trust`: only transactions from someone in your configured trust network will be indexed (see [configuring a trust network](https://docs.ltonetwork.com/v/edge/identity-node/configuration-1/configuration))
+- `trust`: only transactions from someone in your configured trust network will be indexed (see [configuring a trust network](https://docs.ltonetwork.com/v/edge/node/identity-node/configuration-1/configuration))
 - `all`: all transactions will be indexed
 
 _Note_: Keep in mind that if you change a configuration after the indexer has already processed blocks, you will need to restart the synchronization, basically making
