@@ -16,9 +16,9 @@ Expolore all API endpoint using the swagger interface.
 
 A `Dockerfile` is available on the root, along with a `docker-compose.yml` for making it easy to deploy as a Docker container.
 
-The `docker-compose` file also creates a `redis` and `redis-graph` container, and enables the `indexer` to work with a Redis database.
+You can use the environment variables on the `indexer` to enable/disable features or use Redis instead of LevelDB. See more on **Configuration** below.
 
-You can use the environment variables on the `indexer` to enable/disable features or use LevelDB (default) instead of Redis. See more on **Configuration** below.
+# URL Endpoints
 
 ## Anchoring
 
@@ -85,10 +85,7 @@ It's possibible to index and query associations.
 
 ```json
 {
-  "children": [
-    "did:lto:3Jmh1EcLL2GieVAYeyF42D4cBxjAFVUJMpR",
-    "did:lto:3JsYP8QYvkiC5x2nPzUkVYEfQVwXnogXaGP"
-  ],
+  "children": ["did:lto:3Jmh1EcLL2GieVAYeyF42D4cBxjAFVUJMpR", "did:lto:3JsYP8QYvkiC5x2nPzUkVYEfQVwXnogXaGP"],
   "parents": ["did:lto:3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL"]
 }
 ```
@@ -228,7 +225,7 @@ When using API and performing `save` operation call, it does not auto-perform `v
 
 Verification is performed not on blockchain, but on anchors, uploaded from blockchain to database.
 
-## Configuration
+# Configuration
 
 You can run container with predefined environment variables:
 
@@ -276,7 +273,7 @@ the indexer process blocks all over again. This WILL take some time to complete,
 }
 ```
 
-### Changing values on the config file
+## Changing values on the config file
 
 An alternative to changing the configuration is by changing the config file, found in `src/config/data/default.config.json`.
 
