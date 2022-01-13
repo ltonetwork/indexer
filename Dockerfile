@@ -34,5 +34,7 @@ COPY --from=build /usr/src/node_modules ./node_modules/
 
 ADD package.json ./
 
+RUN npm install -g pm2
+
 EXPOSE 80
-CMD ["node", "main.js"]
+CMD ["pm2-runtime", "main.js"]
