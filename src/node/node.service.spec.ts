@@ -22,41 +22,31 @@ describe('NodeService', () => {
 
     const node = {
       getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet'),
-      createAnchorTransaction: jest.spyOn(
-        nodeService,
-        'createAnchorTransaction',
-      ),
+      createAnchorTransaction: jest.spyOn(nodeService, 'createAnchorTransaction'),
       getUnconfirmedAnchor: jest.spyOn(nodeService, 'getUnconfirmedAnchor'),
       getNodeStatus: jest.spyOn(nodeService, 'getNodeStatus'),
     };
 
     const storage = {
-      getAnchor: jest
-        .spyOn(storageService, 'getAnchor')
-        .mockImplementation(() => Promise.resolve(fakeTransaction)),
+      getAnchor: jest.spyOn(storageService, 'getAnchor').mockImplementation(() => Promise.resolve(fakeTransaction)),
     };
 
     const api = {
       getNodeAddresses: jest.spyOn(nodeApiService, 'getNodeAddresses'),
-      getUnconfirmedTransactions: jest.spyOn(
-        nodeApiService,
-        'getUnconfirmedTransactions',
-      ),
+      getUnconfirmedTransactions: jest.spyOn(nodeApiService, 'getUnconfirmedTransactions'),
       getLastBlock: jest.spyOn(nodeApiService, 'getLastBlock'),
       getBlock: jest.spyOn(nodeApiService, 'getBlock'),
       getBlocks: jest.spyOn(nodeApiService, 'getBlocks'),
       getNodeStatus: jest.spyOn(nodeApiService, 'getNodeStatus'),
       getActivationStatus: jest.spyOn(nodeApiService, 'getActivationStatus'),
-      broadcastTransaction: jest
-        .spyOn(nodeApiService, 'broadcastTransaction')
-        .mockImplementation(async () => {
-          return {
-            status: 200,
-            data: {
-              id: 'fake_id',
-            },
-          } as AxiosResponse;
-        }),
+      broadcastTransaction: jest.spyOn(nodeApiService, 'broadcastTransaction').mockImplementation(async () => {
+        return {
+          status: 200,
+          data: {
+            id: 'fake_id',
+          },
+        } as AxiosResponse;
+      }),
       signAndBroadcastTransaction: jest
         .spyOn(nodeApiService, 'signAndBroadcastTransaction')
         .mockImplementation(async () => {
@@ -67,22 +57,18 @@ describe('NodeService', () => {
             },
           } as AxiosResponse;
         }),
-      signTransaction: jest
-        .spyOn(nodeApiService, 'signTransaction')
-        .mockImplementation(async () => {
-          return {
-            status: 200,
-            data: {
-              some: 'data',
-            },
-          } as AxiosResponse;
-        }),
+      signTransaction: jest.spyOn(nodeApiService, 'signTransaction').mockImplementation(async () => {
+        return {
+          status: 200,
+          data: {
+            some: 'data',
+          },
+        } as AxiosResponse;
+      }),
     };
 
     const config = {
-      getSponsorFee: jest
-        .spyOn(configService, 'getSponsorFee')
-        .mockImplementation(() => 5000),
+      getSponsorFee: jest.spyOn(configService, 'getSponsorFee').mockImplementation(() => 5000),
     };
 
     return { api, node, storage, config };
@@ -107,11 +93,24 @@ describe('NodeService', () => {
       const spies = spy();
 
       const response = { status: 200, data: ['fake_address'] } as AxiosResponse;
-      spies.api.getNodeAddresses.mockImplementation(() =>
-        Promise.resolve(response),
-      );
+      spies.api.getNodeAddresses.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getNodeWallet()).toBe(response.data[0]);
+      expect(spies.api.getNodeAddresses.mock.calls.length).toBe(1);
+    });
+
+    test('should only get the node wallet address from server once', async () => {
+      const spies = spy();
+
+      const response = { status: 200, data: ['fake_address'] } as AxiosResponse;
+
+      spies.api.getNodeAddresses.mockImplementation(() => Promise.resolve(response));
+
+      // two calls
+      await nodeService.getNodeWallet();
+      const result = await nodeService.getNodeWallet();
+
+      expect(result).toBe(response.data[0]);
       expect(spies.api.getNodeAddresses.mock.calls.length).toBe(1);
     });
   });
@@ -122,17 +121,11 @@ describe('NodeService', () => {
 
       const response = {
         status: 200,
-        data: [
-          { id: 'fake_id', type: 12, data: [{ value: 'base64:fake_hash' }] },
-        ],
+        data: [{ id: 'fake_id', type: 12, data: [{ value: 'base64:fake_hash' }] }],
       } as AxiosResponse;
-      spies.api.getUnconfirmedTransactions.mockImplementation(() =>
-        Promise.resolve(response),
-      );
+      spies.api.getUnconfirmedTransactions.mockImplementation(() => Promise.resolve(response));
 
-      expect(await nodeService.getUnconfirmedAnchor('fake_hash')).toBe(
-        response.data[0].id,
-      );
+      expect(await nodeService.getUnconfirmedAnchor('fake_hash')).toBe(response.data[0].id);
       expect(spies.api.getUnconfirmedTransactions.mock.calls.length).toBe(1);
     });
   });
@@ -142,9 +135,7 @@ describe('NodeService', () => {
       const spies = spy();
 
       const response = { status: 200, data: { height: 1 } } as AxiosResponse;
-      spies.api.getLastBlock.mockImplementation(() =>
-        Promise.resolve(response),
-      );
+      spies.api.getLastBlock.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getLastBlockHeight()).toBe(response.data.height);
       expect(spies.api.getLastBlock.mock.calls.length).toBe(1);
@@ -235,9 +226,7 @@ describe('NodeService', () => {
     test('should create anchor transaction', async () => {
       const spies = spy();
 
-      expect(
-        await nodeService.createAnchorTransaction('fake_sender', 'fake_hash'),
-      ).toEqual('fake_id');
+      expect(await nodeService.createAnchorTransaction('fake_sender', 'fake_hash')).toEqual('fake_id');
       expect(spies.api.signAndBroadcastTransaction.mock.calls.length).toBe(1);
     });
   });
@@ -245,18 +234,11 @@ describe('NodeService', () => {
   describe('anchor()', () => {
     test('should anchor hash with given encoding', async () => {
       const spies = spy();
-      spies.node.getNodeWallet.mockImplementation(() =>
-        Promise.resolve('fake_wallet'),
-      );
-      spies.node.createAnchorTransaction.mockImplementation(() =>
-        Promise.resolve('fake_transaction'),
-      );
-      spies.node.getUnconfirmedAnchor.mockImplementation(() =>
-        Promise.resolve('fake_transaction'),
-      );
+      spies.node.getNodeWallet.mockImplementation(() => Promise.resolve('fake_wallet'));
+      spies.node.createAnchorTransaction.mockImplementation(() => Promise.resolve('fake_transaction'));
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => Promise.resolve('fake_transaction'));
 
-      const hash =
-        '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const encoding = 'hex';
       const chainpoint = {
         '@context': 'https://w3id.org/chainpoint/v2',
@@ -274,24 +256,17 @@ describe('NodeService', () => {
 
       expect(spies.node.getNodeWallet.mock.calls.length).toBe(1);
       expect(spies.node.createAnchorTransaction.mock.calls.length).toBe(1);
-      expect(spies.node.createAnchorTransaction.mock.calls[0][0]).toBe(
-        'fake_wallet',
-      );
-      expect(spies.node.createAnchorTransaction.mock.calls[0][1]).toBe(
-        '3yMApqCuCjXDWPrbjfR5mjCPTHqFG8Pux1TxQrEM35jj',
-      );
+      expect(spies.node.createAnchorTransaction.mock.calls[0][0]).toBe('fake_wallet');
+      expect(spies.node.createAnchorTransaction.mock.calls[0][1]).toBe('3yMApqCuCjXDWPrbjfR5mjCPTHqFG8Pux1TxQrEM35jj');
     });
   });
 
   describe('getTransactionByHash()', () => {
     test('should get transaction by hash', async () => {
       const spies = spy();
-      spies.node.getUnconfirmedAnchor.mockImplementation(() =>
-        Promise.resolve('fake_transaction'),
-      );
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => Promise.resolve('fake_transaction'));
 
-      const hash =
-        '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const chainpoint = {
         '@context': 'https://w3id.org/chainpoint/v2',
         anchors: [
@@ -320,14 +295,11 @@ describe('NodeService', () => {
 
     test('should get transaction by hash by looking in unconfirmed transactions', async () => {
       const spies = spy();
-      spies.node.getUnconfirmedAnchor.mockImplementation(() =>
-        Promise.resolve('fake_transaction'),
-      );
+      spies.node.getUnconfirmedAnchor.mockImplementation(() => Promise.resolve('fake_transaction'));
 
       spies.storage.getAnchor.mockImplementation(() => Promise.resolve({}));
 
-      const hash =
-        '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
       const chainpoint = {
         '@context': 'https://w3id.org/chainpoint/v2',
         anchors: [
@@ -346,9 +318,7 @@ describe('NodeService', () => {
       expect(spies.storage.getAnchor.mock.calls[0][0]).toBe(hash);
 
       expect(spies.node.getUnconfirmedAnchor.mock.calls.length).toBe(1);
-      expect(spies.node.getUnconfirmedAnchor.mock.calls[0][0]).toBe(
-        'LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=',
-      );
+      expect(spies.node.getUnconfirmedAnchor.mock.calls[0][0]).toBe('LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=');
     });
   });
 
@@ -365,9 +335,7 @@ describe('NodeService', () => {
       };
 
       const response = { status: 200, data: expectData } as AxiosResponse;
-      spies.api.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(response),
-      );
+      spies.api.getNodeStatus.mockImplementation(() => Promise.resolve(response));
 
       expect(await nodeService.getNodeStatus()).toEqual(expectData);
     });
@@ -382,9 +350,7 @@ describe('NodeService', () => {
         updatedTimestamp: 1549617037043,
         updatedDate: '2019-02-08T09:10:37.043Z',
       };
-      spies.node.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(status),
-      );
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       expect(await nodeService.isNodeHealthy()).toBeTruthy();
     });
@@ -409,12 +375,8 @@ describe('NodeService', () => {
       };
 
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(status),
-      );
-      spies.node.getNodeWallet.mockImplementation(() =>
-        Promise.resolve('fake_address'),
-      );
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
+      spies.node.getNodeWallet.mockImplementation(() => Promise.resolve('fake_address'));
 
       expect(await nodeService.getNodeInfo()).toEqual({
         status,
@@ -446,9 +408,7 @@ describe('NodeService', () => {
         },
       } as AxiosResponse;
 
-      spies.api.getActivationStatus.mockImplementation(() =>
-        Promise.resolve(mockResponse),
-      );
+      spies.api.getActivationStatus.mockImplementation(() => Promise.resolve(mockResponse));
 
       const result = await nodeService.getActivationStatus();
 

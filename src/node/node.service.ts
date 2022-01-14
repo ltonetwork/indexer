@@ -28,6 +28,8 @@ export interface ActivationStatus {
  */
 @Injectable()
 export class NodeService {
+  private nodeAddress: string = null;
+
   constructor(
     private readonly api: NodeApiService,
     private readonly logger: LoggerService,
@@ -36,10 +38,7 @@ export class NodeService {
     private readonly config: ConfigService,
   ) {}
 
-  private async signAndBroadcastSponsor(
-    type: 18 | 19,
-    recipient: string,
-  ): Promise<any> {
+  private async signAndBroadcastSponsor(type: 18 | 19, recipient: string): Promise<any> {
     const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type,
@@ -73,17 +72,21 @@ export class NodeService {
   }
 
   async getNodeWallet(): Promise<string> {
-    const response = await this.api.getNodeAddresses();
+    if (!this.nodeAddress) {
+      const response = await this.api.getNodeAddresses();
 
-    if (response instanceof Error) {
-      throw response;
+      if (response instanceof Error) {
+        throw response;
+      }
+
+      if (!response.data.length) {
+        throw new Error(`node: no addresses in node's wallet`);
+      }
+
+      this.nodeAddress = response.data[0];
     }
 
-    if (!response.data.length) {
-      throw new Error(`node: no addresses in node's wallet`);
-    }
-
-    return response.data[0];
+    return this.nodeAddress;
   }
 
   async getUnconfirmedAnchor(hash: string): Promise<string | null> {
@@ -98,11 +101,7 @@ export class NodeService {
         return false;
       }
 
-      if (
-        transaction.data.find(
-          data => data.value && data.value === `base64:${hash}`,
-        )
-      ) {
+      if (transaction.data.find(data => data.value && data.value === `base64:${hash}`)) {
         return true;
       }
 
@@ -126,9 +125,7 @@ export class NodeService {
     return response.data.height;
   }
 
-  async getBlock(
-    id: string | number,
-  ): Promise<{ height; transactions; timestamp }> {
+  async getBlock(id: string | number): Promise<{ height; transactions; timestamp }> {
     const response = await this.api.getBlock(id);
 
     if (response instanceof Error) {
@@ -138,14 +135,9 @@ export class NodeService {
     return response.data;
   }
 
-  async getBlocks(
-    from: number,
-    to: number,
-  ): Promise<Array<{ height; transactions }>> {
+  async getBlocks(from: number, to: number): Promise<Array<{ height; transactions }>> {
     const ranges = this.getBlockRanges(from, to);
-    const promises = ranges.map(range =>
-      this.api.getBlocks(range.from, range.to),
-    );
+    const promises = ranges.map(range => this.api.getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
 
     for (const response of responses) {
@@ -192,10 +184,7 @@ export class NodeService {
     return results.filter(result => !(result instanceof Error));
   }
 
-  async createAnchorTransaction(
-    senderAddress: string,
-    hash: string,
-  ): Promise<string> {
+  async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
     const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type: 15,
@@ -225,24 +214,15 @@ export class NodeService {
 
     try {
       const senderAddress = await this.getNodeWallet();
-      const base58Hash = this.encoder.base58Encode(
-        this.encoder.decode(hash, encoding),
-      );
-      const transactionId = await this.createAnchorTransaction(
-        senderAddress,
-        base58Hash,
-      );
+      const base58Hash = this.encoder.base58Encode(this.encoder.decode(hash, encoding));
+      const transactionId = await this.createAnchorTransaction(senderAddress, base58Hash);
 
       if (!transactionId) {
-        this.logger.warn(
-          `hash: anchoring '${hash}' as '${encoding}' resulted in no transaction id`,
-        );
+        this.logger.warn(`hash: anchoring '${hash}' as '${encoding}' resulted in no transaction id`);
         return null;
       }
 
-      this.logger.debug(
-        `hash: successfully anchored '${hash}' as '${encoding}' in transaction '${transactionId}'`,
-      );
+      this.logger.debug(`hash: successfully anchored '${hash}' as '${encoding}' in transaction '${transactionId}'`);
       return this.asChainPoint(hash, transactionId);
     } catch (e) {
       this.logger.error(`hash: failed anchoring '${hash}' as '${encoding}'`);
@@ -259,23 +239,14 @@ export class NodeService {
     targetHash;
     anchors;
   } | null> {
-    const hashEncoded = encoding
-      ? this.encoder.hexEncode(this.encoder.decode(hash, encoding))
-      : hash;
+    const hashEncoded = encoding ? this.encoder.hexEncode(this.encoder.decode(hash, encoding)) : hash;
     const transaction = await this.storage.getAnchor(hashEncoded);
     let transactionId: string;
 
     if (transaction && transaction.id) {
-      return this.asChainPoint(
-        hash,
-        transaction.id,
-        transaction.blockHeight,
-        transaction.position,
-      );
+      return this.asChainPoint(hash, transaction.id, transaction.blockHeight, transaction.position);
     } else {
-      const encoded = this.encoder.base64Encode(
-        this.encoder.decode(hash, 'hex'),
-      );
+      const encoded = this.encoder.base64Encode(this.encoder.decode(hash, 'hex'));
       transactionId = await this.getUnconfirmedAnchor(encoded);
     }
 
@@ -295,19 +266,11 @@ export class NodeService {
     return await this.storage.getTx(type, address, limit, offset);
   }
 
-  async countTransactionsByAddress(
-    address: string,
-    type: 'anchor' | 'transfer',
-  ): Promise<number> {
+  async countTransactionsByAddress(address: string, type: 'anchor' | 'transfer'): Promise<number> {
     return await this.storage.countTx(type, address);
   }
 
-  asChainPoint(
-    hash: string,
-    transactionId: string,
-    blockHeight?: number,
-    position?: number,
-  ) {
+  asChainPoint(hash: string, transactionId: string, blockHeight?: number, position?: number) {
     const result = {
       '@context': 'https://w3id.org/chainpoint/v2',
       type: 'ChainpointSHA256v2',
