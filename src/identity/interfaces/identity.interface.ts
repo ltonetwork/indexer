@@ -4,15 +4,16 @@ export interface DIDVerificationMethod {
   controller: string;
   publicKeyBase58: string;
   blockchainAccountId: string;
-};
+}
 
 export interface DIDDocument {
   '@context': string;
   id: string;
+  alsoKnownAs?: string[];
   verificationMethod: DIDVerificationMethod[];
   authentication?: string[];
   assertionMethod?: string[];
   keyAgreement?: DIDVerificationMethod[];
   capabilityInvocation?: string[];
   capabilityDelegation?: string[];
-};
+}

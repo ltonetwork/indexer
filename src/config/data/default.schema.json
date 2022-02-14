@@ -29,6 +29,16 @@
       }
     }
   },
+  "cross_chain": {
+    "eip155": {
+      "indexing": {
+        "doc": "Indexing of EIP155 addresses and associations",
+        "default": false,
+        "format": "Boolean",
+        "env": "CROSS_CHAIN_EIP155_INDEXING"
+      }
+    }
+  },
   "association": {
     "indexing": {
       "doc": "Indexing of association transactions",

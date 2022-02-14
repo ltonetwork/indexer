@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
-import toBoolean from 'boolean';
 import { RawRole } from '../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {
-  constructor(private readonly config: ConfigLoaderService) { }
+  constructor(private readonly config: ConfigLoaderService) {}
 
   getEnv(): string {
     return this.config.get('env');
@@ -56,7 +55,7 @@ export class ConfigService {
     return this.config.get('redis.cluster');
   }
 
-  getRedisGraph(): { host: string, port: string } {
+  getRedisGraph(): { host: string; port: string } {
     return {
       host: this.config.get('redis_graph.host'),
       port: this.config.get('redis_graph.port'),
@@ -109,5 +108,10 @@ export class ConfigService {
 
   isAssociationGraphEnabled(): boolean {
     return !!this.config.get('association.use_graph');
+  }
+
+  // @todo: add support for more chains (only eip155 for now)
+  isEip155IndexingEnabled(): boolean {
+    return !!this.config.get('cross_chain.eip155.indexing');
   }
 }

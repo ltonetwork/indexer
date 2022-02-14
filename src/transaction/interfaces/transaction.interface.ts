@@ -2,6 +2,7 @@ export interface Transaction {
   readonly id: string;
   readonly type: number;
   readonly sender: string;
+  readonly senderKeyType: string;
   readonly senderPublicKey: string;
   readonly recipient?: string;
   readonly fee: number;

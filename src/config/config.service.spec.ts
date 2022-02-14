@@ -61,9 +61,13 @@ describe('ConfigService', () => {
     test('getRoles()', () => {
       expect(configService.getRoles()).toStrictEqual({
         root: {
-          description: 'The root role'
-        }
+          description: 'The root role',
+        },
       });
+    });
+
+    test('isEip155IndexingEnabled()', () => {
+      expect(configService.isEip155IndexingEnabled()).toBe(false);
     });
   });
 });
