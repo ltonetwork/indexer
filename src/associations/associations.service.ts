@@ -20,10 +20,23 @@ export class AssociationsService {
 
   async index(index: IndexDocumentType, associationIndexing: 'trust' | 'all'): Promise<void> {
     const { transaction } = index;
-    const { sender, recipient } = transaction;
+    const { sender, recipient, senderKeyType } = transaction;
 
     if (this.transactionTypes.indexOf(transaction.type) === -1) {
       this.logger.debug(`association-service: Unknown transaction type`);
+      return;
+    }
+
+    // @todo: support multiple chains and key types (bip122 for example)
+    if (this.config.isEip155IndexingEnabled() && senderKeyType !== 'sep256k1') {
+      this.logger.debug(`association-service: Cross chain indexing is enabled, but the sender key type is unknown`);
+      return;
+    }
+
+    if (!this.config.isEip155IndexingEnabled() && senderKeyType === 'sep256k1') {
+      this.logger.debug(
+        `association-service: Cross chain indexing is disabled, but sender key type is ${senderKeyType}`,
+      );
       return;
     }
 

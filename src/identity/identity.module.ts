@@ -13,11 +13,7 @@ import { VerificationMethodService } from './verification-method/verification-me
 export const IdentityModuleConfig = {
   imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule],
   controllers: [IdentityController],
-  providers: [
-    IdentityService,
-    IdentityListenerService,
-    VerificationMethodService,
-  ],
+  providers: [IdentityService, IdentityListenerService, VerificationMethodService],
 };
 
 @Module(IdentityModuleConfig)

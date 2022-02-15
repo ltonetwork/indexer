@@ -1,7 +1,8 @@
 {
   "env": "development",
+  "port": 3000,
   "node": {
-    "url": "http://127.0.0.1:3001"
+    "url": "https://testnet.lto.network/"
   },
   "log": {
     "level": "debug"
@@ -12,5 +13,10 @@
   },
   "anchor": {
     "indexing": "all"
+  },
+  "cross_chain": {
+    "eip155": {
+      "indexing": true
+    }
   }
 }

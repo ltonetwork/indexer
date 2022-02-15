@@ -2,11 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import {
-  chainIdOf,
-  deriveAddress,
-  convertED2KeyToX2,
-} from '@lto-network/lto-crypto';
+import { chainIdOf, deriveAddress, convertED2KeyToX2 } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { DIDDocument } from './interfaces/identity.interface';
 import { IndexDocumentType } from '../index/model/index.model';
@@ -22,17 +18,9 @@ export class IdentityService {
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
-    const {
-      id,
-      sender,
-      senderPublicKey,
-      recipient,
-      associationType,
-    } = transaction;
+    const { id, sender, senderPublicKey, recipient, associationType } = transaction;
 
-    this.logger.debug(
-      `identity: saving public key ${senderPublicKey} for address ${sender}`,
-    );
+    this.logger.debug(`identity: saving public key ${senderPublicKey} for address ${sender}`);
 
     await this.storage.savePublicKey(sender, senderPublicKey);
 
@@ -43,28 +31,48 @@ export class IdentityService {
       return;
     }
 
-    await this.verificationMethodService.save(
-      associationType,
-      sender,
-      recipient,
-    );
+    await this.verificationMethodService.save(associationType, sender, recipient);
   }
 
   async resolve(did: string): Promise<DIDDocument> {
-    const { address } = did.match(
-      /^(?:did:lto:)?(?<address>\w+)(?::derived:(?<secret>\w+))?$/,
-    ).groups;
+    try {
+      chainIdOf(did);
+    } catch (error) {
+      if (error.includes('There is no character "0" in the Base58 sequence!')) {
+        return this.resolveCrossChain(did);
+      }
+    }
+
+    const { address } = did.match(/^(?:did:lto:)?(?<address>\w+)(?::derived:(?<secret>\w+))?$/).groups;
 
     const publicKey = await this.storage.getPublicKey(address);
-    const id = did.replace(/^(?:did:lto:)?/, '');
+    const id = `did:lto:${address}`;
 
     return this.asDidDocument(id, address, publicKey);
   }
 
+  async resolveCrossChain(did: string): Promise<DIDDocument> {
+    const address = did.replace(/^(?:did:ltox:)?/, '');
+
+    const associations = await this.storage.getAssociations(address);
+
+    if (!associations.children || associations.children.length === 0) {
+      this.logger.debug(`identity-service: Cross chain address has no association to a known LTO address`);
+      return null;
+    }
+
+    const alias = associations.children[0];
+    const publicKey = await this.storage.getPublicKey(alias);
+
+    // @todo: support multiple chains (bip122 for example)
+    const id = `did:ltox:eip155:1${address}`;
+    const alsoKnownAs = associations.children.map(each => `did:lto:${each}`);
+
+    return this.asDidDocument(id, alias, publicKey, alsoKnownAs);
+  }
+
   async getAddress(did: string): Promise<string> {
-    const { address, secret } = did.match(
-      /(?:did:lto:)?(?<addr>\w+)(?::derived:(?<secret>\w+))?/,
-    ).groups;
+    const { address, secret } = did.match(/(?:did:lto:)?(?<addr>\w+)(?::derived:(?<secret>\w+))?/).groups;
 
     if (!secret) {
       return address;
@@ -75,34 +83,20 @@ export class IdentityService {
     return deriveAddress({ public: publicKey }, secret, chainIdOf(address));
   }
 
-  async getDerivedIdentity(
-    address: string,
-    secret: string,
-  ): Promise<DIDDocument> {
+  async getDerivedIdentity(address: string, secret: string): Promise<DIDDocument> {
     const publicKey = await this.storage.getPublicKey(address);
 
     if (!publicKey) {
       return null;
     }
 
-    return this.asDidDocument(
-      `${address}:derived:${secret}`,
-      address,
-      publicKey,
-    );
+    return this.asDidDocument(`${address}:derived:${secret}`, address, publicKey);
   }
 
-  async asDidDocument(
-    id: string,
-    address: string,
-    publicKey: string,
-  ): Promise<DIDDocument> {
-    const verificationMethods = await this.verificationMethodService.getMethodsFor(
-      address,
-    );
+  async asDidDocument(id: string, address: string, publicKey: string, alsoKnownAs?: string[]): Promise<DIDDocument> {
     const didDocument: DIDDocument = {
       '@context': 'https://www.w3.org/ns/did/v1',
-      id: `did:lto:${id}`,
+      id,
       verificationMethod: [
         {
           id: `did:lto:${address}#sign`,
@@ -114,16 +108,18 @@ export class IdentityService {
       ],
     };
 
+    if (alsoKnownAs && alsoKnownAs.length > 0) {
+      didDocument.alsoKnownAs = alsoKnownAs;
+    }
+
+    const verificationMethods = await this.verificationMethodService.getMethodsFor(address);
+
     for (const verificationMethod of verificationMethods) {
-      const recipientPublicKey = await this.storage.getPublicKey(
-        verificationMethod.recipient,
-      );
+      const recipientPublicKey = await this.storage.getPublicKey(verificationMethod.recipient);
 
       if (!recipientPublicKey) return null;
 
-      const didVerificationMethod = verificationMethod.asDidMethod(
-        recipientPublicKey,
-      );
+      const didVerificationMethod = verificationMethod.asDidMethod(recipientPublicKey);
       didDocument.verificationMethod.push(didVerificationMethod);
 
       if (verificationMethod.isAuthentication()) {
