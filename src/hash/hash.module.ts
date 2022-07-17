@@ -6,11 +6,13 @@ import { NodeModule } from '../node/node.module';
 import { StorageModule } from '../storage/storage.module';
 import { EncoderModule } from '../encoder/encoder.module';
 import { AuthModule } from '../auth/auth.module';
+import { HashService } from './hash.service';
+import { HashListenerService } from './hash-listener.service';
 
 export const HashModuleConfig = {
   imports: [LoggerModule, ConfigModule, NodeModule, StorageModule, EncoderModule, AuthModule],
   controllers: [HashController],
-  providers: [],
+  providers: [HashService, HashListenerService],
 };
 
 @Module(HashModuleConfig)

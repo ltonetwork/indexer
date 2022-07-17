@@ -75,6 +75,12 @@
       "default": "none",
       "format": ["none", "trust", "all"],
       "env": "ANCHOR_INDEXING"
+    },
+    "batch": {
+      "doc": "Batch hashes for anchor transaction",
+      "default": false,
+      "format": "Boolean",
+      "env": "ANCHOR_BATCH"
     }
   },
   "stats": {
@@ -96,18 +102,6 @@
       "default": false,
       "format": "Boolean",
       "env": "STATS_INDEXING"
-    }
-  },
-  "fees": {
-    "anchor": {
-      "doc": "Fees for anchor transactions",
-      "default": 35000000,
-      "env": "FEES_ANCHOR"
-    },
-    "sponsor": {
-      "doc": "Fees for sponsor transactions",
-      "default": 500000000,
-      "env": "FEES_SPONSOR"
     }
   },
   "redis": {

@@ -24,6 +24,7 @@ export class IndexService {
   async index(index: IndexDocumentType): Promise<boolean> {
     if (this.lastBlock !== index.blockHeight) {
       this.txCache = [];
+      this.event.emit(IndexEvent.IndexBlock, index.blockHeight);
     }
 
     this.lastBlock = index.blockHeight;
