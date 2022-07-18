@@ -8,7 +8,7 @@ import { LoggerService } from '../logger/logger.service';
 export class IndexService {
 
   public lastBlock: number;
-  public txCache: string[];
+  public txCache: string[] = [];
 
   constructor(
     private readonly logger: LoggerService,

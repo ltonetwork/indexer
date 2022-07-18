@@ -4,9 +4,11 @@ import request from 'supertest';
 import { HashModuleConfig } from './hash.module';
 import { NodeService } from '../node/node.service';
 import { ConfigService } from '../config/config.service';
+import { HashService } from './hash.service';
 
 describe('HashController', () => {
   let module: TestingModule;
+  let hashService: HashService;
   let nodeService: NodeService;
   let configService: ConfigService;
   let app: INestApplication;
@@ -25,13 +27,15 @@ describe('HashController', () => {
 
   function spy() {
     const hash = {
-      anchor: jest.spyOn(nodeService, 'anchor')
-        .mockImplementation(async () => chainpoint),
+      anchor: jest.spyOn(hashService, 'anchor').mockImplementation(async () => chainpoint),
+    };
+
+    const node = {
       getTransactionByHash: jest.spyOn(nodeService, 'getTransactionByHash')
         .mockImplementation(async () => chainpoint),
     };
 
-    return { hash };
+    return { hash, node };
   }
 
   beforeEach(async () => {
@@ -39,6 +43,7 @@ describe('HashController', () => {
     app = module.createNestApplication();
     await app.init();
 
+    hashService = module.get<HashService>(HashService);
     nodeService = module.get<NodeService>(NodeService);
     configService = module.get<ConfigService>(ConfigService);
   });
@@ -122,8 +127,8 @@ describe('HashController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ chainpoint });
 
-      expect(spies.hash.getTransactionByHash.mock.calls.length).toBe(1);
-      expect(spies.hash.getTransactionByHash.mock.calls[0][0]).toBe(hash);
+      expect(spies.node.getTransactionByHash.mock.calls.length).toBe(1);
+      expect(spies.node.getTransactionByHash.mock.calls[0][0]).toBe(hash);
     });
   });
 
@@ -141,8 +146,8 @@ describe('HashController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ chainpoint });
 
-      expect(spies.hash.getTransactionByHash.mock.calls.length).toBe(1);
-      expect(spies.hash.getTransactionByHash.mock.calls[0][0]).toBe(hash);
+      expect(spies.node.getTransactionByHash.mock.calls.length).toBe(1);
+      expect(spies.node.getTransactionByHash.mock.calls[0][0]).toBe(hash);
     });
   });
 });

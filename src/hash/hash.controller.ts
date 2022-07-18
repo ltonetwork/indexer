@@ -6,12 +6,14 @@ import { HashDto } from './dto/hash.dto';
 import { NodeService } from '../node/node.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { BearerAuthGuard } from '../auth/auth.guard';
+import { HashService } from './hash.service';
 
 @Controller('hash')
 @ApiTags('hash')
 export class HashController {
   constructor(
     private readonly logger: LoggerService,
+    private readonly hash: HashService,
     private readonly node: NodeService,
     private readonly encoder: EncoderService,
   ) { }
@@ -47,7 +49,7 @@ export class HashController {
     }
 
     try {
-      const chainpoint = await this.node.anchor(hash, encoding);
+      const chainpoint = await this.hash.anchor(hash, encoding);
 
       if (!chainpoint) {
         res.status(202);

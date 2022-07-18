@@ -42,14 +42,16 @@ describe('IndexService', () => {
     test('should ignore genesis transactions', async () => {
       const spies = spy();
 
-      const type = 'anchor';
       const transaction = { id: 'fake_transaction', type: 1, sender: 'fake_sender' };
       await indexService.index({ transaction: transaction as any, blockHeight: 1, position: 0});
 
-      expect(spies.emitter.emit.mock.calls.length).toBe(1);
+      expect(spies.emitter.emit.mock.calls.length).toBe(2);
+      expect(spies.emitter.emit.mock.calls[0][0]).toBe('IndexBlock');
+      expect(spies.emitter.emit.mock.calls[1][0]).toBe('IndexTransaction');
     });
 
     test('should index the anchor transaction', async () => {
+      indexService.lastBlock = 1; // Don't emit IndexBlock
       const spies = spy();
 
       const type = 'anchor';

@@ -55,13 +55,13 @@ describe('OperationsService', () => {
     transaction = {
       type: 1,
       id: 'fake_transaction',
-      transfers: [{
-        recipient: 'some_recipient',
-      }, {
-        recipient: 'some_recipient_2',
-      }, {
-        recipient: 'some_recipient_3',
-      }],
+      timestamp: new Date('2020-12-04 00:00:00+00:00').getTime(),
+      transfers: [
+        {recipient: 'some_recipient'},
+        {recipient: 'some_recipient_2'},
+        {recipient: 'some_recipient_3'},
+      ],
+      anchors: ['a', 'b'],
     } as Transaction;
   });
 
@@ -91,7 +91,9 @@ describe('OperationsService', () => {
 
       await operationsService.incrOperationStats(transaction);
 
-      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(3);
+      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
+      expect(spies.storage.incrOperationStats.mock.calls[0][0]).toBe(18600);
+      expect(spies.storage.incrOperationStats.mock.calls[0][1]).toBe(3);
 
       expect(spies.logger.debug.mock.calls.length).toBe(1);
       expect(spies.logger.debug.mock.calls[0][0])
@@ -121,12 +123,13 @@ describe('OperationsService', () => {
 
       await operationsService.incrOperationStats(transaction);
 
-      expect(spies.anchor.getAnchorHashes.mock.calls.length).toBe(1);
-      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(2);
+      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
+      expect(spies.storage.incrOperationStats.mock.calls[0][0]).toBe(18600);
+      expect(spies.storage.incrOperationStats.mock.calls[0][1]).toBe(2);
       expect(spies.transaction.getIdentifiersByType.mock.calls.length).toBe(1);
 
       expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0]).toBe(`operation stats: 2 anchors: increase stats: ${transaction.id}`);
+      expect(spies.logger.debug.mock.calls[0][0]).toBe(`increase operation stats by 2: ${transaction.id}`);
     });
   });
 });

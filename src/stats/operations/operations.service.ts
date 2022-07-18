@@ -23,10 +23,10 @@ export class OperationsService {
     const identifiers = this.transactionService.getIdentifiersByType(transaction.type);
 
     const iterations = identifiers.indexOf('anchor') >= 0
-      ? Math.min(this.anchorService.getAnchorHashes(transaction).length, 1)
+      ? Math.max(transaction.anchors.length, 1)
       : (transaction.transfers?.length || 1);
 
-    this.logger.debug(`operation stats: ${iterations} transfers: increase stats: ${transaction.id}`);
+    this.logger.debug(`increase operation stats by ${iterations}: ${transaction.id}`);
 
     await this.storage.incrOperationStats(Math.floor(transaction.timestamp / 86400000), iterations);
   }
