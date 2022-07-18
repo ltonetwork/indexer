@@ -483,10 +483,10 @@ describe('StorageService', () => {
 
           expect(getMultipleValues.mock.calls.length).toBe(1);
           expect(getMultipleValues.mock.calls[0][0]).toEqual([
-            `lto:stats:transactions:18600`,
-            `lto:stats:transactions:18601`,
-            `lto:stats:transactions:18602`,
-            `lto:stats:transactions:18603`,
+            `lto:stats:operations:18600`,
+            `lto:stats:operations:18601`,
+            `lto:stats:operations:18602`,
+            `lto:stats:operations:18603`,
           ]);
         });
       });

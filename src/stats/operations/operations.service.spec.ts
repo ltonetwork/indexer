@@ -76,7 +76,7 @@ describe('OperationsService', () => {
       const result = await operationsService.getOperationStats(18600, 18603);
 
       expect(spies.storage.getOperationStats.mock.calls.length).toBe(1);
-      expect(result).toBe([
+      expect(result).toEqual([
         { period: '2020-12-04 00:00:00', count: 300 },
         { period: '2020-12-05 00:00:00', count: 329 },
         { period: '2020-12-06 00:00:00', count: 402 },

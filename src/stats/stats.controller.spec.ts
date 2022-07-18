@@ -17,7 +17,11 @@ describe('TrustNetworkController', () => {
 
   function spy() {
     const operations = {
-      getOperationStats: jest.spyOn(operationsService, 'getOperationStats').mockImplementation(async () => '200'),
+      getOperationStats: jest.spyOn(operationsService, 'getOperationStats').mockImplementation(async () => [
+        { period: '2021-03-01 00:00:00', count: 4000 },
+        { period: '2021-03-02 00:00:00', count: 5000 },
+        { period: '2021-03-03 00:00:00', count: 6000 },
+      ]),
     };
 
     const supply = {
@@ -51,21 +55,25 @@ describe('TrustNetworkController', () => {
     await module.close();
   });
 
-  describe('GET /stats/operations', () => {
+  describe('GET /stats/operations/:from/:to', () => {
     test('should return the operation stats from storage', async () => {
       const spies = spy();
 
       const res = await request(app.getHttpServer())
-        .get('/stats/operations')
+        .get('/stats/operations/2021-03-01/2021-03-03')
         .send();
 
       expect(spies.operations.getOperationStats.mock.calls.length).toBe(1);
+      expect(spies.operations.getOperationStats.mock.calls[0][0]).toBe(18687);
+      expect(spies.operations.getOperationStats.mock.calls[0][1]).toBe(18689);
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({
-        operations: '200'
-      });
+      expect(res.body).toEqual([
+        { period: '2021-03-01 00:00:00', count: 4000 },
+        { period: '2021-03-02 00:00:00', count: 5000 },
+        { period: '2021-03-03 00:00:00', count: 6000 },
+      ]);
     });
 
     test('should return error if service fails', async () => {
@@ -74,15 +82,13 @@ describe('TrustNetworkController', () => {
       spies.operations.getOperationStats = jest.spyOn(operationsService, 'getOperationStats').mockRejectedValue('some error');
 
       const res = await request(app.getHttpServer())
-        .get('/stats/operations')
+        .get('/stats/operations/2021-03-01/2021-02-01')
         .send();
 
-      expect(spies.operations.getOperationStats.mock.calls.length).toBe(1);
+      expect(spies.operations.getOperationStats.mock.calls.length).toBe(0);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({
-        error: 'failed to retrieve operation stats'
-      });
+      expect(res.body).toEqual({error: 'invalid period range given'});
     });
   });
 

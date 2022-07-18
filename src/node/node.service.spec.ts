@@ -68,7 +68,6 @@ describe('NodeService', () => {
     };
 
     const config = {
-      getSponsorFee: jest.spyOn(configService, 'getSponsorFee').mockImplementation(() => 5000),
     };
 
     return { api, node, storage, config };
@@ -428,7 +427,7 @@ describe('NodeService', () => {
         version: 1,
         type: 18,
         recipient: 'some-recipient',
-        fee: 5000,
+        fee: 500000000,
       });
     });
   });
@@ -444,7 +443,7 @@ describe('NodeService', () => {
         version: 1,
         type: 19,
         recipient: 'some-recipient',
-        fee: 5000,
+        fee: 500000000,
       });
     });
   });

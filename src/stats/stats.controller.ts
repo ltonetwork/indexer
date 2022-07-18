@@ -44,7 +44,7 @@ export class StatsController {
   @Get('/operations/:from/:to')
   @ApiOperation({ summary: 'Get the operation count per day' })
   @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 400, description: 'failed to retrieve operation stats' })
+  @ApiResponse({ status: 400, description: 'invalid period range given' })
   async getOperationStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
     try {
       const {from, to} = this.periodFromReq(req);
@@ -52,7 +52,7 @@ export class StatsController {
 
       res.status(200).json(stats);
     } catch (e) {
-      return res.status(400).send(e);
+      return res.status(400).send({error: e.message});
     }
   }
 
