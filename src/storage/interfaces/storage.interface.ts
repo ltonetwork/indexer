@@ -4,7 +4,7 @@ export interface StorageInterface {
   getMultipleValues(keys: string[]): Promise<string[]>;
   setValue(key: string, value: string): Promise<void>;
   delValue(key: string): Promise<void>;
-  incrValue(key: string): Promise<void>;
+  incrValue(key: string, amount?: number): Promise<void>;
   addObject(key: string, value: object): Promise<void>;
   setObject(key: string, value: object): Promise<void>;
   getObject(key: string): Promise<object>;

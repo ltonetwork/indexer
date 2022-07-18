@@ -18,17 +18,41 @@ export class StatsController {
     private readonly transactions: TransactionService,
   ) { }
 
-  @Get('/operations')
-  @ApiOperation({ summary: 'Retrieves the operation stats' })
+  private periodFromReq(req: Request)
+  {
+    const fromParam = req.params.from;
+    const toParam = req.params.to;
+
+    const from = Math.floor(new Date(fromParam.match(/\D/) ? fromParam : Number(fromParam)).getTime() / 86400000);
+    const to = Math.floor(new Date(toParam.match(/\D/) ? toParam : Number(toParam)).getTime() / 86400000);
+
+    if (Number.isNaN(from)) {
+      throw Error('invalid from date given');
+    }
+
+    if (Number.isNaN(to)) {
+      throw Error('invalid to date given');
+    }
+
+    if (to <= from || to - from > 100) {
+      throw Error('invalid period range given');
+    }
+
+    return {from, to};
+  }
+
+  @Get('/operations/:from/:to')
+  @ApiOperation({ summary: 'Get the operation count per day' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'failed to retrieve operation stats' })
   async getOperationStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
     try {
-      const operations = await this.operations.getOperationStats();
+      const {from, to} = this.periodFromReq(req);
+      const stats = await this.operations.getOperationStats(from, to);
 
-      return res.status(200).json({ operations });
-    } catch (error) {
-      return res.status(400).json({ error: 'failed to retrieve operation stats' });
+      res.status(200).json(stats);
+    } catch (e) {
+      return res.status(400).send(e);
     }
   }
 
@@ -89,35 +113,19 @@ export class StatsController {
   })
   @ApiResponse({ status: 500, description: `failed to get transaction stats '[reason]'` })
   async getTransactionStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
-    const fromParam = req.params.from;
-    const toParam = req.params.to;
-
-    let from = 0;
-    let to = 0;
-
-    from = Math.floor(new Date(fromParam.match(/\D/) ? fromParam : Number(fromParam)).getTime() / 86400000);
-    to = Math.floor(new Date(toParam.match(/\D/) ? toParam : Number(toParam)).getTime() / 86400000);
-
-    if (Number.isNaN(from)) {
-      return res.status(400).send('invalid from date given');
-    }
-
-    if (Number.isNaN(to)) {
-      return res.status(400).send('invalid to date given');
-    }
-
     const type = req.params.type;
 
     if (!this.transactions.hasIdentifier(type)) {
       return res.status(400).send('invalid type given');
     }
 
-    if (to <= from || to - from > 100) {
-      return res.status(400).send('invalid period range given');
+    try {
+      const {from, to} = this.periodFromReq(req);
+      const stats = await this.transactions.getStats(type, from, to);
+
+      res.status(200).json(stats);
+    } catch (e) {
+      return res.status(400).send(e);
     }
-
-    const stats = await this.transactions.getStats(type, from, to);
-
-    res.status(200).json(stats);
   }
 }
