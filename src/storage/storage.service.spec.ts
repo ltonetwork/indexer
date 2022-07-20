@@ -461,22 +461,33 @@ describe('StorageService', () => {
         test('should increase the value of operation stats', async () => {
           const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
 
-          await storageService.incrOperationStats();
+          await storageService.incrOperationStats(800, 5);
 
           expect(incrValue.mock.calls.length).toBe(1);
-          expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operations`);
+          expect(incrValue.mock.calls[0][0]).toBe(`lto:stats:operations:800`);
+          expect(incrValue.mock.calls[0][1]).toBe(5);
         });
       });
 
       describe('getOperationStats()', () => {
         test('should fetch the value of operation stats', async () => {
-          const getValue = jest.spyOn(redisStorageService, 'getValue').mockImplementation(async () => '15');
+          const getMultipleValues = jest.spyOn(redisStorageService, 'getMultipleValues')
+              .mockImplementation(async () => ['300', '329', '402', '293']);
 
-          const result = await storageService.getOperationStats();
+          expect(await storageService.getOperationStats(18600, 18603)).toEqual([
+            { period: '2020-12-04 00:00:00', count: 300 },
+            { period: '2020-12-05 00:00:00', count: 329 },
+            { period: '2020-12-06 00:00:00', count: 402 },
+            { period: '2020-12-07 00:00:00', count: 293 },
+          ]);
 
-          expect(getValue.mock.calls.length).toBe(1);
-          expect(getValue.mock.calls[0][0]).toBe(`lto:stats:operations`);
-          expect(result).toBe('15');
+          expect(getMultipleValues.mock.calls.length).toBe(1);
+          expect(getMultipleValues.mock.calls[0][0]).toEqual([
+            `lto:stats:operations:18600`,
+            `lto:stats:operations:18601`,
+            `lto:stats:operations:18602`,
+            `lto:stats:operations:18603`,
+          ]);
         });
       });
     });

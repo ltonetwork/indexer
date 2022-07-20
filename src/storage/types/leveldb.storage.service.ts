@@ -49,7 +49,7 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     await this.connection.del(key);
   }
 
-  async incrValue(key: string): Promise<void> {
+  async incrValue(key: string, amount = 1): Promise<void> {
     await this.init();
     await this.connection.incr(key);
   }

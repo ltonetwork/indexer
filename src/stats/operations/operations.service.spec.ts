@@ -18,16 +18,21 @@ describe('OperationsService', () => {
 
   function spy() {
     const anchor = {
-      getAnchorHashes: jest.spyOn(anchorService, 'getAnchorHashes').mockImplementation(() => ['hash_1', 'hash_2'])
+      getAnchorHashes: jest.spyOn(anchorService, 'getAnchorHashes').mockImplementation(() => ['hash_1', 'hash_2']),
     };
 
     const transaction = {
-      getIdentifiersByType: jest.spyOn(transactionService, 'getIdentifiersByType').mockImplementation(() => ['all', 'transaction'])
+      getIdentifiersByType: jest.spyOn(transactionService, 'getIdentifiersByType').mockImplementation(() => ['all', 'transaction']),
     };
 
     const storage = {
       incrOperationStats: jest.spyOn(storageService, 'incrOperationStats').mockImplementation(async () => {}),
-      getOperationStats: jest.spyOn(storageService, 'getOperationStats').mockImplementation(async () => '200'),
+      getOperationStats: jest.spyOn(storageService, 'getOperationStats').mockImplementation(async () => [
+        { period: '2020-12-04 00:00:00', count: 300 },
+        { period: '2020-12-05 00:00:00', count: 329 },
+        { period: '2020-12-06 00:00:00', count: 402 },
+        { period: '2020-12-07 00:00:00', count: 293 },
+      ]),
     };
 
     const logger = {
@@ -50,13 +55,13 @@ describe('OperationsService', () => {
     transaction = {
       type: 1,
       id: 'fake_transaction',
-      transfers: [{
-        recipient: 'some_recipient',
-      }, {
-        recipient: 'some_recipient_2',
-      }, {
-        recipient: 'some_recipient_3',
-      }],
+      timestamp: new Date('2020-12-04 00:00:00+00:00').getTime(),
+      transfers: [
+        {recipient: 'some_recipient'},
+        {recipient: 'some_recipient_2'},
+        {recipient: 'some_recipient_3'},
+      ],
+      anchors: ['a', 'b'],
     } as Transaction;
   });
 
@@ -68,10 +73,15 @@ describe('OperationsService', () => {
     test('should return the operation stats from storage', async () => {
       const spies = spy();
 
-      const result = await operationsService.getOperationStats();
+      const result = await operationsService.getOperationStats(18600, 18603);
 
       expect(spies.storage.getOperationStats.mock.calls.length).toBe(1);
-      expect(result).toBe('200');
+      expect(result).toEqual([
+        { period: '2020-12-04 00:00:00', count: 300 },
+        { period: '2020-12-05 00:00:00', count: 329 },
+        { period: '2020-12-06 00:00:00', count: 402 },
+        { period: '2020-12-07 00:00:00', count: 293 },
+      ]);
     });
   });
 
@@ -81,24 +91,21 @@ describe('OperationsService', () => {
 
       await operationsService.incrOperationStats(transaction);
 
-      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(3);
-
-      expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0]).toBe(`operation stats: 3 transfers: increase stats: ${transaction.id}`);
+      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
+      expect(spies.storage.incrOperationStats.mock.calls[0][0]).toBe(18600);
+      expect(spies.storage.incrOperationStats.mock.calls[0][1]).toBe(3);
     });
 
     test('should increase stats once if transaction has no transfer count', async () => {
       const spies = spy();
 
-      // @ts-ignore (transfers is readonly)
+      // @ts-ignore
+      // noinspection JSConstantReassignment
       transaction.transfers = [];
 
       await operationsService.incrOperationStats(transaction);
 
       expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
-
-      expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0]).toBe(`operation stats: 1 transfers: increase stats: ${transaction.id}`);
     });
 
     test('should increase stats based on the anchor hashes', async () => {
@@ -108,12 +115,10 @@ describe('OperationsService', () => {
 
       await operationsService.incrOperationStats(transaction);
 
-      expect(spies.anchor.getAnchorHashes.mock.calls.length).toBe(1);
-      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(2);
+      expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
+      expect(spies.storage.incrOperationStats.mock.calls[0][0]).toBe(18600);
+      expect(spies.storage.incrOperationStats.mock.calls[0][1]).toBe(2);
       expect(spies.transaction.getIdentifiersByType.mock.calls.length).toBe(1);
-
-      expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0]).toBe(`operation stats: 2 anchors: increase stats: ${transaction.id}`);
     });
   });
 });

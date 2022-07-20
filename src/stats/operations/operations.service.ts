@@ -15,31 +15,19 @@ export class OperationsService {
     private readonly transactionService: TransactionService,
   ) { }
 
-  async getOperationStats(): Promise<string> {
-    return this.storage.getOperationStats();
+  async getOperationStats(from: number, to: number): Promise<{ period: string; count: number }[]> {
+    return this.storage.getOperationStats(from, to);
   }
 
   async incrOperationStats(transaction: Transaction): Promise<void> {
     const identifiers = this.transactionService.getIdentifiersByType(transaction.type);
 
-    if (identifiers.indexOf('anchor') >= 0) {
-      const anchorHashes = this.anchorService.getAnchorHashes(transaction);
+    const iterations = identifiers.indexOf('anchor') >= 0
+      ? Math.max(transaction.anchors.length, 1)
+      : (transaction.transfers?.length || 1);
 
-      this.logger.debug(`operation stats: ${anchorHashes.length} anchors: increase stats: ${transaction.id}`);
+    this.logger.debug(`increase operation stats by ${iterations}: ${transaction.id}`);
 
-      anchorHashes.forEach(async hash => {
-        await this.storage.incrOperationStats();
-      });
-
-      return;
-    }
-
-    const iterations = transaction.transfers?.length || 1;
-
-    this.logger.debug(`operation stats: ${iterations} transfers: increase stats: ${transaction.id}`);
-
-    for (let index = 0; index < iterations; index++) {
-      await this.storage.incrOperationStats();
-    }
+    await this.storage.incrOperationStats(Math.floor(transaction.timestamp / 86400000), iterations);
   }
 }

@@ -50,12 +50,12 @@ export class LeveldbConnection {
     return this.connection.del(key);
   }
 
-  async incr(key): Promise<string> {
+  async incr(key, amount = 1): Promise<string> {
     await this.incrLock.acquireAsync();
 
     try {
       const count = Number(await this.get(key));
-      const result = await this.set(key, String(count + 1));
+      const result = await this.set(key, String(count + amount));
       return result;
     } finally {
       this.incrLock.release();

@@ -3,7 +3,6 @@ import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../logger/logger.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from '../config/config.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
 
@@ -35,7 +34,6 @@ export class NodeService {
     private readonly logger: LoggerService,
     private readonly encoder: EncoderService,
     private readonly storage: StorageService,
-    private readonly config: ConfigService,
   ) {}
 
   private async signAndBroadcastSponsor(type: 18 | 19, recipient: string): Promise<any> {
@@ -43,7 +41,7 @@ export class NodeService {
       version: 1,
       type,
       recipient,
-      fee: this.config.getSponsorFee(),
+      fee: 500000000,
     });
 
     if (response instanceof Error) {
@@ -97,15 +95,8 @@ export class NodeService {
     }
 
     const unconfirmed = response.data.filter(transaction => {
-      if (transaction.type !== 12) {
-        return false;
-      }
-
-      if (transaction.data.find(data => data.value && data.value === `base64:${hash}`)) {
-        return true;
-      }
-
-      return false;
+      return transaction.type === 12 &&
+          !!transaction.data.find(data => data.value && data.value === `base64:${hash}`);
     });
 
     if (unconfirmed.length === 0) {
@@ -184,13 +175,13 @@ export class NodeService {
     return results.filter(result => !(result instanceof Error));
   }
 
-  async createAnchorTransaction(senderAddress: string, hash: string): Promise<string> {
+  async createAnchorTransaction(senderAddress: string, ...hashes: string[]): Promise<string> {
     const response = await this.api.signAndBroadcastTransaction({
       version: 1,
       type: 15,
       sender: senderAddress,
-      anchors: [hash],
-      fee: this.config.getAnchorFee(),
+      anchors: hashes,
+      fee: 25000000 + (hashes.length * 10000000),
       timestamp: Date.now(),
     });
 
@@ -226,6 +217,16 @@ export class NodeService {
       return this.asChainPoint(hash, transactionId);
     } catch (e) {
       this.logger.error(`hash: failed anchoring '${hash}' as '${encoding}'`);
+      throw e;
+    }
+  }
+
+  async anchorAll(...hashes: string[]): Promise<void> {
+    try {
+      const senderAddress = await this.getNodeWallet();
+      await this.createAnchorTransaction(senderAddress, ...hashes);
+    } catch (e) {
+      this.logger.error(`hash: failed anchoring ${hashes.length} hashes`);
       throw e;
     }
   }
@@ -273,9 +274,9 @@ export class NodeService {
   asChainPoint(hash: string, transactionId: string, blockHeight?: number, position?: number) {
     const result = {
       '@context': 'https://w3id.org/chainpoint/v2',
-      type: 'ChainpointSHA256v2',
-      targetHash: hash,
-      anchors: [
+      'type': 'ChainpointSHA256v2',
+      'targetHash': hash,
+      'anchors': [
         {
           type: 'LTODataTransaction',
           sourceId: transactionId,

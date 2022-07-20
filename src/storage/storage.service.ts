@@ -152,12 +152,20 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.incrValue(`lto:stats:transactions:${type}:${day}`);
   }
 
-  async incrOperationStats(): Promise<void> {
-    return this.storage.incrValue(`lto:stats:operations`);
+  async incrOperationStats(day: number, amount = 1): Promise<void> {
+    return this.storage.incrValue(`lto:stats:operations:${day}`, amount);
   }
 
-  async getOperationStats(): Promise<string> {
-    return this.storage.getValue(`lto:stats:operations`);
+  async getOperationStats(from: number, to: number): Promise<{ period: string; count: number }[]> {
+    const length = to - from + 1;
+    const keys = Array.from({ length }, (v, i) => `lto:stats:operations:${from + i}`);
+    const values = await this.storage.getMultipleValues(keys);
+
+    const periods = Array.from({ length }, (v, i) => new Date((from + i) * 86400000));
+    return periods.map((period: Date, index: number) => ({
+      period: this.formatPeriod(period),
+      count: Number(values[index]),
+    }));
   }
 
   async getTxStats(type: string, from: number, to: number): Promise<{ period: string; count: number }[]> {

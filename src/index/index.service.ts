@@ -8,7 +8,7 @@ import { LoggerService } from '../logger/logger.service';
 export class IndexService {
 
   public lastBlock: number;
-  public txCache: string[];
+  public txCache: string[] = [];
 
   constructor(
     private readonly logger: LoggerService,
@@ -24,6 +24,7 @@ export class IndexService {
   async index(index: IndexDocumentType): Promise<boolean> {
     if (this.lastBlock !== index.blockHeight) {
       this.txCache = [];
+      this.event.emit(IndexEvent.IndexBlock, index.blockHeight);
     }
 
     this.lastBlock = index.blockHeight;

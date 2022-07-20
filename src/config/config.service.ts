@@ -35,14 +35,6 @@ export class ConfigService {
     return this.config.get('auth.token');
   }
 
-  getAnchorFee(): number {
-    return Number(this.config.get('fees.anchor'));
-  }
-
-  getSponsorFee(): number {
-    return Number(this.config.get('fees.sponsor'));
-  }
-
   getRedisClient(): string | string[] {
     return this.getRedisUrl() || this.getRedisCluster().split(';');
   }
@@ -113,5 +105,9 @@ export class ConfigService {
   // @todo: add support for more chains (only eip155 for now)
   isEip155IndexingEnabled(): boolean {
     return !!this.config.get('cross_chain.eip155.indexing');
+  }
+
+  isAnchorBatched(): boolean {
+    return !!this.config.get('anchor.batch');
   }
 }
