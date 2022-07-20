@@ -94,10 +94,6 @@ describe('OperationsService', () => {
       expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
       expect(spies.storage.incrOperationStats.mock.calls[0][0]).toBe(18600);
       expect(spies.storage.incrOperationStats.mock.calls[0][1]).toBe(3);
-
-      expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0])
-          .toBe(`operation stats: 3 transfers: increase stats: ${transaction.id}`);
     });
 
     test('should increase stats once if transaction has no transfer count', async () => {
@@ -110,10 +106,6 @@ describe('OperationsService', () => {
       await operationsService.incrOperationStats(transaction);
 
       expect(spies.storage.incrOperationStats.mock.calls.length).toBe(1);
-
-      expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0])
-          .toBe(`operation stats: 1 transfers: increase stats: ${transaction.id}`);
     });
 
     test('should increase stats based on the anchor hashes', async () => {
@@ -127,9 +119,6 @@ describe('OperationsService', () => {
       expect(spies.storage.incrOperationStats.mock.calls[0][0]).toBe(18600);
       expect(spies.storage.incrOperationStats.mock.calls[0][1]).toBe(2);
       expect(spies.transaction.getIdentifiersByType.mock.calls.length).toBe(1);
-
-      expect(spies.logger.debug.mock.calls.length).toBe(1);
-      expect(spies.logger.debug.mock.calls[0][0]).toBe(`increase operation stats by 2: ${transaction.id}`);
     });
   });
 });
