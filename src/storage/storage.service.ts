@@ -45,12 +45,17 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
   }
 
-  getPublicKey(address: string) {
-    return this.storage.getValue(`lto:pubkey:${address}`);
+  getPublicKey(address: string): Promise<{publicKey: string, keyType: string}> {
+    return this.storage.getObject(`lto:pubkey:${address}`)
+        .catch(() => {
+          const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
+          return publicKey ? {publicKey, keyType: 'ed25519'} : null;
+        })
+        .then(r => r ? r as {publicKey: string, keyType: string} : {publicKey: '', keyType: ''});
   }
 
-  savePublicKey(address: string, publicKey: string) {
-    return this.storage.setValue(`lto:pubkey:${address}`, publicKey);
+  savePublicKey(address: string, publicKey: string, keyType: string) {
+    return this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType});
   }
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
