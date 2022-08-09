@@ -22,9 +22,10 @@ export class OperationsService {
   async incrOperationStats(transaction: Transaction): Promise<void> {
     const identifiers = this.transactionService.getIdentifiersByType(transaction.type);
 
-    const iterations = identifiers.indexOf('anchor') >= 0
-      ? Math.max(transaction.anchors.length, 1)
-      : (transaction.transfers?.length || 1);
+    const iterations =
+        transaction.type === 15 ? Math.max(transaction.anchors.length, 1) :
+        transaction.type === 11 ? transaction.transfers.length :
+        1;
 
     this.logger.debug(`increase operation stats by ${iterations}: ${transaction.id}`);
 

@@ -33,8 +33,16 @@ export class LeveldbService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async flush(): Promise<void> {
+    if (this.connection) {
+      this.logger.debug(`level: flush`);
+      await this.connection.flush();
+    }
+  }
+
   async close() {
     if (this.connection) {
+      this.logger.debug(`level: close`);
       await this.connection.close();
     }
   }

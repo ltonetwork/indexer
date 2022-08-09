@@ -4,6 +4,9 @@
   "node": {
     "url": "https://testnet.lto.network/"
   },
+  "log": {
+    "level": "debug"
+  },
   "transaction": {
     "indexing": true
   },
