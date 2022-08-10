@@ -63,7 +63,7 @@
     "ioredis": "^4.22.0",
     "level": "^5.0.1",
     "lto-api": "^0.3.6",
-    "moment": "^2.29.2",
+    "moment": "^2.29.4",
     "nocache": "^2.1.0",
     "offset-stream": "^1.0.2",
     "pascal-case": "^2.0.1",
