@@ -16,19 +16,22 @@ export class IndexService {
   ) { }
 
   /**
+   * Index a new block. Should be called before indexing individual txs.
+   *
+   * @param height
+   */
+  async indexBlock(height: number) {
+    this.txCache = [];
+    this.event.emit(IndexEvent.IndexBlock, height);
+  }
+
+  /**
    * Index transaction, returns boolean based on whether or not transaction was successful
    * Transaction may be skipped if its already processed
    *
    * @param index
    */
   async index(index: IndexDocumentType): Promise<boolean> {
-    if (this.lastBlock !== index.blockHeight) {
-      this.txCache = [];
-      this.event.emit(IndexEvent.IndexBlock, index.blockHeight);
-    }
-
-    this.lastBlock = index.blockHeight;
-
     if (this.txCache.indexOf(index.transaction.id) > -1) {
       // transaction is already processed
       return false;
@@ -39,5 +42,7 @@ export class IndexService {
     this.logger.debug(`index-service: emitting index event`);
 
     this.event.emit(IndexEvent.IndexTransaction, index);
+
+    return true;
   }
 }

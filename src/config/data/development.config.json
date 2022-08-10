@@ -7,12 +7,19 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": 1600000,
   "transaction": {
     "indexing": true
   },
   "anchor": {
     "indexing": "all"
+  },
+  "association": {
+    "indexing": "all"
+  },
+  "stats": {
+    "operations": true,
+    "transactions": true,
+    "supply": true
   },
   "cross_chain": {
     "eip155": {

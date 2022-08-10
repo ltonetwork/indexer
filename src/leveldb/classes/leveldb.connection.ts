@@ -3,16 +3,22 @@ import offsetStream from 'offset-stream';
 import AwaitLock from 'await-lock';
 
 /**
- * @todo Move this logic into leveldb.storage.service
+ * Stored all values in memory until flush() is called.
  */
 export class LeveldbConnection {
-  private incrLock: AwaitLock;
+  private writeLock: AwaitLock;
+  private cache: Map<string, string|null>;
 
   constructor(private connection: level.Level) {
-    this.incrLock = new AwaitLock();
+    this.writeLock = new AwaitLock();
+    this.cache = new Map();
   }
 
-  get(key: level.KeyType): Promise<string> {
+  async get(key: level.KeyType): Promise<string> {
+    if (this.cache.has(key)) {
+      return this.cache.get(key);
+    }
+
     return this.connection.get(key).catch(error => {
       if (error.message?.toLowerCase().includes('key not found in database')) {
         return null;
@@ -28,38 +34,26 @@ export class LeveldbConnection {
   }
 
   async add(key: level.KeyType, value: string): Promise<string> {
-    await this.incrLock.acquireAsync();
+    const existing = await this.get(key);
+    if (existing) return existing;
 
-    try {
-      const existing = await this.get(key);
-
-      if (existing) return existing;
-
-      const result = await this.connection.put(key, value);
-      return result;
-    } finally {
-      this.incrLock.release();
-    }
+    this.cache.set(key, value);
+    return value;
   }
 
-  set(key: level.KeyType, value: string): Promise<string> {
-    return this.connection.put(key, value);
+  async set(key: level.KeyType, value: string): Promise<string> {
+    this.cache.set(key, value);
+    return value;
   }
 
-  del(key: level.KeyType): Promise<0 | 1> {
-    return this.connection.del(key);
+  async del(key: level.KeyType): Promise<0 | 1> {
+    this.cache.set(key, null);
+    return 1;
   }
 
   async incr(key, amount = 1): Promise<string> {
-    await this.incrLock.acquireAsync();
-
-    try {
-      const count = Number(await this.get(key));
-      const result = await this.set(key, String(count + amount));
-      return result;
-    } finally {
-      this.incrLock.release();
-    }
+    const count = Number(await this.get(key));
+    return await this.set(key, String(count + amount));
   }
 
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
@@ -103,6 +97,26 @@ export class LeveldbConnection {
 
   async countTx(key: level.KeyType): Promise<number> {
     return Number(await this.get(`${key}:count`));
+  }
+
+  async flush() {
+    if (this.cache.size === 0) {
+      return;
+    }
+
+    await this.writeLock.acquireAsync();
+    const batch = [];
+
+    for (const [key, value] of this.cache) {
+      batch.push({key, value, type: value !== null ? 'put' : 'del'});
+    }
+
+    try {
+      await this.connection.batch(batch);
+      this.cache.clear();
+    } finally {
+      this.writeLock.release();
+    }
   }
 
   close(): Promise<void> {

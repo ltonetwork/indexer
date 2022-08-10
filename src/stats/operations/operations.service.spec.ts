@@ -53,7 +53,7 @@ describe('OperationsService', () => {
     operationsService = module.get<OperationsService>(OperationsService);
 
     transaction = {
-      type: 1,
+      type: 11,
       id: 'fake_transaction',
       timestamp: new Date('2020-12-04 00:00:00+00:00').getTime(),
       transfers: [
@@ -112,6 +112,9 @@ describe('OperationsService', () => {
       const spies = spy();
 
       spies.transaction.getIdentifiersByType.mockImplementation(() => ['anchor', 'all']);
+      // @ts-ignore
+      // noinspection JSConstantReassignment
+      transaction.type = 15;
 
       await operationsService.incrOperationStats(transaction);
 

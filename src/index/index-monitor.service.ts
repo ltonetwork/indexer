@@ -141,6 +141,8 @@ export class IndexMonitorService {
 
     let position = 0;
 
+    await this.indexer.indexBlock(block.height);
+
     for (const transaction of block.transactions) {
       await this.processTransaction(transaction, block.height, position);
       position++;
