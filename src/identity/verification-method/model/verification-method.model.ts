@@ -1,5 +1,5 @@
 import { chainIdOf } from "@lto-network/lto-crypto";
-import { MethodMap } from "../enums/verification-method.enum";
+import {KeyType, MethodMap} from "../enums/verification-method.enum";
 import { DIDVerificationMethod } from "../../interfaces/identity.interface";
 
 export interface MethodObject {
@@ -43,14 +43,14 @@ export class VerificationMethod {
         return JSON.stringify(this.json());
     }
 
-    public asDidMethod(publicKey: string): DIDVerificationMethod {
+    public asDidMethod(publicKey: string, keyType = KeyType.ed25519): DIDVerificationMethod {
         return {
             id: `did:lto:${this.recipient}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: keyType.toString(),
             controller: `did:lto:${this.recipient}`,
             publicKeyBase58: publicKey,
             blockchainAccountId: `${this.recipient}@lto:${chainIdOf(this.recipient)}`,
-        }
+        };
     }
 
     public isAuthentication() {

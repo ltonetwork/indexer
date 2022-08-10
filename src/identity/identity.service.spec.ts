@@ -43,11 +43,11 @@ describe('IdentityService', () => {
     const storage = {
       savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation(async () => {}),
       getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async (address: string) => {
-        if (address === sender.address) return sender.ed25519PublicKey;
-        if (address === recipient.address) return recipient.ed25519PublicKey;
-        if (address === secondRecipient.address) return secondRecipient.ed25519PublicKey;
+        if (address === sender.address) return { publicKey: sender.ed25519PublicKey, keyType: 'ed25519' };
+        if (address === recipient.address) return { publicKey: recipient.ed25519PublicKey, keyType: 'ed25519' };
+        if (address === secondRecipient.address) return { publicKey: secondRecipient.ed25519PublicKey, keyType: 'ed25519' };
 
-        return null;
+        return {publicKey: '', keyType: ''};
       }),
       getAssociations: jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
         return { children: [], parents: [] };
@@ -70,6 +70,7 @@ describe('IdentityService', () => {
       type: 1,
       sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
       senderPublicKey: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
+      senderKeyType: 'ed25519',
     };
 
     await module.init();
@@ -88,7 +89,8 @@ describe('IdentityService', () => {
       expect(spies.verificationMethod.save).toHaveBeenCalledTimes(0);
 
       expect(spies.storage.savePublicKey).toHaveBeenCalledTimes(1);
-      expect(spies.storage.savePublicKey).toHaveBeenNthCalledWith(1, transaction.sender, transaction.senderPublicKey);
+      expect(spies.storage.savePublicKey)
+          .toHaveBeenNthCalledWith(1, transaction.sender, transaction.senderPublicKey, transaction.senderKeyType);
     });
 
     test('should save verification method if transaction has "recipient" property', async () => {
@@ -256,7 +258,7 @@ describe('IdentityService', () => {
     });
 
     describe('cross chain identities', () => {
-      const offChainSenderAddress = '0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb';
+      const offChainSenderDID = 'did:ltox:eip155:1:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb';
 
       test('should resolve a cross chain identity', async () => {
         const spies = spy();
@@ -265,11 +267,11 @@ describe('IdentityService', () => {
           return { children: [sender.address], parents: [] };
         });
 
-        const did = await identityService.resolve(offChainSenderAddress);
+        const did = await identityService.resolve(offChainSenderDID);
 
         expect(did).toEqual({
           '@context': 'https://www.w3.org/ns/did/v1',
-          id: `did:ltox:eip155:1${offChainSenderAddress}`,
+          id: offChainSenderDID,
           alsoKnownAs: [`did:lto:${sender.address}`],
           verificationMethod: [
             {
@@ -292,7 +294,7 @@ describe('IdentityService', () => {
       test('should fail if sender address has not been indexed/associated with a known LTO address', async () => {
         const spies = spy();
 
-        const did = await identityService.resolve(offChainSenderAddress);
+        const did = await identityService.resolve(offChainSenderDID);
 
         expect(did).toBeNull();
       });
