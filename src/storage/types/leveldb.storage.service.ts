@@ -95,4 +95,8 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     await this.init();
     await this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
   }
+
+  async flush() {
+    await this.connection.flush();
+  }
 }

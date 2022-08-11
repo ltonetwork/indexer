@@ -131,6 +131,7 @@ export class IndexMonitorService {
       }
 
       await this.storage.saveProcessingHeight(range.to);
+      await this.storage.flush();
     }
 
     this.processing = false;

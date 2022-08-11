@@ -238,4 +238,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   clearProcessHeight(): Promise<void> {
     return this.storage.delValue(`lto:processing-height`);
   }
+
+  async flush() {
+    await this.storage.flush();
+  }
 }

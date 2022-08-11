@@ -111,4 +111,8 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
     return this.connection.zrevrange(`lto:tx:${type}:${address}`, start, stop);
   }
+
+  async flush() {
+    // Nothing to do
+  }
 }

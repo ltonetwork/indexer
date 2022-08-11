@@ -17,7 +17,7 @@ describe('RedisGraphService', () => {
 
   function spy() {
     const config = {
-      getRedisGraph: jest.spyOn(configService, 'getRedisGraph').mockImplementation(() => { return { host: 'host', port: '123' } }),
+      getRedisGraph: jest.spyOn(configService, 'getRedisGraph').mockImplementation(() => ({ host: 'host', port: '123' })),
     };
 
     return { config };
@@ -55,7 +55,7 @@ describe('RedisGraphService', () => {
 
       await redisGraphService.saveAssociation('sender', 'party');
 
-      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => { return {} as ResultSet });
+      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(1);
@@ -68,8 +68,8 @@ describe('RedisGraphService', () => {
       const spies = spy();
 
       await redisGraphService.getAssociations('address');
-      
-      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => { return {} as ResultSet });
+
+      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
@@ -84,7 +84,7 @@ describe('RedisGraphService', () => {
 
       await redisGraphService.removeAssociation('sender', 'party');
 
-      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => { return {} as ResultSet });
+      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
