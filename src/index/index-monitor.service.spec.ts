@@ -43,6 +43,7 @@ describe('IndexMonitorService', () => {
         .spyOn(storageService, 'saveProcessingHeight')
         .mockImplementation(),
       saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(),
+      flush: jest.spyOn(storageService, 'flush').mockImplementation(),
     };
     const indexer = {
       index: jest
