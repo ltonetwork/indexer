@@ -120,11 +120,8 @@ export class IdentityService {
       didDocument.alsoKnownAs = alsoKnownAs;
     }
 
-    didDocument.authentication = [`did:lto:${address}#sign`];
-    didDocument.assertionMethod = [`did:lto:${address}#sign`];
-    didDocument.capabilityInvocation = [`did:lto:${address}#sign`];
-
     const verificationMethods = await this.verificationMethodService.getMethodsFor(address);
+    let hasConfiguredOwn = false;
 
     for (const verificationMethod of verificationMethods) {
       const {publicKey: recipientPublicKey, keyType: recipientKeyType} =
@@ -136,7 +133,12 @@ export class IdentityService {
       }
 
       const didVerificationMethod = verificationMethod.asDidMethod(recipientPublicKey, KeyType[recipientKeyType]);
-      didDocument.verificationMethod.push(didVerificationMethod);
+
+      if (verificationMethod.recipient !== verificationMethod.sender) {
+        didDocument.verificationMethod.push(didVerificationMethod);
+      } else {
+        hasConfiguredOwn = true;
+      }
 
       if (verificationMethod.isAuthentication()) {
         didDocument.authentication = didDocument.authentication
@@ -175,6 +177,12 @@ export class IdentityService {
           ? [...didDocument.capabilityDelegation, didVerificationMethod.id]
           : [didVerificationMethod.id];
       }
+    }
+
+    if (!hasConfiguredOwn) {
+      didDocument.authentication = [`did:lto:${address}#sign`, ...(didDocument.authentication || [])];
+      didDocument.assertionMethod = [`did:lto:${address}#sign`, ...(didDocument.assertionMethod || [])];
+      didDocument.capabilityInvocation = [`did:lto:${address}#sign`, ...(didDocument.capabilityInvocation || [])];
     }
 
     return didDocument;

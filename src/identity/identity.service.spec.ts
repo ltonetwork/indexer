@@ -18,6 +18,7 @@ describe('IdentityService', () => {
     chainId: 'T',
     address: '3N6mZMgGqYn9EVAR2Vbf637iej4fFipECq8',
     ed25519PublicKey: '6wx5nshSAkF7GEgxZRet86XnqSog3k3DzkyCaBKStiUd',
+    x25519PublicKey: '8mKEv5qc9WV6vdBFyrFcHW7Jhdz89ypzB9bp7m7Sx3Dx',
   };
 
   const recipient = {
@@ -175,8 +176,17 @@ describe('IdentityService', () => {
             blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
           },
         ],
-        authentication: [`did:lto:${recipient.address}#sign`],
-        assertionMethod: [`did:lto:${recipient.address}#sign`],
+        authentication: [
+          `did:lto:${sender.address}#sign`,
+          `did:lto:${recipient.address}#sign`,
+        ],
+        assertionMethod: [
+          `did:lto:${sender.address}#sign`,
+          `did:lto:${recipient.address}#sign`,
+        ],
+        capabilityInvocation: [
+          `did:lto:${sender.address}#sign`,
+        ],
         keyAgreement: [
           {
             id: `did:lto:${recipient.address}#encrypt`,
@@ -184,6 +194,49 @@ describe('IdentityService', () => {
             controller: `did:lto:${recipient.address}`,
             publicKeyBase58: recipient.x25519PublicKey,
             blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
+          },
+        ],
+      });
+    });
+
+    test('should resolve the identity with reconfigured default verification method', async () => {
+      const spies = spy();
+
+      spies.verificationMethod.getMethodsFor = jest
+          .spyOn(verificationMethodService, 'getMethodsFor')
+          .mockImplementation(async (address: string) => {
+            const relationships = 0x0105; // authentication, key agreement
+
+            return [new VerificationMethod(relationships, address, sender.address, 123456)];
+          });
+
+      const did = await identityService.resolve(sender.address);
+
+      expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
+      expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
+
+      expect(did).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        verificationMethod: [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2018',
+            controller: `did:lto:${sender.address}`,
+            publicKeyBase58: sender.ed25519PublicKey,
+            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
+          },
+        ],
+        authentication: [
+          `did:lto:${sender.address}#sign`,
+        ],
+        keyAgreement: [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyBase58: sender.x25519PublicKey,
+            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
           },
         ],
       });
@@ -235,8 +288,15 @@ describe('IdentityService', () => {
             blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
           },
         ],
-        authentication: [`did:lto:${recipient.address}#sign`, `did:lto:${secondRecipient.address}#sign`],
-        assertionMethod: [`did:lto:${recipient.address}#sign`, `did:lto:${secondRecipient.address}#sign`],
+        authentication: [
+          `did:lto:${sender.address}#sign`,
+          `did:lto:${recipient.address}#sign`,
+          `did:lto:${secondRecipient.address}#sign`,
+        ],
+        assertionMethod: [
+          `did:lto:${sender.address}#sign`,
+          `did:lto:${recipient.address}#sign`,
+        ],
         keyAgreement: [
           {
             id: `did:lto:${recipient.address}#encrypt`,
@@ -253,6 +313,7 @@ describe('IdentityService', () => {
             blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
           },
         ],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
         capabilityDelegation: [`did:lto:${secondRecipient.address}#sign`],
       });
     });

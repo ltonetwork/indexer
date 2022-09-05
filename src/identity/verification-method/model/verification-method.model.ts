@@ -53,24 +53,19 @@ export class VerificationMethod {
         };
     }
 
-    public isAuthentication() {
-        const result = MethodMap.authentication | this.relationships;
-        return result == this.relationships;
+    public isAuthentication(): boolean {
+        return (this.relationships & MethodMap.authentication) === MethodMap.authentication;
     }
-    public isAssertionMethod() {
-        const result = MethodMap.assertionMethod | this.relationships;
-        return result == this.relationships;
+    public isAssertionMethod(): boolean {
+        return (this.relationships & MethodMap.assertionMethod) === MethodMap.assertionMethod;
     }
-    public isKeyAgreement() {
-        const result = MethodMap.keyAgreement | this.relationships;
-        return result == this.relationships;
+    public isKeyAgreement(): boolean {
+        return (this.relationships & MethodMap.keyAgreement) === MethodMap.keyAgreement;
     }
     public isCapabilityInvocation() {
-        const result = MethodMap.capabilityInvocation | this.relationships;
-        return result == this.relationships;
+        return (this.relationships & MethodMap.capabilityInvocation) === MethodMap.capabilityInvocation;
     }
     public isCapabilityDelegation() {
-        const result = MethodMap.capabilityDelegation | this.relationships;
-        return result == this.relationships;
+        return (this.relationships & MethodMap.capabilityDelegation) === MethodMap.capabilityDelegation;
     }
 }
