@@ -37,11 +37,11 @@ describe('VerificationMethodService', () => {
       id: 'fake_transaction',
       type: 1,
       sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      party: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+      recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       associationType: 0x0107,
     };
 
-    expectedMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.party, Math.floor(mockTimestamp / 1000));
+    expectedMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient, Math.floor(mockTimestamp / 1000));
   });
 
   afterEach(async () => {
@@ -52,7 +52,7 @@ describe('VerificationMethodService', () => {
     test('should save a new verification method', async () => {
       const spies = spy();
 
-      await verificationMethodService.save(transaction.associationType, transaction.sender, transaction.party);
+      await verificationMethodService.save(transaction.associationType, transaction.sender, transaction.recipient);
 
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveVerificationMethod).toHaveBeenNthCalledWith(1, transaction.sender, expectedMethod);
@@ -79,7 +79,7 @@ describe('VerificationMethodService', () => {
       const expectedRevokedMethod = new VerificationMethod(
         transaction.associationType,
         transaction.sender,
-        transaction.party,
+        transaction.recipient,
         Math.floor(mockTimestamp / 1000),
         Math.floor(mockTimestamp / 1000),
       );

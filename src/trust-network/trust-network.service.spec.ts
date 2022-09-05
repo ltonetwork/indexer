@@ -88,7 +88,7 @@ describe('TrustNetworkService', () => {
       id: 'fake_transaction',
       type: 16,
       sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      party: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+      recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
       associationType: 101,
     };
 
@@ -116,7 +116,7 @@ describe('TrustNetworkService', () => {
         expect(spies.storage.removeRoleAssociation).toHaveBeenCalledTimes(0);
         expect(spies.storage.saveRoleAssociation).toHaveBeenNthCalledWith(
           1,
-          transaction.party,
+          transaction.recipient,
           transaction.sender,
           expectedRole,
         );
@@ -152,19 +152,19 @@ describe('TrustNetworkService', () => {
         expect(spies.storage.saveRoleAssociation).toHaveBeenCalledTimes(2);
         expect(spies.storage.saveRoleAssociation).toHaveBeenNthCalledWith(
           1,
-          transaction.party,
+          transaction.recipient,
           transaction.sender,
           expectedRoles[0],
         );
         expect(spies.storage.saveRoleAssociation).toHaveBeenNthCalledWith(
           2,
-          transaction.party,
+          transaction.recipient,
           transaction.sender,
           expectedRoles[1],
         );
       });
 
-      test('should send a sponsor transaction to the node if the party will be given a sponsored role', async () => {
+      test('should send a sponsor transaction to the node if the recipient will be given a sponsored role', async () => {
         const spies = spy();
 
         spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
@@ -187,13 +187,13 @@ describe('TrustNetworkService', () => {
         });
 
         expect(spies.node.sponsor).toHaveBeenCalledTimes(1);
-        expect(spies.node.sponsor).toHaveBeenNthCalledWith(1, transaction.party);
+        expect(spies.node.sponsor).toHaveBeenNthCalledWith(1, transaction.recipient);
 
         expect(spies.logger.debug).toHaveBeenCalledTimes(2);
         expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: saving role association');
         expect(spies.logger.debug).toHaveBeenNthCalledWith(
           2,
-          'trust-network: party is being given a sponsored role, sending a transaction to the node',
+          'trust-network: recipient is being given a sponsored role, sending a transaction to the node',
         );
       });
 
@@ -304,16 +304,16 @@ describe('TrustNetworkService', () => {
 
         expect(spies.storage.saveRoleAssociation).toHaveBeenCalledTimes(0);
         expect(spies.storage.removeRoleAssociation).toHaveBeenCalledTimes(1);
-        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(1, transaction.party, expectedRole);
+        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(1, transaction.recipient, expectedRole);
 
         expect(spies.node.cancelSponsor).toHaveBeenCalledTimes(1);
-        expect(spies.node.cancelSponsor).toHaveBeenNthCalledWith(1, transaction.party);
+        expect(spies.node.cancelSponsor).toHaveBeenNthCalledWith(1, transaction.recipient);
 
         expect(spies.logger.debug).toHaveBeenCalledTimes(2);
         expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: removing role association');
         expect(spies.logger.debug).toHaveBeenNthCalledWith(
           2,
-          'trust-network: party has no more sponsored roles, sending a transaction to the node',
+          'trust-network: recipient has no more sponsored roles, sending a transaction to the node',
         );
       });
 
@@ -343,8 +343,8 @@ describe('TrustNetworkService', () => {
         });
 
         expect(spies.storage.removeRoleAssociation).toHaveBeenCalledTimes(2);
-        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(1, transaction.party, expectedRoles[0]);
-        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(2, transaction.party, expectedRoles[1]);
+        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(1, transaction.recipient, expectedRoles[0]);
+        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(2, transaction.recipient, expectedRoles[1]);
       });
 
       test('should not send a remove sponsor transaction to the node if there are still sponsored roles left', async () => {
@@ -390,11 +390,11 @@ describe('TrustNetworkService', () => {
       });
     });
 
-    test('should skip indexing if there is no party', async () => {
+    test('should skip indexing if there is no recipient', async () => {
       const spies = spy();
 
       // @ts-ignore
-      delete transaction.party;
+      delete transaction.recipient;
 
       await trustNetworkService.index({
         transaction,
@@ -440,7 +440,7 @@ describe('TrustNetworkService', () => {
     test('should resolve the roles for an address', async () => {
       const spies = spy();
 
-      const result = await trustNetworkService.getRolesFor('mock-party');
+      const result = await trustNetworkService.getRolesFor('mock-recipient');
 
       const expected: RoleData = {
         roles: ['authority'],
@@ -454,7 +454,7 @@ describe('TrustNetworkService', () => {
       expect(spies.config.getRoles).toHaveBeenCalledTimes(1);
 
       expect(spies.storage.getRolesFor).toHaveBeenCalledTimes(1);
-      expect(spies.storage.getRolesFor).toHaveBeenNthCalledWith(1, 'mock-party');
+      expect(spies.storage.getRolesFor).toHaveBeenNthCalledWith(1, 'mock-recipient');
 
       expect(result).toStrictEqual(expected);
     });
@@ -492,7 +492,7 @@ describe('TrustNetworkService', () => {
         };
       });
 
-      const result = await trustNetworkService.getRolesFor('mock-party');
+      const result = await trustNetworkService.getRolesFor('mock-recipient');
       const expected: RoleData = {
         roles: ['authority', 'sub_authority'],
         issues_roles: [
@@ -515,7 +515,7 @@ describe('TrustNetworkService', () => {
         };
       });
 
-      const result = await trustNetworkService.getRolesFor('mock-party');
+      const result = await trustNetworkService.getRolesFor('mock-recipient');
       const expected: RoleData = {
         roles: ['authority', 'university'],
         issues_roles: [
@@ -535,7 +535,7 @@ describe('TrustNetworkService', () => {
         return {};
       });
 
-      const result = await trustNetworkService.getRolesFor('mock-party');
+      const result = await trustNetworkService.getRolesFor('mock-recipient');
 
       const expected: RoleData = {
         roles: [],

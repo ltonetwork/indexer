@@ -19,7 +19,10 @@ export interface Transaction {
     recipient: string;
     amount: number;
   }>;
-  readonly party?: string;
   readonly associationType?: number;
   readonly hash?: string;
+  readonly accounts?: Array<{
+    keyType: string;
+    publicKey: string;
+  }>;
 }

@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class AssociationApiModel {
 
   @ApiProperty()
-  readonly party: string;
+  readonly recipient: string;
 
   @ApiProperty()
   readonly type: number;

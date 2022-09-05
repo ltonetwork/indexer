@@ -53,13 +53,13 @@ describe('RedisGraphService', () => {
     test('should save an association', async () => {
       const spies = spy();
 
-      await redisGraphService.saveAssociation('sender', 'party');
+      await redisGraphService.saveAssociation('sender', 'recipient');
 
       const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(1);
-      expect(query).toHaveBeenNthCalledWith(1, `MERGE (s:sender {address:'sender'} )-[:ASSOCIATION]->(p:party {address:'party'} )`);
+      expect(query).toHaveBeenNthCalledWith(1, `MERGE (s:sender {address:'sender'} )-[:ASSOCIATION]->(p:recipient {address:'recipient'} )`);
     });
   });
 
@@ -73,8 +73,8 @@ describe('RedisGraphService', () => {
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
-      expect(query).toHaveBeenNthCalledWith(1, `MATCH (s:sender { address: 'address' })-[:ASSOCIATION]->(p:party) RETURN p.address as address`);
-      expect(query).toHaveBeenNthCalledWith(2, `MATCH (s:sender)-[:ASSOCIATION]->(p:party { address: 'address' }) RETURN s.address as address`);
+      expect(query).toHaveBeenNthCalledWith(1, `MATCH (s:sender { address: 'address' })-[:ASSOCIATION]->(p:recipient) RETURN p.address as address`);
+      expect(query).toHaveBeenNthCalledWith(2, `MATCH (s:sender)-[:ASSOCIATION]->(p:recipient { address: 'address' }) RETURN s.address as address`);
     });
   });
 
@@ -82,14 +82,14 @@ describe('RedisGraphService', () => {
     test('should remove the associations from an address and the child', async () => {
       const spies = spy();
 
-      await redisGraphService.removeAssociation('sender', 'party');
+      await redisGraphService.removeAssociation('sender', 'recipient');
 
       const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
-      expect(query).toHaveBeenNthCalledWith(1, `MATCH (s:sender { address: 'sender'} )-[a:ASSOCIATION]->(p:party { address: 'party' }) DELETE a`);
-      expect(query).toHaveBeenNthCalledWith(2, `MATCH (s:sender { address: 'party'} )-[a:ASSOCIATION]->() DELETE a`);
+      expect(query).toHaveBeenNthCalledWith(1, `MATCH (s:sender { address: 'sender'} )-[a:ASSOCIATION]->(p:recipient { address: 'recipient' }) DELETE a`);
+      expect(query).toHaveBeenNthCalledWith(2, `MATCH (s:sender { address: 'recipient'} )-[a:ASSOCIATION]->() DELETE a`);
     });
   });
 });

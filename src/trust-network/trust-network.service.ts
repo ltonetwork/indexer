@@ -28,8 +28,8 @@ export class TrustNetworkService {
       return;
     }
 
-    if (!transaction.party) {
-      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have a party address, skipped indexing`);
+    if (!transaction.recipient) {
+      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have a recipient address, skipped indexing`);
       return;
     }
 
@@ -100,12 +100,12 @@ export class TrustNetworkService {
       const savedRoles: Role[] = [];
       const senderRoleData = await this.getRolesFor(transaction.sender);
 
-      senderRoleData.issues_roles.forEach(async eachRole => {
+      for (const eachRole of senderRoleData.issues_roles) {
         if (eachRole.type === transaction.associationType && !savedRoles.includes(eachRole)) {
           savedRoles.push(eachRole);
-          await this.storage.saveRoleAssociation(transaction.party, transaction.sender, eachRole);
+          await this.storage.saveRoleAssociation(transaction.recipient, transaction.sender, eachRole);
         }
-      });
+      }
 
       if (savedRoles.length === 0) {
         return;
@@ -114,12 +114,12 @@ export class TrustNetworkService {
       const isGettingSponsored = await this.hasSponsoredRoles(savedRoles.map(each => each.role));
 
       if (isGettingSponsored) {
-        if (await this.isSponsoredByNode(transaction.party)) {
+        if (await this.isSponsoredByNode(transaction.recipient)) {
           return;
         }
 
-        this.logger.debug(`trust-network: party is being given a sponsored role, sending a transaction to the node`);
-        await this.node.sponsor(transaction.party);
+        this.logger.debug(`trust-network: recipient is being given a sponsored role, sending a transaction to the node`);
+        await this.node.sponsor(transaction.recipient);
       }
     } catch (error) {
       this.logger.error(`trust-network: error saving a role association: "${error}"`);
@@ -133,7 +133,7 @@ export class TrustNetworkService {
     senderRoleData.issues_roles.forEach(async eachRole => {
       if (eachRole.type === transaction.associationType && !removedRoles.includes(eachRole)) {
         removedRoles.push(eachRole);
-        await this.storage.removeRoleAssociation(transaction.party, eachRole);
+        await this.storage.removeRoleAssociation(transaction.recipient, eachRole);
       }
     });
 
@@ -141,12 +141,12 @@ export class TrustNetworkService {
       return;
     }
 
-    const partyRoleData = await this.getRolesFor(transaction.party);
-    const hasSponsoredRolesLeft = this.hasSponsoredRoles(partyRoleData.roles);
+    const recipientRoleData = await this.getRolesFor(transaction.recipient);
+    const hasSponsoredRolesLeft = this.hasSponsoredRoles(recipientRoleData.roles);
 
     if (!hasSponsoredRolesLeft) {
-      this.logger.debug(`trust-network: party has no more sponsored roles, sending a transaction to the node`);
-      await this.node.cancelSponsor(transaction.party);
+      this.logger.debug(`trust-network: recipient has no more sponsored roles, sending a transaction to the node`);
+      await this.node.cancelSponsor(transaction.recipient);
     }
   }
 

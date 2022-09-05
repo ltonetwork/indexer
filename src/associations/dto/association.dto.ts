@@ -1,6 +1,6 @@
 export class Association {
 
-  readonly party: string;
+  readonly recipient: string;
 
   readonly type: number;
 
