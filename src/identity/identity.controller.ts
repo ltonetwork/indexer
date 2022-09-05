@@ -34,19 +34,19 @@ export class IdentityController {
     try {
       const identity = await this.service.resolve(did);
 
+      if (!identity) {
+        return res.status(404).json({ error: 'notFound' });
+      }
+
       return res.status(200).json(identity);
     } catch (e) {
-      if (e.status === 404) {
-        return res.status(404).json({ error: 'notFound' });
-      } else {
-        this.logger.error(
-          `identity-controller: failed to get DID document '${e}'`,
-          { stack: e.stack },
-        );
-        return res
-          .status(500)
-          .json({ error: `failed to get DID document '${e}'` });
-      }
+      this.logger.error(
+        `identity-controller: failed to get DID document '${e}'`,
+        { stack: e.stack },
+      );
+      return res
+        .status(500)
+        .json({ error: `failed to get DID document '${e}'` });
     }
   }
 }

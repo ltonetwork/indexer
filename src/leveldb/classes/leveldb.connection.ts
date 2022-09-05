@@ -35,7 +35,9 @@ export class LeveldbConnection {
 
   async add(key: level.KeyType, value: string): Promise<string> {
     const existing = await this.get(key);
-    if (existing) return existing;
+    if (existing) {
+      return existing;
+    }
 
     this.cache.set(key, value);
     return value;
@@ -104,16 +106,18 @@ export class LeveldbConnection {
       return;
     }
 
+    const cache = this.cache;
+    this.cache = new Map();
+
     await this.writeLock.acquireAsync();
     const batch = [];
 
-    for (const [key, value] of this.cache) {
+    for (const [key, value] of cache) {
       batch.push({key, value, type: value !== null ? 'put' : 'del'});
     }
 
     try {
       await this.connection.batch(batch);
-      this.cache.clear();
     } finally {
       this.writeLock.release();
     }

@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { chainIdOf, deriveAddress, convertED2KeyToX2 } from '@lto-network/lto-crypto';
+import {chainIdOf, deriveAddress, convertED2KeyToX2, buildAddress, base58decode} from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { DIDDocument } from './interfaces/identity.interface';
 import { IndexDocumentType } from '../index/model/index.model';
-import {KeyType} from "./verification-method/enums/verification-method.enum";
+import {KeyType} from './verification-method/enums/verification-method.enum';
 
 @Injectable()
 export class IdentityService {
@@ -22,17 +22,19 @@ export class IdentityService {
     const { id, sender, senderPublicKey, senderKeyType, recipient, associationType } = transaction;
 
     this.logger.debug(`identity: saving ${senderKeyType} public key ${senderPublicKey} for address ${sender}`);
-
     await this.storage.savePublicKey(sender, senderPublicKey, senderKeyType);
 
-    if (!recipient || !associationType) {
-      this.logger.debug(
-        `identity: transaction ${id} didn't have a recipient address or association type, skipped verification method indexing`,
-      );
-      return;
+    if ( transaction.type === 20) {
+      await Promise.all(transaction.accounts.map( account => {
+        const address = buildAddress(base58decode(account.publicKey), chainIdOf(sender));
+        this.logger.debug(`identity: register ${account.keyType} public key ${account.publicKey} for address ${address}`);
+        return this.storage.savePublicKey(address, account.publicKey, account.keyType);
+      }));
     }
 
-    await this.verificationMethodService.save(associationType, sender, recipient);
+    if (recipient && associationType >= 0x0100 && associationType <= 0x0110) {
+      await this.verificationMethodService.save(associationType, sender, recipient);
+    }
   }
 
   async resolve(did: string): Promise<DIDDocument> {
@@ -45,9 +47,14 @@ export class IdentityService {
     const { publicKey, keyType } = await this.storage.getPublicKey(address);
     const id = `did:lto:${address}`;
 
+    if (!publicKey) {
+      return null;
+    }
+
     return this.asDidDocument(id, address, publicKey, keyType);
   }
 
+  // TODO: This is wrong. The ltox address must be generated from the public key and indexed.
   async resolveCrossChain(did: string): Promise<DIDDocument> {
     const address = did.replace(/^(?:did:ltox:\w+:\w+:)?/, '');
 
@@ -61,11 +68,9 @@ export class IdentityService {
     const alias = associations.children[0];
     const { publicKey, keyType } = await this.storage.getPublicKey(alias);
 
-    // @todo: support multiple chains (bip122 for example)
-    const id = `did:ltox:eip155:1:${address}`;
     const alsoKnownAs = associations.children.map(each => `did:lto:${each}`);
 
-    return this.asDidDocument(id, alias, publicKey, keyType, alsoKnownAs);
+    return this.asDidDocument(did, alias, publicKey, keyType, alsoKnownAs);
   }
 
   async getAddress(did: string): Promise<string> {
@@ -100,7 +105,7 @@ export class IdentityService {
     const didDocument: DIDDocument = {
       '@context': 'https://www.w3.org/ns/did/v1',
       id,
-      verificationMethod: [
+      'verificationMethod': [
         {
           id: `did:lto:${address}#sign`,
           type: KeyType[keyType],
@@ -115,13 +120,20 @@ export class IdentityService {
       didDocument.alsoKnownAs = alsoKnownAs;
     }
 
+    didDocument.authentication = [`did:lto:${address}#sign`];
+    didDocument.assertionMethod = [`did:lto:${address}#sign`];
+    didDocument.capabilityInvocation = [`did:lto:${address}#sign`];
+
     const verificationMethods = await this.verificationMethodService.getMethodsFor(address);
 
     for (const verificationMethod of verificationMethods) {
       const {publicKey: recipientPublicKey, keyType: recipientKeyType} =
           await this.storage.getPublicKey(verificationMethod.recipient);
 
-      if (!recipientPublicKey) return null;
+      if (!recipientPublicKey) {
+        this.logger.warn(`Skipping verification method of ${verificationMethod.recipient} for did:lto:${address}. Public key unknown`);
+        continue;
+      }
 
       const didVerificationMethod = verificationMethod.asDidMethod(recipientPublicKey, KeyType[recipientKeyType]);
       didDocument.verificationMethod.push(didVerificationMethod);
@@ -163,12 +175,6 @@ export class IdentityService {
           ? [...didDocument.capabilityDelegation, didVerificationMethod.id]
           : [didVerificationMethod.id];
       }
-    }
-
-    if (didDocument.verificationMethod.length == 1) {
-      didDocument.authentication = [`did:lto:${address}#sign`];
-      didDocument.assertionMethod = [`did:lto:${address}#sign`];
-      didDocument.capabilityInvocation = [`did:lto:${address}#sign`];
     }
 
     return didDocument;

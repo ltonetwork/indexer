@@ -46,8 +46,8 @@ export class IndexMonitorService {
       this.logger.error(`index-monitor: failed to start monitor: ${e}`);
       this.started = false;
       await delay(2000);
+
       return this.start();
-      throw e;
     }
   }
 
