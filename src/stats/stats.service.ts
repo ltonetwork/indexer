@@ -8,9 +8,9 @@ import { Block } from '../transaction/interfaces/block.interface';
 
 @Injectable()
 export class StatsService {
-  private readonly operationsEnabled: boolean;
-  private readonly transactionsEnabled: boolean;
-  private readonly supplyEnabled: boolean;
+  private operationsEnabled: boolean;
+  private transactionsEnabled: boolean;
+  private supplyEnabled: boolean;
 
   constructor(
     private readonly storage: StorageService,
@@ -18,12 +18,24 @@ export class StatsService {
     private readonly config: ConfigService,
     private readonly supplyService: SupplyService,
   ) {
-    this.operationsEnabled = this.config.isStatsEnabled('operations');
-    this.transactionsEnabled = this.config.isStatsEnabled('transactions');
-    this.supplyEnabled = this.config.isStatsEnabled('supply');
+    this.configure(
+        this.config.isStatsEnabled('operations'),
+        this.config.isStatsEnabled('transactions'),
+        this.config.isStatsEnabled('supply'),
+    );
   }
 
-  async index(block: Block): Promise<void> {
+  configure(operationsEnabled: boolean, transactionsEnabled: boolean, supplyEnabled: boolean) {
+    this.operationsEnabled = operationsEnabled;
+    this.transactionsEnabled = transactionsEnabled;
+    this.supplyEnabled = supplyEnabled;
+  }
+
+  private calculateTxStats(block: Block) {
+    if (!this.operationsEnabled && !this.transactionsEnabled) {
+      return {txsByType: {}, operations: 0};
+    }
+
     const txsByType = { all: 0 };
     let operations = 0;
 
@@ -37,8 +49,8 @@ export class StatsService {
       if (this.operationsEnabled) {
         operations +=
             transaction.type === 15 ? (transaction.anchors.length || 1) :
-            transaction.type === 11 ? transaction.transfers.length :
-            1;
+                transaction.type === 11 ? transaction.transfers.length :
+                    1;
       }
 
       if (this.transactionsEnabled) {
@@ -49,11 +61,18 @@ export class StatsService {
       }
     }
 
+    return {txsByType, operations};
+  }
+
+  async index(block: Block): Promise<void> {
+    const {txsByType, operations} = this.calculateTxStats(block);
+
     const promises: Array<Promise<any>> = [];
     const day = Math.floor(block.timestamp / 86400000);
 
     if (this.transactionsEnabled) {
       for (const [identifier, amount] of Object.entries(txsByType)) {
+        if (amount === 0) continue;
         promises.push(this.storage.incrTxStats(identifier, day, amount));
       }
     }
