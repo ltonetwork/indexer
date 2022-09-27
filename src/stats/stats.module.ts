@@ -11,7 +11,6 @@ import { StatsListenerService } from './stats.listener.service';
 import { EmitterModule } from '../emitter/emitter.module';
 import { AnchorModule } from '../anchor/anchor.module';
 import { SupplyService } from './supply/supply.service';
-import { OperationsService } from './operations/operations.service';
 import { StatsController } from './stats.controller';
 import { NodeModule } from '../node/node.module';
 
@@ -32,13 +31,11 @@ export const StatsModuleConfig = {
   providers: [
     StatsService,
     SupplyService,
-    OperationsService,
     StatsListenerService,
   ],
   exports: [
     StatsService,
     SupplyService,
-    OperationsService,
   ],
 };
 

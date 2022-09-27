@@ -6,7 +6,6 @@ import { StatsService } from './stats.service';
 import { SupplyService } from './supply/supply.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { OperationsService } from './operations/operations.service';
 import { TransactionService } from '../transaction/transaction.service';
 
 describe('StatsService', () => {
@@ -17,7 +16,6 @@ describe('StatsService', () => {
   let supplyService: SupplyService;
   let configService: ConfigService;
   let storageService: StorageService;
-  let operationsService: OperationsService;
   let transactionService: TransactionService;
 
   function spy() {
@@ -31,10 +29,6 @@ describe('StatsService', () => {
 
     const supply = {
       incrTxFeeBurned: jest.spyOn(supplyService, 'incrTxFeeBurned').mockImplementation(async () => {}),
-    };
-
-    const operations = {
-      incrOperationStats: jest.spyOn(operationsService, 'incrOperationStats').mockImplementation()
     };
 
     const transaction = {
@@ -52,7 +46,6 @@ describe('StatsService', () => {
     supplyService = module.get<SupplyService>(SupplyService);
     configService = module.get<ConfigService>(ConfigService);
     storageService = module.get<StorageService>(StorageService);
-    operationsService = module.get<OperationsService>(OperationsService);
     transactionService = module.get<TransactionService>(TransactionService);
 
     transaction = {

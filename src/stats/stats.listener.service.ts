@@ -29,8 +29,8 @@ export class StatsListenerService implements OnModuleInit {
   }
   async onIndexTransaction() {
     this.indexEmitter.on(
-      IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.statsService.index(val),
+      IndexEvent.IndexBlock,
+      (val: IndexEventsReturnType['IndexBlock']) => this.statsService.index(val),
     );
   }
 }

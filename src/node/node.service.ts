@@ -126,7 +126,8 @@ export class NodeService {
     return response.data;
   }
 
-  async getBlocks(from: number, to: number): Promise<Array<{ height; transactions }>> {
+  // tslint:disable-next-line:max-line-length
+  async getBlocks(from: number, to: number): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees; }>> {
     const ranges = this.getBlockRanges(from, to);
     const promises = ranges.map(range => this.api.getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
@@ -145,12 +146,8 @@ export class NodeService {
   getBlockRanges(from: number, to: number): Array<{ from; to }> {
     const ranges = [];
 
-    if (from === to) {
-      ranges.push({ from, to });
-    }
-
     // public node doesn't allow getting more than 100 blocks at a time
-    for (let start = from; start < to; start += 100) {
+    for (let start = from; start <= to; start += 100) {
       const range = start + 99;
       const max = range > to ? to : range;
       ranges.push({ from: start, to: max });

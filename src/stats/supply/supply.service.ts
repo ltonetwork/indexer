@@ -32,8 +32,8 @@ export interface BridgeStats {
       bridge: number;
       supply: number;
       burn_fee: number;
-    }
-  }
+    },
+  };
 }
 
 @Injectable()
@@ -69,7 +69,7 @@ export class SupplyService {
                       + bridgeStats.data.volume.lto20.supply
                       + bridgeStats.data.volume.binance.supply;
 
-    return this.fixedDecimals(maxSupply)
+    return this.fixedDecimals(maxSupply);
   }
 
   private calculateCirculatingSupply(stats: BridgeStats, locked: number, burnFee: number): number {
@@ -86,54 +86,12 @@ export class SupplyService {
     return (Math.round(input * 100) / 100).toFixed(8);
   }
 
-  async incrTxFeeBurned(blockHeight: number): Promise<void> {
-    const isFeatureActivated = await this.isFeatureActivated(blockHeight);
-    if (!isFeatureActivated) {
-      return;
-    }
-
-    const current = await this.storage.getTxFeeBurned().catch<number>(() => 0);
-
-    const burnFee = 0.1;
-    const newValue = current + burnFee;
-
-    return this.storage.setTxFeeBurned(newValue.toString());
+  async incrTxFeeBurned(amount: number): Promise<void> {
+    return this.storage.incrTxFeeBurned(amount);
   }
 
   async getTxFeeBurned(): Promise<number> {
     return this.storage.getTxFeeBurned();
-  }
-
-  async getFeeBurnFeatureHeight(): Promise<number | Error> {
-    return this.storage.getFeeBurnFeatureHeight();
-  }
-
-  async isFeatureActivated(blockHeight: number): Promise<boolean> {
-    const activationHeight = await this.getFeeBurnFeatureHeight().catch<number | Error>(() => null);
-
-    if (!activationHeight) {
-      const activationStatus = await this.node.getActivationStatus().catch<ActivationStatus>(() => null);
-      if (!activationStatus) {
-        return false;
-      }
-  
-      const feeBurnFeature = activationStatus.features.find(each => each.id === 12);
-      if (!feeBurnFeature || !feeBurnFeature.activationHeight) {
-        return false;
-      }
-
-      await this.storage.setFeeBurnFeatureHeight(feeBurnFeature.activationHeight.toString());
-  
-      if (blockHeight < feeBurnFeature.activationHeight) {
-        return false;
-      }
-    }
-
-    if (blockHeight < activationHeight) {
-      return false;
-    }
-
-    return true;
   }
 
   private getLockedSupply(): number {

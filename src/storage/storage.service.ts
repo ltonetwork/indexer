@@ -153,12 +153,16 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  async incrTxStats(type: string, day: number): Promise<void> {
-    return this.storage.incrValue(`lto:stats:transactions:${type}:${day}`);
+  async incrTxStats(type: string, day: number, amount = 1): Promise<void> {
+    if (amount > 0) {
+      return this.storage.incrValue(`lto:stats:transactions:${type}:${day}`, amount);
+    }
   }
 
   async incrOperationStats(day: number, amount = 1): Promise<void> {
-    return this.storage.incrValue(`lto:stats:operations:${day}`, amount);
+    if (amount > 0) {
+      return this.storage.incrValue(`lto:stats:operations:${day}`, amount);
+    }
   }
 
   async getOperationStats(from: number, to: number): Promise<{ period: string; count: number }[]> {
@@ -185,8 +189,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     }));
   }
 
-  async setTxFeeBurned(value: string): Promise<void> {
-    return this.storage.setValue('lto:stats:supply:txfeeburned', value);
+  async incrTxFeeBurned(amount: number): Promise<void> {
+    return this.storage.incrValue('lto:stats:supply:txfeeburned', amount);
   }
 
   async getTxFeeBurned(): Promise<number> {
@@ -237,9 +241,5 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   clearProcessHeight(): Promise<void> {
     return this.storage.delValue(`lto:processing-height`);
-  }
-
-  async flush() {
-    await this.storage.flush();
   }
 }

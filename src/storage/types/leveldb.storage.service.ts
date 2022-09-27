@@ -51,7 +51,7 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async incrValue(key: string, amount = 1): Promise<void> {
     await this.init();
-    await this.connection.incr(key);
+    await this.connection.incr(key, amount);
   }
 
   async addObject(key: string, value: object): Promise<void> {
@@ -94,9 +94,5 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
   async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
     await this.init();
     await this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
-  }
-
-  async flush() {
-    await this.connection.flush();
   }
 }

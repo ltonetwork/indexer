@@ -7,7 +7,7 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": 1951700,
+  "starting_block": 1972742,
   "transaction": {
     "indexing": false
   },
@@ -18,16 +18,16 @@
     "indexing": "none"
   },
   "stats": {
-    "operations": false,
-    "transactions": false,
+    "operations": true,
+    "transactions": true,
     "supply": false
   },
   "identity": {
-    "indexing": true
+    "indexing": false
   },
   "cross_chain": {
     "eip155": {
-      "indexing": true
+      "indexing": false
     }
   }
 }
