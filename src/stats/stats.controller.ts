@@ -5,7 +5,6 @@ import { Response, Request } from 'express';
 
 import { StatsService } from './stats.service';
 import { SupplyService } from './supply/supply.service';
-import { OperationsService } from './operations/operations.service';
 import { TransactionService } from '../transaction/transaction.service';
 
 @Controller('stats')
@@ -13,7 +12,6 @@ import { TransactionService } from '../transaction/transaction.service';
 export class StatsController {
   constructor(
     private readonly service: StatsService,
-    private readonly operations: OperationsService,
     private readonly supply: SupplyService,
     private readonly transactions: TransactionService,
   ) { }
@@ -48,7 +46,7 @@ export class StatsController {
   async getOperationStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
     try {
       const {from, to} = this.periodFromReq(req);
-      const stats = await this.operations.getOperationStats(from, to);
+      const stats = await this.service.getOperationStats(from, to);
 
       res.status(200).json(stats);
     } catch (e) {

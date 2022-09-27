@@ -32,7 +32,14 @@ describe('IndexMonitorService', () => {
         })),
       getBlocks: jest
         .spyOn(nodeService, 'getBlocks')
-        .mockImplementation(async () => [{ height: 100, transactions: [] }]),
+        .mockImplementation(async () => [{
+          height: 100,
+          transactions: [],
+          transactionCount: 0,
+          timestamp: 123,
+          generator: '2g',
+          burnedFees: 0,
+        }]),
       getNodeStatus: jest.spyOn(nodeService, 'getNodeStatus'),
     };
     const storage = {
@@ -43,11 +50,10 @@ describe('IndexMonitorService', () => {
         .spyOn(storageService, 'saveProcessingHeight')
         .mockImplementation(),
       saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(),
-      flush: jest.spyOn(storageService, 'flush').mockImplementation(),
     };
     const indexer = {
       index: jest
-        .spyOn(indexerService, 'index')
+        .spyOn(indexerService, 'indexTx')
         .mockImplementation(async () => true),
     };
 
@@ -204,21 +210,25 @@ describe('IndexMonitorService', () => {
       const spies = spy();
       spies.monitor.processBlock.mockImplementation();
 
+      monitorService.lastBlock = 99;
       await monitorService.checkNewBlocks();
 
       expect(spies.monitor.processBlock.mock.calls.length).toBe(1);
       expect(spies.monitor.processBlock.mock.calls[0][0]).toEqual({
         height: 100,
         transactions: [],
+        transactionCount: 0,
+        timestamp: 123,
+        generator: '2g',
+        burnedFees: 0,
       });
 
       expect(spies.node.getLastBlockHeight.mock.calls.length).toBe(1);
       expect(spies.node.getBlock.mock.calls.length).toBe(0);
       expect(spies.node.getBlocks.mock.calls.length).toBe(1);
-      expect(spies.node.getBlocks.mock.calls[0][0]).toEqual(99);
+      expect(spies.node.getBlocks.mock.calls[0][0]).toEqual(100);
       expect(spies.node.getBlocks.mock.calls[0][1]).toEqual(100);
 
-      expect(spies.storage.getProcessingHeight.mock.calls.length).toBe(1);
       expect(spies.storage.saveProcessingHeight.mock.calls.length).toBe(1);
       expect(spies.storage.saveProcessingHeight.mock.calls[0][0]).toBe(100);
     });

@@ -11,7 +11,7 @@ describe('IndexService', () => {
 
   function spy() {
     const indexer = {
-      index: jest.spyOn(indexService, 'index'),
+      index: jest.spyOn(indexService, 'indexTx'),
     };
 
     const emitter = {
@@ -43,7 +43,7 @@ describe('IndexService', () => {
       const spies = spy();
 
       const transaction = { id: 'fake_transaction', type: 1, sender: 'fake_sender' };
-      await indexService.index({ transaction: transaction as any, blockHeight: 1, position: 0});
+      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.emitter.emit.mock.calls.length).toBe(1);
       expect(spies.emitter.emit.mock.calls[0][0]).toBe('IndexTransaction');
@@ -55,7 +55,7 @@ describe('IndexService', () => {
 
       const type = 'anchor';
       const transaction = { id: 'fake_transaction', type: 12, sender: 'fake_sender' };
-      await indexService.index({ transaction: transaction as any, blockHeight: 1, position: 0});
+      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.emitter.emit.mock.calls.length).toBe(1);
       // expect(spies.storage.indexTx.mock.calls[0][0]).toBe(type);

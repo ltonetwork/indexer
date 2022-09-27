@@ -7,6 +7,7 @@ import AwaitLock from 'await-lock';
  */
 export class LeveldbConnection {
   private writeLock: AwaitLock;
+  private flushCache?: Map<string, string|null>;
   private cache: Map<string, string|null>;
 
   constructor(private connection: level.Level) {
@@ -14,11 +15,7 @@ export class LeveldbConnection {
     this.cache = new Map();
   }
 
-  async get(key: level.KeyType): Promise<string> {
-    if (this.cache.has(key)) {
-      return this.cache.get(key);
-    }
-
+  private async _get(key: level.KeyType): Promise<string> {
     return this.connection.get(key).catch(error => {
       if (error.message?.toLowerCase().includes('key not found in database')) {
         return null;
@@ -26,6 +23,12 @@ export class LeveldbConnection {
 
       throw error;
     });
+  }
+
+  async get(key: level.KeyType): Promise<string> {
+    return this.cache.has(key) ? this.cache.get(key) :
+        this.flushCache?.has(key) ? this.flushCache.get(key) :
+        this._get(key);
   }
 
   mget(keys: level.KeyType[]): Promise<string[]> {
@@ -54,8 +57,25 @@ export class LeveldbConnection {
   }
 
   async incr(key, amount = 1): Promise<string> {
-    const count = Number(await this.get(key));
-    return await this.set(key, String(count + amount));
+    let current;
+
+    if (this.cache.has(key)) {
+      // do nothing
+    } else if (this.flushCache?.has(key)) {
+      this.cache.set(key, this.flushCache.get(key));
+    } else {
+      current = await this._get(key) || '0';
+    }
+
+    // Current value might have been set during await.
+    if (this.cache.has(key)) {
+      current = this.cache.get(key);
+    }
+
+    const value = (Number(current) + amount).toString();
+
+    this.cache.set(key, value);
+    return value;
   }
 
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
@@ -106,13 +126,14 @@ export class LeveldbConnection {
       return;
     }
 
-    const cache = this.cache;
+    await this.writeLock.acquireAsync();
+
+    this.flushCache = this.cache;
     this.cache = new Map();
 
-    await this.writeLock.acquireAsync();
     const batch = [];
 
-    for (const [key, value] of cache) {
+    for (const [key, value] of this.flushCache) {
       batch.push({key, value, type: value !== null ? 'put' : 'del'});
     }
 
@@ -120,6 +141,7 @@ export class LeveldbConnection {
       await this.connection.batch(batch);
     } finally {
       this.writeLock.release();
+      delete this.flushCache;
     }
   }
 

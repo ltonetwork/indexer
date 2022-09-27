@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { TransactionService } from '../transaction/transaction.service';
-import { OperationsService } from './operations/operations.service';
 import { StatsModuleConfig } from './stats.module';
 import { StatsService } from './stats.service';
 import { SupplyService } from './supply/supply.service';
@@ -11,13 +10,12 @@ describe('TrustNetworkController', () => {
   let module: TestingModule;
   let statsService: StatsService;
   let supplyService: SupplyService;
-  let operationsService: OperationsService;
   let transactionService: TransactionService;
   let app: INestApplication;
 
   function spy() {
     const operations = {
-      getOperationStats: jest.spyOn(operationsService, 'getOperationStats').mockImplementation(async () => [
+      getOperationStats: jest.spyOn(statsService, 'getOperationStats').mockImplementation(async () => [
         { period: '2021-03-01 00:00:00', count: 4000 },
         { period: '2021-03-02 00:00:00', count: 5000 },
         { period: '2021-03-03 00:00:00', count: 6000 },
@@ -47,7 +45,6 @@ describe('TrustNetworkController', () => {
 
     statsService = module.get<StatsService>(StatsService);
     supplyService = module.get<SupplyService>(SupplyService);
-    operationsService = module.get<OperationsService>(OperationsService);
     transactionService = module.get<TransactionService>(TransactionService);
   });
 
@@ -79,7 +76,7 @@ describe('TrustNetworkController', () => {
     test('should return error if service fails', async () => {
       const spies = spy();
 
-      spies.operations.getOperationStats = jest.spyOn(operationsService, 'getOperationStats').mockRejectedValue('some error');
+      spies.operations.getOperationStats = jest.spyOn(statsService, 'getOperationStats').mockRejectedValue('some error');
 
       const res = await request(app.getHttpServer())
         .get('/stats/operations/2021-03-01/2021-02-01')

@@ -31,17 +31,18 @@ describe('TransactionService', () => {
   describe('getAllTypes()', () => {
     test('get all transaction types', async () => {
       expect(transactionService.getAllTypes()).toEqual([
-        { id: 'anchor', types: [12, 15] },
+        { id: 'anchor', types: [15, 22] },
         { id: 'transfer', types: [4] },
         { id: 'mass_transfer', types: [11] },
-        { id: 'all_transfers', types: [4, 11] },
-        { id: 'start_lease', types: [8] },
-        { id: 'cancel_lease', types: [9] },
+        { id: 'burn', types: [21] },
+        { id: 'all_transfers', types: [4, 11, 21] },
         { id: 'lease', types: [8, 9] },
         { id: 'association', types: [16, 17] },
         { id: 'script', types: [13] },
         { id: 'sponsor', types: [18, 19] },
-        { id: 'all', types: [1, 4, 8, 9, 11, 12, 13, 15, 16, 17, 18, 19] },
+        { id: 'data', types: [12] },
+        { id: 'statement', types: [23] },
+        { id: 'all' },
       ]);
     });
   });
@@ -53,13 +54,14 @@ describe('TransactionService', () => {
           'anchor',
           'transfer',
           'mass_transfer',
+          'burn',
           'all_transfers',
-          'start_lease',
-          'cancel_lease',
           'lease',
           'association',
           'script',
           'sponsor',
+          'data',
+          'statement',
           'all',
         ]);
     });
@@ -68,10 +70,10 @@ describe('TransactionService', () => {
   describe('getIdentifierByType()', () => {
     test('get identifier by type', async () => {
       expect(transactionService.getIdentifierByType(4)).toBe('transfer');
-      expect(transactionService.getIdentifierByType(8)).toBe('start_lease');
-      expect(transactionService.getIdentifierByType(9)).toBe('cancel_lease');
+      expect(transactionService.getIdentifierByType(8)).toBe('lease');
+      expect(transactionService.getIdentifierByType(9)).toBe('lease');
       expect(transactionService.getIdentifierByType(11)).toBe('mass_transfer');
-      expect(transactionService.getIdentifierByType(12)).toBe('anchor');
+      expect(transactionService.getIdentifierByType(12)).toBe('data');
       expect(transactionService.getIdentifierByType(15)).toBe('anchor');
       expect(transactionService.getIdentifierByType(99)).toBe(null);
     });
@@ -83,12 +85,12 @@ describe('TransactionService', () => {
       expect(transactionService.hasIdentifier('transfer')).toBe(true);
       expect(transactionService.hasIdentifier('mass_transfer')).toBe(true);
       expect(transactionService.hasIdentifier('all_transfers')).toBe(true);
-      expect(transactionService.hasIdentifier('start_lease')).toBe(true);
-      expect(transactionService.hasIdentifier('cancel_lease')).toBe(true);
       expect(transactionService.hasIdentifier('lease')).toBe(true);
       expect(transactionService.hasIdentifier('association')).toBe(true);
       expect(transactionService.hasIdentifier('script')).toBe(true);
       expect(transactionService.hasIdentifier('sponsor')).toBe(true);
+      expect(transactionService.hasIdentifier('data')).toBe(true);
+      expect(transactionService.hasIdentifier('statement')).toBe(true);
       expect(transactionService.hasIdentifier('all')).toBe(true);
 
       expect(transactionService.hasIdentifier('foo')).toBe(false);

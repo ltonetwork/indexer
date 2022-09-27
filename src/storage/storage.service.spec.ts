@@ -242,13 +242,13 @@ describe('StorageService', () => {
     describe('transaction fee burn', () => {
       describe('setTxFeeBurned()', () => {
         test('should set the new transcation fee burned value', async () => {
-          const setValue = jest.spyOn(redisStorageService, 'setValue').mockImplementation(async () => {});
+          const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
 
-          await storageService.setTxFeeBurned('20');
+          await storageService.incrTxFeeBurned(20);
 
-          expect(setValue.mock.calls.length).toBe(1);
-          expect(setValue.mock.calls[0][0]).toBe('lto:stats:supply:txfeeburned');
-          expect(setValue.mock.calls[0][1]).toBe('20');
+          expect(incrValue.mock.calls.length).toBe(1);
+          expect(incrValue.mock.calls[0][0]).toBe('lto:stats:supply:txfeeburned');
+          expect(incrValue.mock.calls[0][1]).toBe(20);
         });
       });
 

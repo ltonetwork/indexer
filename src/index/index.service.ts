@@ -3,6 +3,7 @@ import { IndexDocumentType } from './model/index.model';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from './index.events';
 import { LoggerService } from '../logger/logger.service';
+import { Block } from '../transaction/interfaces/block.interface';
 
 @Injectable()
 export class IndexService {
@@ -18,20 +19,22 @@ export class IndexService {
   /**
    * Index a new block. Should be called before indexing individual txs.
    *
-   * @param height
+   * @param block
    */
-  async indexBlock(height: number) {
+  async indexBlock(block: Block) {
     this.txCache = [];
-    this.event.emit(IndexEvent.IndexBlock, height);
+
+    this.logger.debug(`index-service: emitting index event for block ${block.height}`);
+    this.event.emit(IndexEvent.IndexBlock, block);
   }
 
   /**
-   * Index transaction, returns boolean based on whether or not transaction was successful
+   * Index transaction, returns boolean based on whether indexing the transaction was successful
    * Transaction may be skipped if its already processed
    *
    * @param index
    */
-  async index(index: IndexDocumentType): Promise<boolean> {
+  async indexTx(index: IndexDocumentType): Promise<boolean> {
     if (this.txCache.indexOf(index.transaction.id) > -1) {
       // transaction is already processed
       return false;
@@ -39,8 +42,7 @@ export class IndexService {
 
     this.txCache.push(index.transaction.id);
 
-    this.logger.debug(`index-service: emitting index event`);
-
+    this.logger.debug(`index-service: emitting index event for ${index.transaction.id}`);
     this.event.emit(IndexEvent.IndexTransaction, index);
 
     return true;

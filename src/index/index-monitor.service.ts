@@ -14,6 +14,7 @@ export class IndexMonitorService {
   public processing: boolean;
   public lastBlock: number;
   public started: boolean;
+  public txCount = 0;
 
   constructor(
     private readonly logger: LoggerService,
@@ -25,30 +26,35 @@ export class IndexMonitorService {
   ) {}
 
   async start() {
-    try {
-      this.logger.info(`index-monitor: starting monitor`);
+    while (!this.started) {
+      try {
+        this.logger.info('index-monitor: starting monitor');
 
-      if (this.started) {
-        return this.logger.warn('index-monitor: monitor already running');
+        if (this.started) {
+          return this.logger.warn('index-monitor: monitor already running');
+        }
+
+        if (this.config.getRestartSync()) {
+          await this.storage.clearProcessHeight();
+        }
+
+        this.lastBlock = await this.storage.getProcessingHeight() || await this.initialProcessingHeight();
+        this.started = true;
+
+        await this.process();
+      } catch (e) {
+        this.processing = false;
+        this.logger.error(`index-monitor: failed to start monitor: ${e}`);
+        this.started = false;
+        await delay(2000);
       }
-
-      this.lastBlock =
-        this.config.getStartingBlock() === 'last'
-          ? await this.node.getLastBlockHeight()
-          : (this.config.getStartingBlock() as number);
-      if (this.config.getRestartSync()) {
-        await this.storage.clearProcessHeight();
-      }
-      await this.process();
-      this.started = true;
-    } catch (e) {
-      this.processing = false;
-      this.logger.error(`index-monitor: failed to start monitor: ${e}`);
-      this.started = false;
-      await delay(2000);
-
-      return this.start();
     }
+  }
+
+  private async initialProcessingHeight() {
+    return this.config.getStartingBlock() === 'last'
+      ? await this.node.getLastBlockHeight()
+      : (this.config.getStartingBlock() as number) - 1;
   }
 
   async process() {
@@ -82,7 +88,7 @@ export class IndexMonitorService {
             message: 'Blockchain height is higher than processing height',
             data: {
               nodeResponse: resp,
-              processingHeight: processingHeight,
+              processingHeight,
             },
           };
         }
@@ -92,7 +98,7 @@ export class IndexMonitorService {
           message: 'Indexer is in sync',
           data: {
             nodeResponse: resp,
-            processingHeight: processingHeight,
+            processingHeight,
           },
         };
       }
@@ -119,8 +125,8 @@ export class IndexMonitorService {
     this.processing = true;
 
     const blockHeight = await this.node.getLastBlockHeight();
-    const processingHeight = (await this.storage.getProcessingHeight()) || this.lastBlock;
-    const ranges = this.node.getBlockRanges(processingHeight, blockHeight);
+    const processingHeight = this.lastBlock;
+    const ranges = this.node.getBlockRanges(processingHeight + 1, blockHeight);
 
     for (const range of ranges) {
       this.logger.info(`index-monitor: processing blocks ${range.from} to ${range.to}`);
@@ -130,27 +136,27 @@ export class IndexMonitorService {
         await this.processBlock(block);
       }
 
+      this.lastBlock = range.to;
       await this.storage.saveProcessingHeight(range.to);
-      await this.storage.flush();
     }
 
     this.processing = false;
   }
 
   async processBlock(block: Block) {
-    this.logger.debug(`index-monitor: processing block ${block.height}`);
-
     let position = 0;
 
-    await this.indexer.indexBlock(block.height);
+    await this.indexer.indexBlock(block);
 
     for (const transaction of block.transactions) {
       await this.processTransaction(transaction, block.height, position);
       position++;
     }
+
+    this.txCount += block.transactions.length;
   }
 
   processTransaction(transaction: Transaction, blockHeight: number, position: number) {
-    return this.indexer.index({ transaction, blockHeight, position });
+    return this.indexer.indexTx({ transaction, blockHeight, position });
   }
 }

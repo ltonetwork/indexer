@@ -8,7 +8,7 @@ import { StorageService } from '../storage/storage.service';
 export class TransactionService {
   constructor(private readonly logger: LoggerService, private readonly storage: StorageService) {}
 
-  getAllTypes(): Array<{ id: string; types: number[] }> {
+  getAllTypes(): Array<{ id: string; types?: number[] }> {
     return Object.keys(TransactionTypes).map(k => TransactionTypes[k]);
   }
 
@@ -19,13 +19,13 @@ export class TransactionService {
 
   getIdentifierByType(type: number): string | null {
     const types = this.getAllTypes();
-    const match = types.find(tx => tx.types.indexOf(type) > -1);
+    const match = types.find(tx => tx.types?.includes(type));
     return match ? match.id : null;
   }
 
   getIdentifiersByType(type: number): string[] {
     const types = this.getAllTypes();
-    return types.filter(tx => tx.types.indexOf(type) > -1).map(match => match.id);
+    return types.filter(tx => tx.types?.includes(type)).map(match => match.id);
   }
 
   hasIdentifier(identifier): boolean {
@@ -39,7 +39,7 @@ export class TransactionService {
 
   async index(index: IndexDocumentType) {
     const { transaction, blockHeight } = index;
-    const identifiers = this.getIdentifiersByType(transaction.type);
+    const identifiers = [...this.getIdentifiersByType(transaction.type), 'all'];
     const promises = [] as Promise<any>[];
 
     if (identifiers.length === 0) {

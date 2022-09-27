@@ -16,6 +16,4 @@ export interface StorageInterface {
   countTx(type: string, address: string): Promise<number>;
   indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void>;
   getTx(type: string, address: string, limit: number, offset: number): Promise<string[]>;
-
-  flush();
 }
