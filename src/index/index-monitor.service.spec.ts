@@ -226,8 +226,7 @@ describe('IndexMonitorService', () => {
       expect(spies.node.getLastBlockHeight.mock.calls.length).toBe(1);
       expect(spies.node.getBlock.mock.calls.length).toBe(0);
       expect(spies.node.getBlocks.mock.calls.length).toBe(1);
-      expect(spies.node.getBlocks.mock.calls[0][0]).toEqual(100);
-      expect(spies.node.getBlocks.mock.calls[0][1]).toEqual(100);
+      expect(spies.node.getBlocks.mock.calls[0]).toEqual([99, 100]);
 
       expect(spies.storage.saveProcessingHeight.mock.calls.length).toBe(1);
       expect(spies.storage.saveProcessingHeight.mock.calls[0][0]).toBe(100);

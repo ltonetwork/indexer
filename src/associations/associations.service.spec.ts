@@ -165,8 +165,6 @@ describe('AssociationsService', () => {
       expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
       expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
 
-      expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Sender is not part of trust network');
-
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
     });
 
