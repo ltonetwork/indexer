@@ -16,10 +16,10 @@ export class HashListenerService implements OnModuleInit {
 
   onModuleInit() {
     if (!this.config.isAnchorBatched()) {
-      this.logger.debug(`hash-listener: Not batching anchors`);
       return;
     }
 
+    this.logger.debug(`hash-listener: Batching anchors`);
     this.onIndexBlock();
   }
 

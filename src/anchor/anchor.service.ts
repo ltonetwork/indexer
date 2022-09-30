@@ -36,14 +36,13 @@ export class AnchorService {
       const isSenderTrustNetwork = Object.keys(senderRoles.roles).length > 0;
 
       if (!isSenderTrustNetwork) {
-        this.logger.debug(`anchor: Sender is not part of trust network`);
         return;
       }
     }
 
     const hashes = this.getAnchorHashes(transaction);
 
-    hashes.forEach(async hexHash => {
+    for (const hexHash of hashes) {
       this.logger.debug(`anchor: save hash ${hexHash} with transaction ${transaction.id}`);
 
       await this.storage.saveAnchor(hexHash, {
@@ -51,7 +50,7 @@ export class AnchorService {
         blockHeight,
         position,
       });
-    });
+    }
   }
 
   public getAnchorHashes(transaction: Transaction): string[] {
@@ -74,6 +73,8 @@ export class AnchorService {
         hashes.push(hexHash);
       });
     }
+
+    console.log(hashes);
 
     return hashes;
   }

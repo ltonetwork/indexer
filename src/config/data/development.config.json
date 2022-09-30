@@ -7,19 +7,20 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": 1972742,
+  "starting_block": -1,
   "transaction": {
     "indexing": false
   },
   "anchor": {
-    "indexing": "none"
+    "indexing": "all",
+    "batch": true
   },
   "association": {
     "indexing": "none"
   },
   "stats": {
-    "operations": true,
-    "transactions": true,
+    "operations": false,
+    "transactions": false,
     "supply": false
   },
   "identity": {
