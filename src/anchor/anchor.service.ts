@@ -74,8 +74,6 @@ export class AnchorService {
       });
     }
 
-    console.log(hashes);
-
     return hashes;
   }
 }
