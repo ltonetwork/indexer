@@ -27,7 +27,6 @@ describe('IndexService', () => {
 
     indexService = module.get<IndexService>(IndexService);
     emitterService = module.get<EmitterService<IndexEventsReturnType>>(EmitterService);
-
   });
 
   afterEach(async () => {
@@ -39,6 +38,17 @@ describe('IndexService', () => {
   });
 
   describe('index()', () => {
+    beforeEach(() => {
+      indexService.lastBlock = {
+        height: 1,
+        burnedFees: 0,
+        timestamp: 1,
+        generator: '2s',
+        transactionCount: 0,
+        transactions: [],
+      };
+    });
+
     test('should ignore genesis transactions', async () => {
       const spies = spy();
 
@@ -50,21 +60,23 @@ describe('IndexService', () => {
     });
 
     test('should index the anchor transaction', async () => {
-      indexService.lastBlock = 1; // Don't emit IndexBlock
       const spies = spy();
 
-      const type = 'anchor';
-      const transaction = { id: 'fake_transaction', type: 12, sender: 'fake_sender' };
-      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0});
+      const transaction = {id: 'fake_transaction', type: 15, sender: 'fake_sender'};
+      await indexService.indexTx({transaction: transaction as any, blockHeight: 1, position: 0});
 
       expect(spies.emitter.emit.mock.calls.length).toBe(1);
-      // expect(spies.storage.indexTx.mock.calls[0][0]).toBe(type);
-      // expect(spies.storage.indexTx.mock.calls[0][1]).toBe(transaction.sender);
-      // expect(spies.storage.indexTx.mock.calls[0][2]).toBe(transaction.id);
     });
 
-    test.skip('should skip index if an tx is indexed twice', () => {
+    test('should skip index if an tx is indexed twice', async () => {
+      const spies = spy();
 
+      indexService.txCache.push('fake_transaction');
+
+      const transaction = {id: 'fake_transaction', type: 15, sender: 'fake_sender'};
+      await indexService.indexTx({transaction: transaction as any, blockHeight: 1, position: 0});
+
+      expect(spies.emitter.emit.mock.calls.length).toBe(0);
     });
   });
 });
