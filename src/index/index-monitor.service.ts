@@ -14,7 +14,6 @@ export class IndexMonitorService {
   public processing: boolean;
   public lastBlock: number;
   public started: boolean;
-  public txCount = 0;
 
   constructor(
     private readonly logger: LoggerService,
@@ -52,9 +51,9 @@ export class IndexMonitorService {
   }
 
   private async initialProcessingHeight() {
-    return this.config.getStartingBlock() === 'last'
+    return this.config.getStartingBlock() < 0
       ? await this.node.getLastBlockHeight()
-      : (this.config.getStartingBlock() as number) - 1;
+      : (this.config.getStartingBlock() as number);
   }
 
   async process() {
@@ -126,10 +125,15 @@ export class IndexMonitorService {
 
     const blockHeight = await this.node.getLastBlockHeight();
     const processingHeight = this.lastBlock;
-    const ranges = this.node.getBlockRanges(processingHeight + 1, blockHeight);
+    const ranges = this.node.getBlockRanges(processingHeight, blockHeight);
 
     for (const range of ranges) {
-      this.logger.info(`index-monitor: processing blocks ${range.from} to ${range.to}`);
+      if (range.from !== range.to) {
+        this.logger.info(`index-monitor: processing blocks ${range.from} to ${range.to}`);
+      } else {
+        this.logger.debug(`index-monitor: processing block ${range.from}`);
+      }
+
       const blocks = await this.node.getBlocks(range.from, range.to);
 
       for (const block of blocks) {
@@ -152,8 +156,6 @@ export class IndexMonitorService {
       await this.processTransaction(transaction, block.height, position);
       position++;
     }
-
-    this.txCount += block.transactions.length;
   }
 
   processTransaction(transaction: Transaction, blockHeight: number, position: number) {

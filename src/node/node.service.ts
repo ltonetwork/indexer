@@ -198,8 +198,6 @@ export class NodeService {
     targetHash;
     anchors;
   } | null> {
-    this.logger.debug(`hash: starting anchoring '${hash}' as '${encoding}'`);
-
     try {
       const senderAddress = await this.getNodeWallet();
       const base58Hash = this.encoder.base58Encode(this.encoder.decode(hash, encoding));
@@ -218,10 +216,13 @@ export class NodeService {
     }
   }
 
-  async anchorAll(...hashes: string[]): Promise<void> {
+  async anchorAll(...hashes: string[]): Promise<string> {
     try {
       const senderAddress = await this.getNodeWallet();
-      await this.createAnchorTransaction(senderAddress, ...hashes);
+      const txId = await this.createAnchorTransaction(senderAddress, ...hashes);
+
+      this.logger.debug(`hash: anchored ${hashes.length} hashes with tx ${txId}`);
+      return txId;
     } catch (e) {
       this.logger.error(`hash: failed anchoring ${hashes.length} hashes`);
       throw e;

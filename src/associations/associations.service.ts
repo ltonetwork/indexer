@@ -45,7 +45,6 @@ export class AssociationsService {
       const isSenderTrustNetwork = Object.keys(senderRoles.roles).length > 0;
 
       if (!isSenderTrustNetwork) {
-        this.logger.debug(`association-service: Sender is not part of trust network`);
         return;
       }
     }

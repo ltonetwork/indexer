@@ -52,7 +52,7 @@ export class HashController {
       const chainpoint = await this.hash.anchor(hash, encoding);
 
       if (!chainpoint) {
-        res.status(202);
+        res.status(202).end();
       } else {
         res.status(200).json({chainpoint});
       }

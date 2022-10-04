@@ -8,7 +8,7 @@ import { Block } from '../transaction/interfaces/block.interface';
 @Injectable()
 export class IndexService {
 
-  public lastBlock: number;
+  public lastBlock: Block;
   public txCache: string[] = [];
 
   constructor(
@@ -22,10 +22,18 @@ export class IndexService {
    * @param block
    */
   async indexBlock(block: Block) {
-    this.txCache = [];
+    if (!this.lastBlock) {
+      this.lastBlock = block;
+      return;
+    }
 
-    this.logger.debug(`index-service: emitting index event for block ${block.height}`);
-    this.event.emit(IndexEvent.IndexBlock, block);
+    if (this.lastBlock.height !== block.height) {
+      this.logger.debug(`index-service: emitting index event for block ${this.lastBlock.height}`);
+      this.event.emit(IndexEvent.IndexBlock, this.lastBlock);
+
+      this.lastBlock = block;
+      this.txCache = [];
+    }
   }
 
   /**
