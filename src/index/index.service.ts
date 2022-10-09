@@ -30,10 +30,10 @@ export class IndexService {
     if (this.lastBlock.height !== block.height) {
       this.logger.debug(`index-service: emitting index event for block ${this.lastBlock.height}`);
       this.event.emit(IndexEvent.IndexBlock, this.lastBlock);
-
-      this.lastBlock = block;
       this.txCache = [];
     }
+
+    this.lastBlock = block;
   }
 
   /**
