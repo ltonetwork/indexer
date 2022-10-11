@@ -29,13 +29,14 @@ export class TransactionController {
       'anchor',
       'transfer',
       'mass_transfer',
+      'burn',
       'all_transfers',
-      'start_lease',
-      'cancel_lease',
       'lease',
       'association',
       'script',
       'sponsor',
+      'data',
+      'statement',
     ],
   })
   @ApiResponse({ status: 200, headers: { 'X-Total': { description: 'Total amount of transactions' } } })
