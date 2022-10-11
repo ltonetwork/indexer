@@ -19,8 +19,7 @@ export class AnchorService {
     private readonly config: ConfigService,
     private readonly trust: TrustNetworkService,
   ) {
-    this.transactionTypes = [12, 15];
-    this.anchorToken = '\u2693';
+    this.transactionTypes = [15, 22];
   }
 
   async index(index: IndexDocumentType, anchorIndexing: 'trust' | 'all') {
@@ -54,24 +53,14 @@ export class AnchorService {
   }
 
   public getAnchorHashes(transaction: Transaction): string[] {
-    const hashes: string[] = [];
+    let hashes: string[];
 
-    // Process old data transactions
-    if (transaction.type === 12 && !!transaction.data) {
-      for (const item of transaction.data) {
-        if (item.key === this.anchorToken) {
-          const value = item.value.replace('base64:', '');
-          const hexHash = this.encoder.hexEncode(this.encoder.base64Decode(value));
-
-          hashes.push(hexHash);
-        }
-      }
-    } else if (transaction.type === 15 && !!transaction.anchors) {
-      transaction.anchors.forEach(anchor => {
-        const hexHash = this.encoder.hexEncode(this.encoder.base58Decode(anchor));
-
-        hashes.push(hexHash);
-      });
+    if (transaction.type === 15) {
+      hashes = (transaction.anchors as Array<string>)
+          .map(hash => this.encoder.hexEncode(this.encoder.base58Decode(hash)));
+    } else if (transaction.type === 22) {
+      hashes = (transaction.anchors as Array<{key: string, value: string}>)
+          .map(pair => this.encoder.hexEncode(this.encoder.base58Decode(pair.value)));
     }
 
     return hashes;
