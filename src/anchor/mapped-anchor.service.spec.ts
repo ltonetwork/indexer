@@ -4,16 +4,20 @@ import { AnchorService } from './anchor.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
+import { MappedAnchorService } from './mapped-anchor.service';
 
-describe('AnchorService', () => {
+describe('MappedAnchorService', () => {
   let module: TestingModule;
-  let service: AnchorService;
+  let service: MappedAnchorService;
   let storageService: StorageService;
   let trustService: TrustNetworkService;
 
   function spy() {
     const storage = {
-      saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(async () => {}),
+      saveMappedAnchor: jest.spyOn(storageService, 'saveMappedAnchor').mockImplementation(async () => {}),
+      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+        return {};
+      }),
     };
 
     const trust = {
@@ -29,7 +33,7 @@ describe('AnchorService', () => {
     module = await Test.createTestingModule(AnchorModuleConfig).compile();
     await module.init();
 
-    service = module.get<AnchorService>(AnchorService);
+    service = module.get<MappedAnchorService>(MappedAnchorService);
     storageService = module.get<StorageService>(StorageService);
     trustService = module.get<TrustNetworkService>(TrustNetworkService);
   });
@@ -39,28 +43,6 @@ describe('AnchorService', () => {
   });
 
   describe('index()', () => {
-    test('should process anchor transactions', async () => {
-      const spies = spy();
-
-      const transaction = {
-        id: 'fake_transaction',
-        type: 15,
-        anchors: ['3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu'],
-      } as Transaction;
-
-      await service.index({ transaction, blockHeight: 1, position: 0 }, 'all');
-
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
-      expect(spies.storage.saveAnchor.mock.calls[0][0]).toBe(
-        '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
-      );
-      expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({
-        id: 'fake_transaction',
-        blockHeight: 1,
-        position: 0,
-      });
-    });
-
     test('should process mapped-anchor transactions', async () => {
       const spies = spy();
 
@@ -74,28 +56,17 @@ describe('AnchorService', () => {
 
       await service.index({ transaction, blockHeight: 1, position: 0 }, 'all');
 
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
-      expect(spies.storage.saveAnchor.mock.calls[0][0]).toBe(
-          '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
+      expect(spies.storage.getRolesFor.mock.calls.length).toBe(0);
+      expect(spies.storage.saveMappedAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.saveMappedAnchor.mock.calls[0][0]).toBe(
+          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
       );
-      expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({
+      expect(spies.storage.saveMappedAnchor.mock.calls[0][1]).toMatchObject({
+        anchor: '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
         id: 'fake_transaction',
         blockHeight: 1,
         position: 0,
       });
-    });
-
-    test('should not process other transaction types', async () => {
-      const spies = spy();
-
-      const transaction = {
-        id: 'fake_transaction',
-        type: 1,
-      } as Transaction;
-
-      await service.index({ transaction, blockHeight: 1, position: 0 }, 'all');
-
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
     });
 
     test('should process "trust" anchor if sender is trusted', async () => {
@@ -103,14 +74,16 @@ describe('AnchorService', () => {
 
       const transaction = {
         id: 'fake_transaction',
-        type: 15,
+        type: 22,
         sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-        anchors: ['3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu'],
+        anchors: [
+          {key: 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn', value: '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu'}
+        ],
       } as Transaction;
 
       await service.index({ transaction, blockHeight: 1, position: 0 }, 'trust');
 
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
+      expect(spies.storage.saveMappedAnchor.mock.calls.length).toBe(1);
 
       expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
       expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
@@ -129,14 +102,16 @@ describe('AnchorService', () => {
 
       const transaction = {
         id: 'fake_transaction',
-        type: 15,
+        type: 22,
         sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-        anchors: ['3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu'],
+        anchors: [
+          {key: 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn', value: '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu'}
+        ],
       } as Transaction;
 
       await service.index({ transaction, blockHeight: 1, position: 0 }, 'trust');
 
-      expect(spies.storage.saveAnchor.mock.calls.length).toBe(0);
+      expect(spies.storage.saveMappedAnchor.mock.calls.length).toBe(0);
 
       expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
       expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
