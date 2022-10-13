@@ -48,7 +48,7 @@ describe('AnchorListenerService', () => {
     anchorListenerService.onModuleInit();
 
     expect(spies.config.getAnchorIndexing.mock.calls.length).toBe(1);
-    expect(spies.emitter.on.mock.calls.length).toBe(1);
+    expect(spies.emitter.on.mock.calls.length).toBe(2);
   });
 
   test('should not emit event if anchor indexing is set to `none`', async () => {
@@ -60,7 +60,8 @@ describe('AnchorListenerService', () => {
 
     expect(spies.config.getAnchorIndexing.mock.calls.length).toBe(1);
     expect(spies.logger.debug.mock.calls.length).toBe(1);
-    expect(spies.logger.debug.mock.calls[0][0]).toBe(`transaction-listener: Not processing anchor: config set to "none"`);
+    expect(spies.logger.debug.mock.calls[0][0])
+        .toBe(`transaction-listener: Not processing anchor: config set to "none"`);
     expect(spies.emitter.on.mock.calls.length).toBe(0);
   });
 });

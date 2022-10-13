@@ -3,7 +3,6 @@ import { LoggerService } from '../logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { ConfigService } from '../config/config.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 
@@ -40,7 +39,7 @@ export class MappedAnchorService {
 
       this.logger.debug(`mapped-anchor: save ${hexKey}:${hexValue} with transaction ${transaction.id}`);
 
-      await this.storage.saveAnchor(hexKey, {
+      await this.storage.saveMappedAnchor(hexKey, {
         anchor: hexValue,
         id: transaction.id,
         blockHeight,
