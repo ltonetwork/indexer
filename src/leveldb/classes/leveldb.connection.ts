@@ -92,7 +92,7 @@ export class LeveldbConnection {
   async paginate(key: level.KeyType, limit: number, offset: number): Promise<any> {
     return new Promise((resolve, reject) => {
       const _arr = [];
-      const start = Number(offset);
+      const start = Number(offset + 1);
       const stop = Number(limit) + start;
 
       return this.connection
