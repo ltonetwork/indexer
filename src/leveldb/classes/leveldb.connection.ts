@@ -79,7 +79,8 @@ export class LeveldbConnection {
   }
 
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
-    const newKey = `${key}!${score}`;
+    const rand = (Math.random() + 1).toString(36).substring(6);
+    const newKey = `${key}!${score}:${rand}`;
     await this.incrCount(key);
     return this.set(newKey, value);
   }
