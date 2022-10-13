@@ -79,7 +79,8 @@ export class LeveldbConnection {
   }
 
   async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
-    const newKey = `${key}!${score}`;
+    const rand = (Math.random() + 1).toString(36).substring(6);
+    const newKey = `${key}!${score}:${rand}`;
     await this.incrCount(key);
     return this.set(newKey, value);
   }
@@ -91,7 +92,7 @@ export class LeveldbConnection {
   async paginate(key: level.KeyType, limit: number, offset: number): Promise<any> {
     return new Promise((resolve, reject) => {
       const _arr = [];
-      const start = Number(offset);
+      const start = Number(offset + 1);
       const stop = Number(limit) + start;
 
       return this.connection

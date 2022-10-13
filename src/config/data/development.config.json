@@ -7,12 +7,12 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": -1,
+  "starting_block": 2000000,
   "transaction": {
-    "indexing": false
+    "indexing": true
   },
   "anchor": {
-    "indexing": "all",
+    "indexing": "none",
     "batch": true
   },
   "association": {
