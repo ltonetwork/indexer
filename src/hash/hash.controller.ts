@@ -1,5 +1,5 @@
 import {Controller, Post, Req, Res, Get, UseGuards} from '@nestjs/common';
-import { ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { LoggerService } from '../logger/logger.service';
 import { HashDto } from './dto/hash.dto';
@@ -112,7 +112,7 @@ export class HashController {
     }
 
     const encoding = req.params.encoding;
-    if (['base64', 'base58', 'hex'].indexOf(encoding) === -1) {
+    if (!['base64', 'base58', 'hex'].includes(encoding)) {
       return res.status(400).send('invalid encoding given');
     }
 
@@ -129,4 +129,40 @@ export class HashController {
       return res.status(500).send(`failed to get transaction by hash and encoding '${e}'`);
     }
   }
+
+  @Post('verify')
+  @ApiOperation({ summary: 'Verify if hash is anchored with given encoding' })
+  @ApiQuery({ name: 'encoding' })
+  @ApiBody({ type: String }) // Todo: Should be Map<String,String> | Array<String>
+  @ApiResponse({ status: 200 })
+  @ApiResponse({
+    status: 400,
+    description: ['invalid encoding given', 'invalid body'].join('<br>'),
+  })
+  async verify(@Req() req: Request, @Res() res: Response): Promise<Response> {
+    const encoding: string = (req.query.encoding as string) || 'hex';
+    if (!['base64', 'base58', 'hex'].includes(encoding)) {
+      return res.status(400).send('invalid encoding given');
+    }
+
+    try {
+      if (Array.isArray(req.body)) {
+        return res.status(200).send(
+            await this.hash.verifyAnchors(req.body, encoding)
+        );
+      }
+
+      if (typeof req.body === 'object') {
+        return res.status(200).send(
+            await this.hash.verifyMappedAnchors(req.body, encoding)
+        );
+      }
+
+      return res.status(400).send('invalid body');
+    } catch (e) {
+      this.logger.error(`hash-controller: failed to verify hash '${e}'`, { stack: e.stack });
+      return res.status(500).send(`failed to verify hash '${e}'`);
+    }
+  }
+
 }

@@ -1,42 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
 import { HashModuleConfig } from './hash.module';
-import { NodeService } from '../node/node.service';
 import { ConfigService } from '../config/config.service';
 import { HashService } from './hash.service';
+import { StorageService } from '../storage/storage.service';
 
-describe('HashController', () => {
+describe('HashService', () => {
   let module: TestingModule;
   let hashService: HashService;
-  let nodeService: NodeService;
+  let storageService: StorageService;
   let configService: ConfigService;
   let app: INestApplication;
-
-  const chainpoint = {
-    '@context': 'https://w3id.org/chainpoint/v2',
-    'type': 'ChainpointSHA256v2',
-    'targetHash': 'bdf8c9bdf076d6aff0292a1c9448691d2ae283f2ce41b045355e2c8cb8e85ef2',
-    'anchors': [
-      {
-        type: 'LTO',
-        sourceId: '3JzVxKUyREwKAVYoEUTeUTv9xQh17TqAjtR',
-      },
-    ],
-  };
-
-  function spy() {
-    const hash = {
-      anchor: jest.spyOn(hashService, 'anchor').mockImplementation(async () => chainpoint),
-    };
-
-    const node = {
-      getTransactionByHash: jest.spyOn(nodeService, 'getTransactionByHash')
-        .mockImplementation(async () => chainpoint),
-    };
-
-    return { hash, node };
-  }
 
   beforeEach(async () => {
     module = await Test.createTestingModule(HashModuleConfig).compile();
@@ -44,7 +18,7 @@ describe('HashController', () => {
     await app.init();
 
     hashService = module.get<HashService>(HashService);
-    nodeService = module.get<NodeService>(NodeService);
+    storageService = module.get<StorageService>(StorageService);
     configService = module.get<ConfigService>(ConfigService);
   });
 
@@ -52,102 +26,158 @@ describe('HashController', () => {
     await module.close();
   });
 
-  describe('POST /hash', () => {
-    test('should anchor hash to the blockchain', async () => {
-      const spies = spy();
+  describe('verifyAnchors()', () => {
+    test('return verified is true if all anchors are found', async () => {
+      const hashes = [
+        '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+        '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+      ];
 
-      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const res = await request(app.getHttpServer())
-        .post('/hash')
-        .send({ hash });
+      const stored = {
+        '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b': { id: 1 },
+        'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35': { id: 2 },
+        '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce': { id: 3 },
+      };
 
-      expect(res.status).toBe(200);
-      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint });
+      const getAnchor = jest.spyOn(storageService, 'getAnchor')
+          .mockImplementation(async hash => stored[hash] || {});
 
-      expect(spies.hash.anchor.mock.calls.length).toBe(1);
-      expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
-      expect(spies.hash.anchor.mock.calls[0][1]).toBe('hex');
+      const result = await hashService.verifyAnchors(hashes, 'base58');
+
+      expect(getAnchor.mock.calls.length).toBe(3);
+      expect(getAnchor.mock.calls[0][0]).toBe('6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b');
+      expect(getAnchor.mock.calls[1][0]).toBe('d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35');
+      expect(getAnchor.mock.calls[2][0]).toBe('4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce');
+
+      expect(result.anchors).toEqual({
+        '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG': true,
+        'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg': true,
+        '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf': true,
+      });
+      expect(result.verified).toBe(true);
     });
 
-    test('should anchor hash to the blockchain when auth is enabled and given', async () => {
-      const spies = spy();
-      const token = '8DeKltC3dOjTNlv1EbXjCYIsOhypz4u245LypJeSdu5lES33VnqI3sy5OznLuA4x';
-      jest.spyOn(configService, 'getAuthToken').mockImplementation(() => token);
+    test('return verified is false if one anchors is not found', async () => {
+      const hashes = [
+        '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+        '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+      ];
 
-      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const res = await request(app.getHttpServer())
-        .post('/hash')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ hash });
+      const stored = {
+        '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b': { id: 1 },
+        'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35': { },
+        '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce': { id: 3 },
+      };
 
-      expect(res.status).toBe(200);
-      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint });
+      const getAnchor = jest.spyOn(storageService, 'getAnchor')
+          .mockImplementation(async hash => stored[hash] || {});
 
-      expect(spies.hash.anchor.mock.calls.length).toBe(1);
-      expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
-      expect(spies.hash.anchor.mock.calls[0][1]).toBe('hex');
-    });
+      const result = await hashService.verifyAnchors(hashes, 'base58');
 
-    test('should return an unauthorized when auth is enabled and not given', async () => {
-      jest.spyOn(configService, 'getAuthToken').mockImplementation(() => '8DeKltC3dOjTNlv1EbXjCYIsOhypz4u245LypJeSdu5lES33VnqI3sy5OznLuA4x');
+      expect(getAnchor.mock.calls.length).toBe(3);
+      expect(getAnchor.mock.calls[0][0]).toBe('6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b');
+      expect(getAnchor.mock.calls[1][0]).toBe('d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35');
+      expect(getAnchor.mock.calls[2][0]).toBe('4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce');
 
-      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const res = await request(app.getHttpServer())
-        .post('/hash')
-        .send({ hash });
-
-      expect(res.status).toBe(401);
-    });
-
-    test('should return an unauthorized when auth is enabled and a wrong one given', async () => {
-      jest.spyOn(configService, 'getAuthToken').mockImplementation(() => '8DeKltC3dOjTNlv1EbXjCYIsOhypz4u245LypJeSdu5lES33VnqI3sy5OznLuA4x');
-
-      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const res = await request(app.getHttpServer())
-        .post('/hash')
-        .set('Authorization', `Bearer test`)
-        .send({ hash });
-
-      expect(res.status).toBe(401);
-    });
-  });
-
-  describe('GET /hash/:hash', () => {
-    test('should get chainpoint that matches the hash', async () => {
-      const spies = spy();
-
-      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const res = await request(app.getHttpServer())
-        .get(`/hash/${hash}`)
-        .send();
-
-      expect(res.status).toBe(200);
-      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint });
-
-      expect(spies.node.getTransactionByHash.mock.calls.length).toBe(1);
-      expect(spies.node.getTransactionByHash.mock.calls[0][0]).toBe(hash);
+      expect(result.anchors).toEqual({
+        '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG': true,
+        'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg': false,
+        '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf': true,
+      });
+      expect(result.verified).toBe(false);
     });
   });
 
-  describe('GET /hash/:hash/encoding/:encoding', () => {
-    test('should get chainpoint that matches the hash and encoding', async () => {
-      const spies = spy();
+  describe('verifyMappedAnchors()', () => {
+    test('return verified is true if all anchors match', async () => {
+      const pairs = {
+        '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+      };
 
-      const encoding = 'hex';
-      const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
-      const res = await request(app.getHttpServer())
-        .get(`/hash/${hash}/encoding/${encoding}`)
-        .send();
+      const stored = {
+        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': { anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' },
+        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': { anchor: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35' },
+        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': { anchor: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce' },
+      };
 
-      expect(res.status).toBe(200);
-      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
-      expect(res.body).toEqual({ chainpoint });
+      const getMappedAnchor = jest.spyOn(storageService, 'getMappedAnchor')
+          .mockImplementation(async hash => stored[hash] || {});
 
-      expect(spies.node.getTransactionByHash.mock.calls.length).toBe(1);
-      expect(spies.node.getTransactionByHash.mock.calls[0][0]).toBe(hash);
+      const result = await hashService.verifyMappedAnchors(pairs, 'base58');
+
+      expect(getMappedAnchor.mock.calls.length).toBe(3);
+      expect(getMappedAnchor.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
+      expect(getMappedAnchor.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
+      expect(getMappedAnchor.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+
+      expect(result.anchors).toEqual(pairs);
+      expect(result.verified).toBe(true);
+    });
+
+    test('return verified is false if one anchors is not found', async () => {
+      const pairs = {
+        '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+      };
+
+      const stored = {
+        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': { anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' },
+        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': { },
+        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': { anchor: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce' },
+      };
+
+      const getMappedAnchor = jest.spyOn(storageService, 'getMappedAnchor')
+          .mockImplementation(async hash => stored[hash] || {});
+
+      const result = await hashService.verifyMappedAnchors(pairs, 'base58');
+
+      expect(getMappedAnchor.mock.calls.length).toBe(3);
+      expect(getMappedAnchor.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
+      expect(getMappedAnchor.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
+      expect(getMappedAnchor.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+
+      expect(result.anchors).toEqual({
+        '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': null,
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+      });
+      expect(result.verified).toBe(false);
+    });
+
+    test('return verified is false if one anchors does not match', async () => {
+      const pairs = {
+        '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+      };
+
+      const stored = {
+        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': { anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' },
+        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': { anchor: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35' },
+        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': { anchor: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
+      };
+
+      const getMappedAnchor = jest.spyOn(storageService, 'getMappedAnchor')
+          .mockImplementation(async hash => stored[hash] || {});
+
+      const result = await hashService.verifyMappedAnchors(pairs, 'base58');
+
+      expect(getMappedAnchor.mock.calls.length).toBe(3);
+      expect(getMappedAnchor.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
+      expect(getMappedAnchor.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
+      expect(getMappedAnchor.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+
+      expect(result.anchors).toEqual({
+        '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+        '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
+      });
+      expect(result.verified).toBe(false);
     });
   });
 });

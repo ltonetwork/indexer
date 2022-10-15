@@ -45,6 +45,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, info);
   }
 
+  getMappedAnchor(key: string): Promise<any> {
+    return this.storage.getObject(`lto:mapped-anchor:${key.toLowerCase()}`);
+  }
+
   saveMappedAnchor(key: string, info: object) {
     return this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}`, info);
   }

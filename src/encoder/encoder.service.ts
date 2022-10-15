@@ -15,6 +15,19 @@ export class EncoderService {
     this.allowsHashLengths = [16, 20, 32, 48, 64];
   }
 
+  encode(hashBytes: Uint8Array, encoding: string): string {
+    switch (encoding) {
+      case 'base64':
+        return this.base64Encode(hashBytes);
+      case 'base58':
+        return this.base58Encode(hashBytes);
+      case 'hex':
+        return this.hexEncode(hashBytes);
+      default:
+        throw new Error(`Unsupported encoding ${encoding}`);
+    }
+  }
+
   base64Encode(buffer) {
     return Buffer.from(String.fromCharCode.apply(null, buffer), 'binary').toString('base64');
   }
@@ -59,23 +72,17 @@ export class EncoderService {
     }).join('');
   }
 
-  decode(hash, encoding) {
-    let hashBytes;
+  decode(hash: string, encoding: string): Uint8Array {
     switch (encoding) {
       case 'base64':
-        hashBytes = this.base64Decode(hash);
-        break;
-
+        return this.base64Decode(hash);
       case 'base58':
-        hashBytes = this.base58Decode(hash);
-        break;
-
+        return this.base58Decode(hash);
       case 'hex':
-        hashBytes = this.hexDecode(hash);
-        break;
+        return this.hexDecode(hash);
+      default:
+        throw new Error(`Unsupported encoding ${encoding}`);
     }
-
-    return hashBytes;
   }
 
   validateHash(hash, encoding) {
