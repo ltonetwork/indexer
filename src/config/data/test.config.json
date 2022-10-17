@@ -1,1 +1,5 @@
-{ }
+{
+  "node": {
+    "api_key": "lt1secretapikey!"
+  }
+}
