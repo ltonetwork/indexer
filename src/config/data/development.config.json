@@ -7,7 +7,7 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": 2000000,
+  "starting_block": -1,
   "transaction": {
     "indexing": true
   },
@@ -21,7 +21,8 @@
   "stats": {
     "operations": false,
     "transactions": false,
-    "supply": false
+    "supply": false,
+    "lease": false
   },
   "identity": {
     "indexing": false

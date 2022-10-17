@@ -147,10 +147,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     const children = await this.storage.getArray(`lto:assoc:${address}:childs`);
     const parents = await this.storage.getArray(`lto:assoc:${address}:parents`);
 
-    return {
-      children,
-      parents,
-    };
+    return { children, parents };
   }
 
   async incrTxStats(type: string, day: number, amount = 1): Promise<void> {
@@ -195,16 +192,32 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async getTxFeeBurned(): Promise<number> {
     const value = await this.storage.getValue('lto:stats:supply:txfeeburned').catch(() => '0');
-    return Number(value);
+    return Number(value || '0');
   }
 
-  async setFeeBurnFeatureHeight(value: string): Promise<void> {
-    return this.storage.setValue('lto:stats:supply:feeburnheight', value);
+  async incrLeaseStats(day: number, amountIn: number, amountOut: number) {
+    return Promise.all([
+      this.storage.incrValue(`lto:stats:lease:in:${day}`, amountIn),
+      this.storage.incrValue(`lto:stats:lease:out:${day}`, amountOut),
+    ]);
   }
 
-  async getFeeBurnFeatureHeight(): Promise<number | Error> {
-    const value = await this.storage.getValue('lto:stats:supply:feeburnheight');
-    return Number(value);
+  async getLeaseStats(from, to): Promise<{ period: string; in: number, out: number }[]> {
+    const length = to - from + 1;
+
+    const keysIn = Array.from({ length }, (v, i) => `lto:stats:lease:in:${from + i}`);
+    const valuesIn = (await this.storage.getMultipleValues(keysIn)).map(amount => Number(amount || '0'));
+
+    const keysOut = Array.from({ length }, (v, i) => `lto:stats:lease:out:${from + i}`);
+    const valuesOut = (await this.storage.getMultipleValues(keysOut)).map(amount => Number(amount || '0'));
+
+    const periods = Array.from({ length }, (v, i) => new Date((from + i) * 86400000));
+
+    return periods.map((period: Date, index: number) => ({
+      period: this.formatPeriod(period),
+      in: valuesIn[index],
+      out: valuesOut[index],
+    }));
   }
 
   private formatPeriod(date: Date): string {

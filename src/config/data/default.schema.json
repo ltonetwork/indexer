@@ -102,6 +102,12 @@
       "default": false,
       "format": "Boolean",
       "env": "STATS_INDEXING"
+    },
+    "lease": {
+      "doc": "Statistics for leased amount",
+      "default": false,
+      "format": "Boolean",
+      "env": "STATS_LEASE"
     }
   },
   "redis": {
