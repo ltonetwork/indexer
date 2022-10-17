@@ -16,11 +16,7 @@ export class StatsListenerService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    const opsEnabled = this.config.isStatsEnabled('operations');
-    const txEnabled = this.config.isStatsEnabled('transactions');
-    const supplyEnabled = this.config.isStatsEnabled('supply');
-
-    if (!opsEnabled && !txEnabled && !supplyEnabled) {
+    if (!this.config.isStatsEnabled()) {
       this.logger.debug(`transaction-listener: Not processing stats`);
       return;
     }

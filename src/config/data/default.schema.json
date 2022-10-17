@@ -102,6 +102,12 @@
       "default": false,
       "format": "Boolean",
       "env": "STATS_INDEXING"
+    },
+    "lease": {
+      "doc": "Statistics for leased amount",
+      "default": false,
+      "format": "Boolean",
+      "env": "STATS_LEASE"
     }
   },
   "redis": {
@@ -143,7 +149,7 @@
     },
     "api_key": {
       "doc": "Node API key",
-      "default": "lt1secretapikey!",
+      "default": "",
       "env": "NODE_API_KEY"
     }
   },

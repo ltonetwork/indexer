@@ -126,4 +126,25 @@ export class StatsController {
       return res.status(400).send(e);
     }
   }
+
+  @Get('/lease/:from/:to')
+  @ApiOperation({ summary: 'Get lease increase / decrease per day' })
+  @ApiParam({ name: 'from', description: 'Date as `year-month-day` or timestamp in ms' })
+  @ApiParam({ name: 'to', description: 'Date as `year-month-day` or timestamp in ms' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({
+    status: 400,
+    description: ['invalid from date given', 'invalid to date given', 'invalid period range given'].join('<br>'),
+  })
+  @ApiResponse({ status: 500, description: `failed to get transaction stats '[reason]'` })
+  async getLeaseStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
+    try {
+      const {from, to} = this.periodFromReq(req);
+      const stats = await this.service.getLeaseStats(from, to);
+
+      res.status(200).json(stats);
+    } catch (e) {
+      return res.status(400).send(e);
+    }
+  }
 }

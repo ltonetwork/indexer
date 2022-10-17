@@ -2,33 +2,10 @@
   "env": "development",
   "port": 3000,
   "node": {
-    "url": "https://nodes.lto.network"
+    "url": "https://testnet.lto.network"
   },
   "log": {
     "level": "debug"
   },
-  "starting_block": 2000000,
-  "transaction": {
-    "indexing": true
-  },
-  "anchor": {
-    "indexing": "none",
-    "batch": true
-  },
-  "association": {
-    "indexing": "none"
-  },
-  "stats": {
-    "operations": false,
-    "transactions": false,
-    "supply": false
-  },
-  "identity": {
-    "indexing": false
-  },
-  "cross_chain": {
-    "eip155": {
-      "indexing": false
-    }
-  }
+  "starting_block": -1
 }

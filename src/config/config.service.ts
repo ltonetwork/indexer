@@ -78,7 +78,11 @@ export class ConfigService {
     return !!this.config.get('transaction.indexing');
   }
 
-  isStatsEnabled(token: 'operations' | 'transactions' | 'supply'): boolean {
+  isStatsEnabled(token?: 'operations' | 'transactions' | 'supply' | 'lease'): boolean {
+    if (!token) {
+      return Object.values(this.config.get('stats')).includes(true);
+    }
+
     return !!this.config.get(`stats.${token}`);
   }
 

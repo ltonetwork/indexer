@@ -9,6 +9,7 @@ export interface Transaction {
   readonly timestamp: number;
   readonly proofs: string[];
   readonly version: number;
+  readonly amount?: number;
   readonly data?: Array<{
     key: string;
     type: string;
@@ -25,4 +26,5 @@ export interface Transaction {
     keyType: string;
     publicKey: string;
   }>;
+  readonly leaseId?: string;
 }
