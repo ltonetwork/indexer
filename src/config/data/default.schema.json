@@ -149,7 +149,7 @@
     },
     "api_key": {
       "doc": "Node API key",
-      "default": "lt1secretapikey!",
+      "default": "",
       "env": "NODE_API_KEY"
     }
   },
