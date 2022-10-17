@@ -195,11 +195,11 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return Number(value || '0');
   }
 
-  async incrLeaseStats(day: number, amountIn: number, amountOut: number) {
+  async incrLeaseStats(day: number, amountIn: number, amountOut: number): Promise<void> {
     return Promise.all([
       this.storage.incrValue(`lto:stats:lease:in:${day}`, amountIn),
       this.storage.incrValue(`lto:stats:lease:out:${day}`, amountOut),
-    ]);
+    ]).then(() => {});
   }
 
   async getLeaseStats(from, to): Promise<{ period: string; in: number, out: number }[]> {
