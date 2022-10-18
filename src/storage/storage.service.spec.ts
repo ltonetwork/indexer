@@ -7,7 +7,6 @@ import { RedisStorageService } from './types/redis.storage.service';
 import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -125,6 +124,41 @@ describe('StorageService', () => {
       //     expect(getObject).toHaveBeenCalledWith('lto:anchor:some-anchor');
       //   }
       // });
+    });
+
+    describe('saveMappedAnchor()', () => {
+      test('should save the anchor', async () => {
+        const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(() => Promise.resolve());
+
+        const key = 'C9ED6179884278AF4E0D91286E52B688EF5B6998AF5E33D7E574DA3A719CA3D8';
+
+        const transaction = {
+          anchor: '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE',
+          id: 'fake_transaction',
+          block: '1',
+          position: '10',
+        };
+
+        await storageService.saveMappedAnchor(key, transaction);
+
+        expect(addObject.mock.calls.length).toBe(1);
+        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`);
+        expect(addObject.mock.calls[0][1]).toEqual(transaction);
+      });
+    });
+
+    describe('getMappedAnchor()', () => {
+      test('should get the anchor from database', async () => {
+        const getObject = jest
+            .spyOn(redisStorageService, 'getObject')
+            .mockImplementation(() => Promise.resolve({some: 'data'}));
+
+        const result = await storageService.getMappedAnchor('some-anchor');
+
+        expect(getObject).toHaveBeenCalledTimes(1);
+        expect(getObject).toHaveBeenCalledWith('lto:mapped-anchor:some-anchor');
+        expect(result).toEqual({some: 'data'});
+      });
     });
 
     describe('indexTx()', () => {

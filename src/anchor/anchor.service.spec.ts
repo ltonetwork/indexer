@@ -67,10 +67,10 @@ describe('AnchorService', () => {
       const transaction = {
         id: 'fake_transaction',
         type: 22,
-        anchors: [
-          {key: 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn', value: '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu'}
-        ],
-      } as Transaction;
+        anchors: {
+          GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn: '3zLWTHPNkmDsCRi2kZqFXFSBnTYykz13gHLezU4p6zmu',
+        },
+      } as unknown as Transaction;
 
       await service.index({ transaction, blockHeight: 1, position: 0 }, 'all');
 
