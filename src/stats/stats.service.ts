@@ -53,7 +53,12 @@ export class StatsService {
     for (const transaction of block.transactions) {
       if (this.operationsEnabled) {
         operations +=
+<<<<<<< HEAD
             transaction.type === 15 ? (transaction.anchors.length || 1) :
+=======
+            transaction.type === 15 ? ((transaction.anchors as string[]).length || 1 ) :
+            transaction.type === 22 ? (Object.values(transaction.anchors as object).length || 1 ) :
+>>>>>>> d6579d5 (Fixed index mapped anchor.)
             transaction.type === 11 ? transaction.transfers.length :
             1;
       }

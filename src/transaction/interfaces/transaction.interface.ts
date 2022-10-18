@@ -15,7 +15,7 @@ export interface Transaction {
     type: string;
     value: string;
   }>;
-  readonly anchors?: Array<string>|Array<{key: string, value: string}>;
+  readonly anchors?: string[]|{[_: string]: string};
   readonly transfers: Array<{
     recipient: string;
     amount: number;

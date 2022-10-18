@@ -54,8 +54,8 @@ export class AnchorService {
     }
 
     if (transaction.type === 22) {
-      return (transaction.anchors as Array<{key: string, value: string}>)
-          .map(pair => this.encoder.hexEncode(this.encoder.base58Decode(pair.value)));
+      return (Object.values(transaction.anchors as {[_: string]: string}))
+          .map(hash => this.encoder.hexEncode(this.encoder.base58Decode(hash)));
     }
 
     throw new Error('Not an anchor tx');

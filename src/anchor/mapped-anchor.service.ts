@@ -33,7 +33,7 @@ export class MappedAnchorService {
       }
     }
 
-    for (const {key, value} of transaction.anchors as Array<{key: string, value: string}>) {
+    for (const [key, value] of Object.entries(transaction.anchors as {[_: string]: string})) {
       const hexKey = this.encoder.hexEncode(this.encoder.base58Decode(key));
       const hexValue = this.encoder.hexEncode(this.encoder.base58Decode(value));
 
