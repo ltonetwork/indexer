@@ -258,7 +258,7 @@ export class NodeService {
 
   async getTransactionsByAddress(
     address: string,
-    type: 'anchor' | 'transfer',
+    type: string,
     limit: number = 25,
     offset: number = 0,
   ): Promise<string[]> {

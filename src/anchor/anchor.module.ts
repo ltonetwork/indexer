@@ -11,6 +11,7 @@ import { TransactionModule } from '../transaction/transaction.module';
 import { AnchorListenerService } from './anchor-listener.service';
 import { EmitterModule } from '../emitter/emitter.module';
 import { TrustNetworkModule } from '../trust-network/trust-network.module';
+import { MappedAnchorService } from './mapped-anchor.service';
 
 export const AnchorModuleConfig = {
   imports: [
@@ -25,8 +26,8 @@ export const AnchorModuleConfig = {
     EmitterModule,
   ],
   controllers: [],
-  providers: [...anchorProviders, AnchorService, AnchorListenerService],
-  exports: [...anchorProviders, AnchorService],
+  providers: [...anchorProviders, AnchorService, MappedAnchorService, AnchorListenerService],
+  exports: [...anchorProviders, AnchorService, MappedAnchorService],
 };
 
 @Module(AnchorModuleConfig)

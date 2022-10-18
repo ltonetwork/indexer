@@ -4,6 +4,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AnchorService } from './anchor.service';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
+import { MappedAnchorService } from './mapped-anchor.service';
 
 @Injectable()
 export class AnchorListenerService implements OnModuleInit {
@@ -12,6 +13,7 @@ export class AnchorListenerService implements OnModuleInit {
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
     private readonly anchorService: AnchorService,
+    private readonly mappedAnchorService: MappedAnchorService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
   ) { }
@@ -31,6 +33,11 @@ export class AnchorListenerService implements OnModuleInit {
     this.indexEmitter.on(
       IndexEvent.IndexTransaction,
       (val: IndexEventsReturnType['IndexTransaction']) => this.anchorService.index(val, this.anchorIndexing as 'trust' | 'all'),
+    );
+
+    this.indexEmitter.on(
+        IndexEvent.IndexTransaction,
+        (val: IndexEventsReturnType['IndexTransaction']) => this.mappedAnchorService.index(val, this.anchorIndexing as 'trust' | 'all'),
     );
   }
 }

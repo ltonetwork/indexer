@@ -5,9 +5,8 @@ import { StorageInterface } from './interfaces/storage.interface';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import storageServices from './types';
 import PascalCase from 'pascal-case';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { LoggerService } from '../logger/logger.service';
-import { MethodObject, VerificationMethod } from '../identity/verification-method/model/verification-method.model';
+import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
 import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
 
@@ -41,8 +40,16 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.getObject(`lto:anchor:${hash.toLowerCase()}`);
   }
 
-  saveAnchor(hash: string, transaction: object) {
-    return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, transaction);
+  saveAnchor(hash: string, info: object) {
+    return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, info);
+  }
+
+  getMappedAnchor(key: string): Promise<any> {
+    return this.storage.getObject(`lto:mapped-anchor:${key.toLowerCase()}`);
+  }
+
+  saveMappedAnchor(key: string, info: object) {
+    return this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}`, info);
   }
 
   getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
@@ -59,20 +66,11 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
-    const result: VerificationMethod[] = [];
     const methods = await this.storage.getObject(`lto:verification:${address}`);
 
-    for (const key in methods) {
-      const data: MethodObject = methods[key];
-
-      if (!data.revokedAt) {
-        const method = new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt);
-
-        result.push(method);
-      }
-    }
-
-    return result;
+    return Object.values(methods)
+      .filter(data => !data.revokedAt)
+      .map(data => new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt));
   }
 
   async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
