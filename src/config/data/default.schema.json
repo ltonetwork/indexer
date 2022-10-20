@@ -107,7 +107,7 @@
       "doc": "Statistics for leased amount",
       "default": false,
       "format": "Boolean",
-      "env": "STATS_LEASE"
+      "env": "STATS_INDEXING"
     }
   },
   "redis": {
