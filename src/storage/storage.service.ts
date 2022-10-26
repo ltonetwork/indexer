@@ -44,12 +44,22 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, info);
   }
 
-  getMappedAnchor(key: string): Promise<any> {
-    return this.storage.getObject(`lto:mapped-anchor:${key.toLowerCase()}`);
+  async getMappedAnchorsByKey(key: string): Promise<Array<any>> {
+    const hashes = await this.storage.getSet(`lto:mapped-anchor:${key.toLowerCase()}`);
+    const keys = hashes.map(hash => `lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
+
+    return Promise.all(keys.map(k => this.storage.getObject(k)));
   }
 
-  saveMappedAnchor(key: string, info: object) {
-    return this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}`, info);
+  getMappedAnchor(key: string, hash: string): Promise<any> {
+    return this.storage.getObject(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
+  }
+
+  async saveMappedAnchor(key: string, hash: string, info: object): Promise<void> {
+    await Promise.all([
+      this.storage.addToSet(`lto:mapped-anchor:${key.toLowerCase()}`, hash),
+      this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`, info)
+    ]);
   }
 
   getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
@@ -108,8 +118,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       return await this.redisGraph.saveAssociation(sender, recipient);
     }
 
-    await this.storage.sadd(`lto:assoc:${sender}:childs`, recipient);
-    await this.storage.sadd(`lto:assoc:${recipient}:parents`, sender);
+    await this.storage.addToSet(`lto:assoc:${sender}:childs`, recipient);
+    await this.storage.addToSet(`lto:assoc:${recipient}:parents`, sender);
 
     this.logger.debug(`storage-service: Add assoc for ${sender} child ${recipient}`);
   }
@@ -119,19 +129,19 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       return await this.redisGraph.removeAssociation(sender, recipient);
     }
 
-    await this.storage.srem(`lto:assoc:${sender}:childs`, recipient);
-    await this.storage.srem(`lto:assoc:${recipient}:parents`, sender);
+    await this.storage.delFromSet(`lto:assoc:${sender}:childs`, recipient);
+    await this.storage.delFromSet(`lto:assoc:${recipient}:parents`, sender);
 
     await this.recurRemoveAssociation(recipient);
     this.logger.debug(`storage-service: removed assoc for ${sender} child ${recipient}`);
   }
 
   async recurRemoveAssociation(address: string) {
-    const childAssocs = await this.storage.getArray(`lto:assoc:${address}:childs`);
+    const childAssocs = await this.storage.getSet(`lto:assoc:${address}:childs`);
 
     for (const child of childAssocs) {
-      await this.storage.srem(`lto:assoc:${address}:childs`, child);
-      await this.storage.srem(`lto:assoc:${child}:parents`, address);
+      await this.storage.delFromSet(`lto:assoc:${address}:childs`, child);
+      await this.storage.delFromSet(`lto:assoc:${child}:parents`, address);
       await this.recurRemoveAssociation(child);
       this.logger.debug(`storage-service: Remove assoc for ${address} child ${child}`);
     }
@@ -142,8 +152,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       return await this.redisGraph.getAssociations(address);
     }
 
-    const children = await this.storage.getArray(`lto:assoc:${address}:childs`);
-    const parents = await this.storage.getArray(`lto:assoc:${address}:parents`);
+    const children = await this.storage.getSet(`lto:assoc:${address}:childs`);
+    const parents = await this.storage.getSet(`lto:assoc:${address}:parents`);
 
     return { children, parents };
   }

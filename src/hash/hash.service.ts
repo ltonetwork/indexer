@@ -68,22 +68,40 @@ export class HashService
     async verifyMappedAnchors(
         hashes: {[key: string]: string},
         encoding: string,
-    ): Promise<{ verified: boolean, anchors: {[key: string]: string|null} }> {
-        const promises: Array<Promise<{key: string, anchor: string|null, verified: boolean}>> = [];
-
-        for (const [key, value] of Object.entries(hashes)) {
+    ): Promise<{ verified: boolean, anchors: {[key: string]: object|null} }> {
+        const promises = Object.entries(hashes).map(([key, value]) => {
             const keyHex = this.encoder.hexEncode(this.encoder.decode(key, encoding));
-            promises.push(this.storage.getMappedAnchor(keyHex).then(info => {
-                const anchor = info.anchor ? this.encoder.encode(this.encoder.hexDecode(info.anchor), encoding) : null;
-                return { key, anchor, verified: anchor === value};
-            }));
-        }
-
+            return this.storage.getMappedAnchorsByKey(keyHex)
+                .then(set => this.processMappedAnchor(set, key, value, encoding));
+        });
         const result = await Promise.all(promises);
 
         return {
             verified: result.every(({verified}) => verified),
-            anchors: Object.fromEntries(result.map(({key, anchor}) => [key, anchor])),
+            anchors: Object.fromEntries(result.map(({key, anchors}) => [key, anchors])),
         };
+    }
+
+    private processMappedAnchor(
+        set: {anchor: string, sender: string, timestamp: number, blockHeight: number, position: number}[],
+        key: string,
+        value: string|null,
+        encoding: string,
+    ): { verified: boolean, key: string, anchors: Array<any> } {
+        const anchors = set
+            .sort((a, b) => b.blockHeight - a.blockHeight || b.position - a.position)
+            .map(info => ({
+                anchor: this.encoder.encode(this.encoder.hexDecode(info.anchor), encoding),
+                sender: info.sender,
+            }));
+
+        if (value === null) {
+            return { key, verified: anchors.length === 0, anchors };
+        }
+
+        const index = anchors.findIndex(info => info.anchor.toLowerCase() === value.toLowerCase());
+        if (index >= 0) anchors.splice(index + 1);
+
+        return { key, verified: index >= 0, anchors };
     }
 }

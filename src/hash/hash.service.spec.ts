@@ -91,31 +91,79 @@ describe('HashService', () => {
   });
 
   describe('verifyMappedAnchors()', () => {
-    test('return verified is true if all anchors match', async () => {
+    let stored;
+    let getMappedAnchorsByKey;
+
+    beforeAll(() => {
+      stored = {
+        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': [ // 2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc
+          {
+            anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b', // 8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG
+            sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
+          },
+          {
+            anchor: '2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae', // 3yMApqCuCjXDWPrbjfR5mjCPTHqFG8Pux1TxQrEM35jj
+            sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
+          },
+        ],
+        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': [ // 4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc
+          {
+            anchor: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35', // FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg
+            sender: '3NBYfy8LvDgnsr9qEiWHKD6qP7RMQdb2Uf8',
+          },
+        ],
+        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': [ // 28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd
+          {
+            anchor: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', // GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn
+            sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
+          },
+        ],
+      };
+    });
+
+    beforeEach(() => {
+      getMappedAnchorsByKey = jest.spyOn(storageService, 'getMappedAnchorsByKey')
+          .mockImplementation(async hash => stored[hash] || []);
+    });
+
+    test('return verified is true if all anchors match as first entry', async () => {
       const pairs = {
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
-        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
+        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
       };
 
-      const stored = {
-        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': { anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' },
-        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': { anchor: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35' },
-        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': { anchor: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce' },
-      };
+      const {verified, anchors} = await hashService.verifyMappedAnchors(pairs, 'base58');
 
-      const getMappedAnchor = jest.spyOn(storageService, 'getMappedAnchor')
-          .mockImplementation(async hash => stored[hash] || {});
+      expect(getMappedAnchorsByKey.mock.calls.length).toBe(4);
+      expect(getMappedAnchorsByKey.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
+      expect(getMappedAnchorsByKey.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
+      expect(getMappedAnchorsByKey.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+      expect(getMappedAnchorsByKey.mock.calls[3][0]).toBe('d5ce2b19fbda14a25deac948154722f33efd37b369a32be8f03ec2be8ef7d3a5');
 
-      const result = await hashService.verifyMappedAnchors(pairs, 'base58');
-
-      expect(getMappedAnchor.mock.calls.length).toBe(3);
-      expect(getMappedAnchor.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
-      expect(getMappedAnchor.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
-      expect(getMappedAnchor.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
-
-      expect(result.anchors).toEqual(pairs);
-      expect(result.verified).toBe(true);
+      expect(anchors).toEqual({
+        '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': [
+          {
+            anchor: '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
+            sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
+          },
+        ],
+        '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': [
+          {
+            anchor: 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
+            sender: '3NBYfy8LvDgnsr9qEiWHKD6qP7RMQdb2Uf8',
+          },
+        ],
+        '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': [
+          {
+            anchor: 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
+            sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
+          },
+        ],
+        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': [],
+      });
+      expect(verified).toBe(true);
     });
 
     test('return verified is false if one anchors is not found', async () => {
@@ -125,21 +173,13 @@ describe('HashService', () => {
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
       };
 
-      const stored = {
-        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': { anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' },
-        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': { },
-        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': { anchor: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce' },
-      };
-
-      const getMappedAnchor = jest.spyOn(storageService, 'getMappedAnchor')
-          .mockImplementation(async hash => stored[hash] || {});
-
       const result = await hashService.verifyMappedAnchors(pairs, 'base58');
 
-      expect(getMappedAnchor.mock.calls.length).toBe(3);
-      expect(getMappedAnchor.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
-      expect(getMappedAnchor.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
-      expect(getMappedAnchor.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+      expect(getMappedAnchorsByKey.mock.calls.length).toBe(4);
+      expect(getMappedAnchorsByKey.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
+      expect(getMappedAnchorsByKey.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
+      expect(getMappedAnchorsByKey.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+      expect(getMappedAnchorsByKey.mock.calls[3][0]).toBe('d5ce2b19fbda14a25deac948154722f33efd37b369a32be8f03ec2be8ef7d3a5');
 
       expect(result.anchors).toEqual({
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
@@ -156,21 +196,15 @@ describe('HashService', () => {
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf',
       };
 
-      const stored = {
-        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1': { anchor: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' },
-        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b': { anchor: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35' },
-        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda': { anchor: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
-      };
-
-      const getMappedAnchor = jest.spyOn(storageService, 'getMappedAnchor')
+      const getMappedAnchorsByKey = jest.spyOn(storageService, 'getMappedAnchorsByKey')
           .mockImplementation(async hash => stored[hash] || {});
 
       const result = await hashService.verifyMappedAnchors(pairs, 'base58');
 
-      expect(getMappedAnchor.mock.calls.length).toBe(3);
-      expect(getMappedAnchor.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
-      expect(getMappedAnchor.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
-      expect(getMappedAnchor.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
+      expect(getMappedAnchorsByKey.mock.calls.length).toBe(3);
+      expect(getMappedAnchorsByKey.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
+      expect(getMappedAnchorsByKey.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
+      expect(getMappedAnchorsByKey.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
 
       expect(result.anchors).toEqual({
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
