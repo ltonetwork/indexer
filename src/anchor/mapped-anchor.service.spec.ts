@@ -65,7 +65,7 @@ describe('MappedAnchorService', () => {
           '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
       );
       expect(spies.storage.saveMappedAnchor.mock.calls[0][2]).toMatchObject({
-        anchor: '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
+        hash: '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
         id: 'fake_transaction',
         sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
         blockHeight: 1,

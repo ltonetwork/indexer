@@ -133,24 +133,24 @@ describe('StorageService', () => {
         const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(() => Promise.resolve());
 
         const key = 'C9ED6179884278AF4E0D91286E52B688EF5B6998AF5E33D7E574DA3A719CA3D8';
-        const anchor = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
+        const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
 
         const transaction = {
-          anchor,
+          hash,
           id: 'fake_transaction',
           sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
           block: '1',
           position: '10',
         };
 
-        await storageService.saveMappedAnchor(key, transaction.anchor, transaction);
+        await storageService.saveMappedAnchor(key, transaction.hash, transaction);
 
         expect(addToSet.mock.calls.length).toBe(1);
         expect(addToSet.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`)
-        expect(addToSet.mock.calls[0][1]).toBe(anchor);
+        expect(addToSet.mock.calls[0][1]).toBe(hash);
 
         expect(addObject.mock.calls.length).toBe(1);
-        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}:${anchor.toLowerCase()}`);
+        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
         expect(addObject.mock.calls[0][1]).toEqual(transaction);
       });
     });

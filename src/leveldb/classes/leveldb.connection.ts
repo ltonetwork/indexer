@@ -83,7 +83,7 @@ export class LeveldbConnection {
   }
 
   async srem(key: string, value: string): Promise<any> {
-    return this.add(`${key}!${value}`, value);
+    return this.del(`${key}!${value}`);
   }
 
   async sget(key: string): Promise<string[]> {

@@ -66,42 +66,40 @@ export class HashService
     }
 
     async verifyMappedAnchors(
-        hashes: {[key: string]: string},
+        hashes: {[key: string]: string|{hash: string, sender?: string|string[]}},
         encoding: string,
-    ): Promise<{ verified: boolean, anchors: {[key: string]: object|null} }> {
+    ): Promise<{ verified: boolean, anchors: {[key: string]: string|null} }> {
         const promises = Object.entries(hashes).map(([key, value]) => {
             const keyHex = this.encoder.hexEncode(this.encoder.decode(key, encoding));
+            const {hash, sender = null} = typeof value === 'object' && value !== null ? (value as any) : {hash: value};
             return this.storage.getMappedAnchorsByKey(keyHex)
-                .then(set => this.processMappedAnchor(set, key, value, encoding));
+                .then(set => this.processMappedAnchor(set, key, hash, encoding, sender));
         });
         const result = await Promise.all(promises);
 
         return {
             verified: result.every(({verified}) => verified),
-            anchors: Object.fromEntries(result.map(({key, anchors}) => [key, anchors])),
+            anchors: Object.fromEntries(result.map(({key, hash}) => [key, hash])),
         };
     }
 
     private processMappedAnchor(
-        set: {anchor: string, sender: string, timestamp: number, blockHeight: number, position: number}[],
+        set: {hash: string, sender: string, timestamp: number, blockHeight: number, position: number}[],
         key: string,
         value: string|null,
         encoding: string,
-    ): { verified: boolean, key: string, anchors: Array<any> } {
-        const anchors = set
-            .sort((a, b) => b.blockHeight - a.blockHeight || b.position - a.position)
-            .map(info => ({
-                anchor: this.encoder.encode(this.encoder.hexDecode(info.anchor), encoding),
-                sender: info.sender,
-            }));
-
-        if (value === null) {
-            return { key, verified: anchors.length === 0, anchors };
+        sender?: string|string[],
+    ): { verified: boolean, key: string, hash: string } {
+        if (sender) {
+            const senders = (typeof sender === 'string') ? [sender] : sender;
+            set = set.filter(info => senders.includes(info.sender));
         }
 
-        const index = anchors.findIndex(info => info.anchor.toLowerCase() === value.toLowerCase());
-        if (index >= 0) anchors.splice(index + 1);
+        const {hash: hashHex} = set
+            .sort((a, b) => b.blockHeight - a.blockHeight || b.position - a.position)
+            [0] || {hash: null};
+        const hash = hashHex ? this.encoder.encode(this.encoder.hexDecode(hashHex), encoding) : null;
 
-        return { key, verified: index >= 0, anchors };
+        return { key, verified: hash === value, hash };
     }
 }

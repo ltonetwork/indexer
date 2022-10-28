@@ -29,10 +29,6 @@ export class IndexMonitorService {
       try {
         this.logger.info('index-monitor: starting monitor');
 
-        if (this.started) {
-          return this.logger.warn('index-monitor: monitor already running');
-        }
-
         if (this.config.getRestartSync()) {
           await this.storage.clearProcessHeight();
         }
@@ -43,7 +39,7 @@ export class IndexMonitorService {
         await this.process();
       } catch (e) {
         this.processing = false;
-        this.logger.error(`index-monitor: failed to start monitor: ${e}`);
+        this.logger.error(`index-monitor: ${e}`);
         this.started = false;
         await delay(2000);
       }
