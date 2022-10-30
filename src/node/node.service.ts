@@ -224,7 +224,7 @@ export class NodeService {
       this.logger.debug(`hash: anchored ${hashes.length} hashes with tx ${txId}`);
       return txId;
     } catch (e) {
-      this.logger.error(`hash: failed anchoring ${hashes.length} hashes`);
+      this.logger.error(`hash: failed anchoring ${hashes.length} hashes. ${e}`);
       throw e;
     }
   }
