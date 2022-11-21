@@ -7,12 +7,21 @@ import { TransactionService } from '../transaction/transaction.service';
 import { Block } from '../transaction/interfaces/block.interface';
 import { NodeService } from '../node/node.service';
 
+interface ConfigurationOptions {
+  operations?: boolean;
+  transactions?: boolean;
+  supply?: boolean;
+  lease?: boolean;
+  generators?: boolean;
+}
+
 @Injectable()
 export class StatsService {
   private operationsEnabled: boolean;
   private transactionsEnabled: boolean;
   private supplyEnabled: boolean;
   private leaseEnabled: boolean;
+  private generatorsEnabled: boolean;
 
   constructor(
     private readonly storage: StorageService,
@@ -21,19 +30,21 @@ export class StatsService {
     private readonly supplyService: SupplyService,
     private readonly node: NodeService,
   ) {
-    this.configure(
-        this.config.isStatsEnabled('operations'),
-        this.config.isStatsEnabled('transactions'),
-        this.config.isStatsEnabled('supply'),
-        this.config.isStatsEnabled('lease'),
-    );
+    this.configure({
+      operations: this.config.isStatsEnabled('operations'),
+      transactions: this.config.isStatsEnabled('transactions'),
+      supply: this.config.isStatsEnabled('supply'),
+      lease: this.config.isStatsEnabled('lease'),
+      generators: this.config.isStatsEnabled('generators'),
+    });
   }
 
-  configure(operationsEnabled: boolean, transactionsEnabled: boolean, supplyEnabled: boolean, leaseEnabled: boolean) {
-    this.operationsEnabled = operationsEnabled;
-    this.transactionsEnabled = transactionsEnabled;
-    this.supplyEnabled = supplyEnabled;
-    this.leaseEnabled = leaseEnabled;
+  configure(options: ConfigurationOptions) {
+    if ('operations' in options) this.operationsEnabled = options.operations;
+    if ('transactions' in options) this.transactionsEnabled = options.transactions;
+    if ('supply' in options) this.supplyEnabled = options.supply;
+    if ('lease' in options) this.leaseEnabled = options.lease;
+    if ('generators' in options) this.generatorsEnabled = options.generators;
   }
 
   private calculateTxStats(block: Block) {

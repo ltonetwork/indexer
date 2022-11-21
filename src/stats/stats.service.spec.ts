@@ -51,7 +51,13 @@ describe('StatsService', () => {
     transactionService = module.get<TransactionService>(TransactionService);
     nodeService = module.get<NodeService>(NodeService);
 
-    statsService.configure(true, true, true, true);
+    statsService.configure({
+      operations: true,
+      transactions: true,
+      supply: true,
+      lease: true,
+      generators: true,
+    });
 
     block = {
       height: 100,
@@ -66,7 +72,8 @@ describe('StatsService', () => {
       ],
       transactionCount: 6,
       generator: '2f',
-      burnedFees: 1.75,
+      generatorReward: 4200,
+      burnedFees: 175,
     } as Block;
   });
 
@@ -92,7 +99,7 @@ describe('StatsService', () => {
       expect(spies.storage.incrTxStats.mock.calls[5]).toEqual(['lease', 19262, 2]);
 
       expect(spies.supply.incrTxFeeBurned.mock.calls.length).toBe(1);
-      expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(1.75);
+      expect(spies.supply.incrTxFeeBurned.mock.calls[0][0]).toBe(175);
 
       expect(spies.node.getTransaction.mock.calls.length).toBe(1);
       expect(spies.node.getTransaction.mock.calls[0][0]).toBe('fake_current_lease');
@@ -103,7 +110,7 @@ describe('StatsService', () => {
     test('should skip "operations" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure(false, true, true, true);
+      statsService.configure({operations: false});
 
       await statsService.index(block);
 
@@ -116,7 +123,7 @@ describe('StatsService', () => {
     test('should skip "transactions" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure(true, false, true, true);
+      statsService.configure({transactions: false});
 
       await statsService.index(block);
 
@@ -129,7 +136,7 @@ describe('StatsService', () => {
     test('should skip "supply" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure(true, true, false, true);
+      statsService.configure({supply: false});
 
       await statsService.index(block);
 
@@ -142,7 +149,7 @@ describe('StatsService', () => {
     test('should skip "lease" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure(true, true, true, false);
+      statsService.configure({lease: false});
 
       await statsService.index(block);
 
