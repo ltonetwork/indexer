@@ -45,9 +45,9 @@
   "dependencies": {
     "@lto-network/lto-crypto": "^1.1.1",
     "@nestjs/common": "^7.6.0",
-    "@nestjs/core": "^7.6.0",
+    "@nestjs/core": "^9.2.1",
     "@nestjs/passport": "^7.1.0",
-    "@nestjs/platform-express": "^7.6.15",
+    "@nestjs/platform-express": "^9.2.1",
     "@nestjs/swagger": "^4.8.0",
     "@types/crypto-js": "^4.0.1",
     "amqplib": "^0.10.3",
@@ -80,7 +80,7 @@
     "winston-daily-rotate-file": "^3.10.0"
   },
   "devDependencies": {
-    "@nestjs/testing": "^7.6.0",
+    "@nestjs/testing": "^9.2.1",
     "@types/amqplib": "^0.5.17",
     "@types/axios": "^0.14.0",
     "@types/convict": "^4.2.1",
