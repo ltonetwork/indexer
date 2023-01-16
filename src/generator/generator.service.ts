@@ -41,18 +41,16 @@ export class GeneratorService {
         await this.writeLock.acquireAsync();
 
         try {
-            const modified = new Set(this.modifiedBalances(block).filter(address => !!this.generators[address]));
-            modified.add(this.previousGenerator);
-
             if (block.height - this.delta > 0) {
                 const oldBlock = await this.node.getBlock(block.height - this.delta);
                 await this.removeMined(oldBlock);
-                modified.add(oldBlock.generator);
             }
 
             await this.addMined(block);
 
-            await this.updateBalances(Array.from(modified));
+            const modified = this.modifiedBalances(block, this.previousGenerator);
+            await this.updateBalances(modified.filter(address => !!this.generators[address]));
+
             this.updateShare();
 
             this.previousGenerator = block.generator;
@@ -80,11 +78,12 @@ export class GeneratorService {
         this.previousGenerator = blocks[blocks.length - 1].generator;
     }
 
-    private modifiedBalances(block: Block): string[] {
+    private modifiedBalances(block: Block, ...other: string[]): string[] {
         return Array.from(new Set([
             block.generator,
             ...block.transactions.map(tx => tx.sender),
             ...block.transactions.filter(tx => !!tx.recipient).map(tx => tx.recipient),
+            ...other,
         ]));
     }
 
