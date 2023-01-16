@@ -20,7 +20,7 @@ export class IndexService {
    * Signal that the indexer has caught up with the node.
    */
   async inSync(blockHeight: number) {
-    this.event.emit(IndexEvent.IndexSync, blockHeight);
+    this.event.emit(IndexEvent.InSync, blockHeight);
   }
 
   /**

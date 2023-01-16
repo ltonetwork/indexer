@@ -21,7 +21,7 @@ export class StatsListenerService implements OnModuleInit {
       return;
     }
 
-    this.indexEmitter.on(IndexEvent.IndexSync, (val: IndexEventsReturnType['IndexSync']) => {
+    this.indexEmitter.on(IndexEvent.InSync, (val: IndexEventsReturnType['InSync']) => {
       this.generatorService.calculate(val);
       this.onIndexBlock();
     });
