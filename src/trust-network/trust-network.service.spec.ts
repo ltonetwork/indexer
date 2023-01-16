@@ -6,7 +6,7 @@ import { ConfigService } from '../config/config.service';
 import { NodeService } from '../node/node.service';
 import { RoleData } from './interfaces/trust-network.interface';
 import { LoggerService } from '../logger/logger.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 
 describe('TrustNetworkService', () => {
   let module: TestingModule;

@@ -1,32 +1,36 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { EmitterService } from '../emitter/emitter.service';
-import { StatsService } from './stats.service';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
+import {GeneratorService} from './generator.service';
 
 @Injectable()
 export class StatsListenerService implements OnModuleInit {
 
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
-    private readonly statsService: StatsService,
+    private readonly generatorService: GeneratorService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
   ) { }
 
   onModuleInit() {
-    if (!this.config.isStatsEnabled()) {
-      this.logger.debug(`stats-listener: Not processing stats`);
+    if (!this.config.isGeneratorIndexingEnabled()) {
+      this.logger.debug(`generator-listener: Not processing`);
       return;
     }
 
-    this.onIndexBlock();
+    this.indexEmitter.on(IndexEvent.IndexSync, (val: IndexEventsReturnType['IndexSync']) => {
+      this.generatorService.calculate(val);
+      this.onIndexBlock();
+    });
   }
-  async onIndexBlock() {
+
+  onIndexBlock() {
     this.indexEmitter.on(
       IndexEvent.IndexBlock,
-      (val: IndexEventsReturnType['IndexBlock']) => this.statsService.index(val),
+      (val: IndexEventsReturnType['IndexBlock']) => this.generatorService.update(val),
     );
   }
 }

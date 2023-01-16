@@ -3,8 +3,10 @@ import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../logger/logger.service';
 import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
+import {Block, BlockHeader} from "../interfaces/block.interface";
+import {BalanceDetails} from "../interfaces/balance-details.interface";
 
 export interface Feature {
   id: number;
@@ -116,7 +118,7 @@ export class NodeService {
     return response.data.height;
   }
 
-  async getBlock(id: string | number): Promise<{ height; transactions; timestamp }> {
+  async getBlock(id: string | number): Promise<Block> {
     const response = await this.api.getBlock(id);
 
     if (response instanceof Error) {
@@ -126,10 +128,21 @@ export class NodeService {
     return response.data;
   }
 
-  // tslint:disable-next-line:max-line-length
-  async getBlocks(from: number, to: number): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees; }>> {
+  getBlocks(from: number, to: number): Promise<Array<Block>> {
+    return this._getBlocks(from, to, this.api.getBlocks) as Promise<Array<Block>>;
+  }
+
+  getBlockHeaders(from: number, to: number): Promise<Array<BlockHeader>> {
+    return this._getBlocks(from, to, this.api.getBlockHeaders) as Promise<Array<BlockHeader>>;
+  }
+
+  private async _getBlocks(
+      from: number,
+      to: number,
+      getBlocks: (from: number, to: number) => Promise<AxiosResponse|Error>,
+  ): Promise<Array<Block|BlockHeader>> {
     const ranges = this.getBlockRanges(from, to);
-    const promises = ranges.map(range => this.api.getBlocks(range.from, range.to));
+    const promises = ranges.map(range => getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
 
     for (const response of responses) {
@@ -141,6 +154,16 @@ export class NodeService {
     const data = responses.map((response: AxiosResponse) => response.data);
 
     return [].concat(...data).sort((a, b) => a.height - b.height);
+  }
+
+  async getBalanceDetails(address: string): Promise<BalanceDetails> {
+    const response = await this.api.getBalanceDetails(address);
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
   }
 
   getBlockRanges(from: number, to: number): Array<{ from; to }> {

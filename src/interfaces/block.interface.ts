@@ -9,3 +9,12 @@ export interface Block {
   generatorReward: number;
   burnedFees: number;
 }
+
+export interface BlockHeader {
+  height;
+  timestamp: number;
+  transactionCount: number;
+  generator: string;
+  generatorReward: number;
+  burnedFees: number;
+}

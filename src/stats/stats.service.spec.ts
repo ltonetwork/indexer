@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StatsModuleConfig } from './stats.module';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 
 import { StatsService } from './stats.service';
 import { SupplyService } from './supply/supply.service';
 import { StorageService } from '../storage/storage.service';
 import { TransactionService } from '../transaction/transaction.service';
-import { Block } from '../transaction/interfaces/block.interface';
+import { Block } from '../interfaces/block.interface';
 import { NodeService } from '../node/node.service';
 
 describe('StatsService', () => {

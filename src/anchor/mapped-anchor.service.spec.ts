@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnchorModuleConfig } from './anchor.module';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 import { MappedAnchorService } from './mapped-anchor.service';
 

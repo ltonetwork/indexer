@@ -5,8 +5,8 @@ import { EncoderService } from '../encoder/encoder.service';
 import { NodeService } from '../node/node.service';
 import { StorageService } from '../storage/storage.service';
 import delay from 'delay';
-import { Block } from '../transaction/interfaces/block.interface';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Block } from '../interfaces/block.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 import { IndexService } from './index.service';
 
 @Injectable()
@@ -14,6 +14,7 @@ export class IndexMonitorService {
   public processing: boolean;
   public lastBlock: number;
   public started: boolean;
+  public inSync: boolean = false;
 
   constructor(
     private readonly logger: LoggerService,
@@ -138,6 +139,11 @@ export class IndexMonitorService {
 
       for (const block of blocks) {
         await this.processBlock(block);
+      }
+
+      if (range.from === range.to && !this.inSync) {
+        this.inSync = true;
+        await this.indexer.inSync(range.to);
       }
 
       this.lastBlock = range.to;

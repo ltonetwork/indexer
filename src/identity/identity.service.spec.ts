@@ -4,7 +4,7 @@ import { IdentityService } from './identity.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { VerificationMethod } from './verification-method/model/verification-method.model';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 
 describe('IdentityService', () => {
   let module: TestingModule;

@@ -3,7 +3,7 @@ import { IndexDocumentType } from './model/index.model';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from './index.events';
 import { LoggerService } from '../logger/logger.service';
-import { Block } from '../transaction/interfaces/block.interface';
+import { Block } from '../interfaces/block.interface';
 
 @Injectable()
 export class IndexService {
@@ -17,9 +17,14 @@ export class IndexService {
   ) { }
 
   /**
+   * Signal that the indexer has caught up with the node.
+   */
+  async inSync(blockHeight: number) {
+    this.event.emit(IndexEvent.IndexSync, blockHeight);
+  }
+
+  /**
    * Index a new block. Should be called before indexing individual txs.
-   *
-   * @param block
    */
   async indexBlock(block: Block) {
     if (!this.lastBlock) {
@@ -39,8 +44,6 @@ export class IndexService {
   /**
    * Index transaction, returns boolean based on whether indexing the transaction was successful
    * Transaction may be skipped if its already processed
-   *
-   * @param index
    */
   async indexTx(index: IndexDocumentType): Promise<boolean> {
     if (this.txCache.indexOf(index.transaction.id) > -1) {

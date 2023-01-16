@@ -36,6 +36,17 @@ export class NodeApiService {
     return this.request.get(`${url}/blocks/seq/${from}/${to}`);
   }
 
+  async getBlockHeaders(from: number, to: number): Promise<AxiosResponse | Error> {
+    // note: max range of 100 is supported
+    const url = this.config.getNodeUrl();
+    return this.request.get(`${url}/blocks/headers/${from}/${to}`);
+  }
+
+  async getBalanceDetails(address: string): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return this.request.get(`${url}/address/details/${address}`);
+  }
+
   async getTransaction(id: string): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return this.request.get(`${url}/transactions/info/${id}`);
