@@ -12,7 +12,6 @@ interface ConfigurationOptions {
   transactions?: boolean;
   supply?: boolean;
   lease?: boolean;
-  generators?: boolean;
 }
 
 @Injectable()
@@ -21,7 +20,6 @@ export class StatsService {
   private transactionsEnabled: boolean;
   private supplyEnabled: boolean;
   private leaseEnabled: boolean;
-  private generatorsEnabled: boolean;
 
   constructor(
     private readonly storage: StorageService,
@@ -35,7 +33,6 @@ export class StatsService {
       transactions: this.config.isStatsEnabled('transactions'),
       supply: this.config.isStatsEnabled('supply'),
       lease: this.config.isStatsEnabled('lease'),
-      generators: this.config.isStatsEnabled('generators'),
     });
   }
 
@@ -44,7 +41,6 @@ export class StatsService {
     if ('transactions' in options) this.transactionsEnabled = options.transactions;
     if ('supply' in options) this.supplyEnabled = options.supply;
     if ('lease' in options) this.leaseEnabled = options.lease;
-    if ('generators' in options) this.generatorsEnabled = options.generators;
   }
 
   private calculateTxStats(block: Block) {

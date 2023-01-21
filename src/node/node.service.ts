@@ -5,8 +5,8 @@ import { EncoderService } from '../encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
-import {Block, BlockHeader} from "../interfaces/block.interface";
-import {BalanceDetails} from "../interfaces/balance-details.interface";
+import {Block} from '../interfaces/block.interface';
+import {BalanceDetails} from '../interfaces/balance-details.interface';
 
 export interface Feature {
   id: number;
@@ -128,21 +128,9 @@ export class NodeService {
     return response.data;
   }
 
-  getBlocks(from: number, to: number): Promise<Array<Block>> {
-    return this._getBlocks(from, to, this.api.getBlocks) as Promise<Array<Block>>;
-  }
-
-  getBlockHeaders(from: number, to: number): Promise<Array<BlockHeader>> {
-    return this._getBlocks(from, to, this.api.getBlockHeaders) as Promise<Array<BlockHeader>>;
-  }
-
-  private async _getBlocks(
-      from: number,
-      to: number,
-      getBlocks: (from: number, to: number) => Promise<AxiosResponse|Error>,
-  ): Promise<Array<Block|BlockHeader>> {
+  async getBlocks(from: number, to: number): Promise<Array<Block>> {
     const ranges = this.getBlockRanges(from, to);
-    const promises = ranges.map(range => getBlocks(range.from, range.to));
+    const promises = ranges.map(range => this.api.getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
 
     for (const response of responses) {

@@ -39,12 +39,12 @@ export class NodeApiService {
   async getBlockHeaders(from: number, to: number): Promise<AxiosResponse | Error> {
     // note: max range of 100 is supported
     const url = this.config.getNodeUrl();
-    return this.request.get(`${url}/blocks/headers/${from}/${to}`);
+    return this.request.get(`${url}/blocks/headers/seq/${from}/${to}`);
   }
 
   async getBalanceDetails(address: string): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
-    return this.request.get(`${url}/address/details/${address}`);
+    return this.request.get(`${url}/addresses/balance/details/${address}`);
   }
 
   async getTransaction(id: string): Promise<AxiosResponse | Error> {

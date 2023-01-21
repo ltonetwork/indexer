@@ -7,5 +7,8 @@
   "log": {
     "level": "debug"
   },
-  "starting_block": -1
+  "starting_block": -1,
+  "generator": {
+    "indexing": true
+  }
 }

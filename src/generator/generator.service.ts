@@ -5,6 +5,7 @@ import {Block, BlockHeader} from '../interfaces/block.interface';
 import AwaitLock from 'await-lock';
 
 export interface GeneratorStats {
+    readonly generator: string;
     blocks: number;
     reward: number;
     balance: number;
@@ -23,6 +24,10 @@ export class GeneratorService {
         config: ConfigService,
     ) {
         this.delta = config.getGeneratorIndexingDelta();
+    }
+
+    get stats(): GeneratorStats[] {
+        return Object.values(this.generators).sort((a, b) => b.balance - a.balance);
     }
 
     async calculate(blockHeight: number) {
@@ -60,11 +65,12 @@ export class GeneratorService {
     }
 
     private async calculateMined(blockHeight: number) {
-        const blocks = await this.node.getBlockHeaders(blockHeight - this.delta + 1, blockHeight);
+        const blocks = await this.node.getBlocks(blockHeight - this.delta + 1, blockHeight);
 
         for (const block of blocks) {
             if (!this.generators[block.generator]) {
                 this.generators[block.generator] = {
+                    generator: block.generator,
                     blocks: 0,
                     reward: 0,
                     balance: 0,

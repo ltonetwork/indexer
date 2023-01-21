@@ -19,6 +19,7 @@ import { EmitterModule } from './emitter/emitter.module';
 import { AssociationsModule } from './associations/associations.module';
 import { TrustNetworkModule } from './trust-network/trust-network.module';
 import { StatsModule } from './stats/stats.module';
+import { GeneratorModule } from './generator/generator.module';
 
 export const AppModuleConfig = {
   imports: [
@@ -41,6 +42,7 @@ export const AppModuleConfig = {
     AssociationsModule,
     TrustNetworkModule,
     StatsModule,
+    GeneratorModule,
   ],
   controllers: [AppController],
   providers: [],

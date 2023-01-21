@@ -10,6 +10,7 @@ export class IndexService {
 
   public lastBlock: Block;
   public txCache: string[] = [];
+  public isInSync: boolean = false;
 
   constructor(
     private readonly logger: LoggerService,
@@ -20,6 +21,10 @@ export class IndexService {
    * Signal that the indexer has caught up with the node.
    */
   async inSync(blockHeight: number) {
+    if (this.isInSync) return;
+
+    this.isInSync = true;
+    this.logger.debug(`index-service: emitting in-sync event at block ${blockHeight}`);
     this.event.emit(IndexEvent.InSync, blockHeight);
   }
 

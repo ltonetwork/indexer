@@ -14,7 +14,6 @@ export class IndexMonitorService {
   public processing: boolean;
   public lastBlock: number;
   public started: boolean;
-  public inSync: boolean = false;
 
   constructor(
     private readonly logger: LoggerService,
@@ -141,8 +140,7 @@ export class IndexMonitorService {
         await this.processBlock(block);
       }
 
-      if (range.from === range.to && !this.inSync) {
-        this.inSync = true;
+      if (range.from === range.to) {
         await this.indexer.inSync(range.to);
       }
 

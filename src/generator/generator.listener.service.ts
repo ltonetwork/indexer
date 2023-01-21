@@ -6,7 +6,7 @@ import { LoggerService } from '../logger/logger.service';
 import {GeneratorService} from './generator.service';
 
 @Injectable()
-export class StatsListenerService implements OnModuleInit {
+export class GeneratorListenerService implements OnModuleInit {
 
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
@@ -21,13 +21,13 @@ export class StatsListenerService implements OnModuleInit {
       return;
     }
 
-    this.indexEmitter.on(IndexEvent.InSync, (val: IndexEventsReturnType['InSync']) => {
-      this.generatorService.calculate(val);
-      this.onIndexBlock();
+    this.indexEmitter.on(IndexEvent.InSync, (height: IndexEventsReturnType['InSync']) => {
+      this.generatorService.calculate(height - 1);
+      this.statsBlockListener();
     });
   }
 
-  onIndexBlock() {
+  statsBlockListener() {
     this.indexEmitter.on(
       IndexEvent.IndexBlock,
       (val: IndexEventsReturnType['IndexBlock']) => this.generatorService.update(val),
