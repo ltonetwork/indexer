@@ -25,6 +25,7 @@ async function readVersionFile(): Promise<string> {
 }
 
 async function swagger(app: INestApplication) {
+  const config = app.get<ConfigService>(ConfigService);
   const version = await readVersionFile();
 
   const options = new DocumentBuilder()
@@ -35,11 +36,15 @@ async function swagger(app: INestApplication) {
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api-docs', app, document);
+  SwaggerModule.setup(config.getApiDocsUrl(), app, document);
 }
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const config = app.get<ConfigService>(ConfigService);
+
+  if (config.getApiPrefix() !== '') app.setGlobalPrefix(config.getApiPrefix());
+
   await swagger(app);
 
   app.use(cors({ exposedHeaders: ['X-Total'] }));
@@ -47,11 +52,10 @@ async function bootstrap() {
 
   app.useStaticAssets(path.join(__dirname, '..', 'public'));
 
-  const configService = app.get<ConfigService>(ConfigService);
-  await app.listen(configService.getPort());
+  await app.listen(config.getPort());
 
   const logger = app.get<LoggerService>(LoggerService);
-  logger.info(`server: running on http://localhost:${configService.getPort()}`);
+  logger.info(`server: running on http://localhost:${config.getPort()}`);
 
   const indexService = app.get<IndexMonitorService>(IndexMonitorService);
   await indexService.start();
