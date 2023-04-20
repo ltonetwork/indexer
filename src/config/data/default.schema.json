@@ -10,6 +10,11 @@
     "default": 80,
     "env": "PORT"
   },
+  "api_prefix": {
+    "doc": "The prefix for the API",
+    "default": "",
+    "env": "API_PREFIX"
+  },
   "trust_network": {
     "doc": "Configuration for the trust network based on roles",
     "indexing": {

@@ -11,6 +11,14 @@ export class ConfigService {
     return this.config.get('env');
   }
 
+  getApiPrefix(): string {
+    return this.config.get('api_prefix');
+  }
+
+  getApiDocsUrl(): string {
+    return this.config.get('api_prefix') + '/api-docs';
+  }
+
   getPort(): string {
     return this.config.get('port');
   }
