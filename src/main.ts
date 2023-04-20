@@ -12,7 +12,7 @@ import { IndexMonitorService } from './index/index-monitor.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function readVersionFile(): Promise<string> {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve) => {
     return fs.readFile(path.join(__dirname, 'version.txt'), 'utf-8', (err, data) => {
       if (err) {
         return resolve('unknown');
