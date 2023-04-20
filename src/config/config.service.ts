@@ -55,13 +55,6 @@ export class ConfigService {
     return this.config.get('redis.cluster');
   }
 
-  getRedisGraph(): { host: string; port: string } {
-    return {
-      host: this.config.get('redis_graph.host'),
-      port: this.config.get('redis_graph.port'),
-    };
-  }
-
   getLevelDbName(): string {
     return this.config.get('leveldb.name');
   }
