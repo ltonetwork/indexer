@@ -40,6 +40,8 @@ export class StatsController {
   }
 
   @Get('/operations/:from/:to')
+  @ApiParam({ name: 'from', description: 'Date as `year-month-day` or timestamp in ms' })
+  @ApiParam({ name: 'to', description: 'Date as `year-month-day` or timestamp in ms' })
   @ApiOperation({ summary: 'Get the operation count per day' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'invalid period range given' })
