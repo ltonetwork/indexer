@@ -4,7 +4,7 @@ services:
   indexer:
     container_name: indexer
     build: .
-    image: lto/local-indexer
+    image: lto-indexer
     volumes:
       - indexer:/usr/app/lto-index
     ports:

@@ -3,6 +3,7 @@ import { Graph, ResultSet } from 'redisgraph.js';
 
 import { ConfigService } from '../../config/config.service';
 import { LoggerService } from '../../logger/logger.service';
+import { RedisService } from '../../redis/redis.service';
 
 @Injectable()
 export class RedisGraphService {
@@ -16,10 +17,10 @@ export class RedisGraphService {
 
   async init(): Promise<void> {
     if (!this.client) {
-      const options = this.config.getRedisGraph();
+      const url = new URL(this.config.getRedisUrl());
 
       this.logger.debug(`redis-graph: connecting to redis-graph`);
-      this.client = new Graph('indexer', options.host, options.port);
+      this.client = new Graph('indexer', url.host, url.port);
     }
   }
 
@@ -44,7 +45,7 @@ export class RedisGraphService {
 
     return {
       children,
-      parents
+      parents,
     };
   }
 

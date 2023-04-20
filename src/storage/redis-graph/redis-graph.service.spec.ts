@@ -17,7 +17,7 @@ describe('RedisGraphService', () => {
 
   function spy() {
     const config = {
-      getRedisGraph: jest.spyOn(configService, 'getRedisGraph').mockImplementation(() => ({ host: 'host', port: '123' })),
+      getRedisGraph: jest.spyOn(configService, 'getRedisUrl').mockImplementation(() => ('https://host:123')),
     };
 
     return { config };

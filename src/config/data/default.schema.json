@@ -140,18 +140,6 @@
       "env": "REDIS_CLUSTER"
     }
   },
-  "redis_graph": {
-    "host": {
-      "doc": "Redis graph host",
-      "default": "localhost",
-      "env": "REDIS_GRAPH_HOST"
-    },
-    "port": {
-      "doc": "Redis graph port",
-      "default": "6379",
-      "env": "REDIS_GRAPH_PORT"
-    }
-  },
   "leveldb": {
     "name": {
       "doc": "LevelDB database name",
