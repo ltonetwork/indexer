@@ -4,7 +4,7 @@ import { LeveldbConnection } from './classes/leveldb.connection';
 import { LEVEL } from '../constants';
 import level from 'level';
 import delay from 'delay';
-import {setInterval} from "timers";
+import {setInterval} from 'timers';
 
 @Injectable()
 export class LeveldbService implements OnModuleInit, OnModuleDestroy {
@@ -30,7 +30,7 @@ export class LeveldbService implements OnModuleInit, OnModuleDestroy {
   async connect(config: string): Promise<LeveldbConnection> {
     try {
       this.logger.debug(`level: configuration file to connect ${config}`);
-      const connection = new this._level(config);
+      const connection = this._level(config);
       this.connection = new LeveldbConnection(connection);
       return this.connection;
     } catch (e) {

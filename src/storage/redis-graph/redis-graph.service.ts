@@ -20,7 +20,7 @@ export class RedisGraphService {
       const url = new URL(this.config.getRedisUrl());
 
       this.logger.debug(`redis-graph: connecting to redis-graph`);
-      this.client = new Graph('indexer', url.host, url.port);
+      this.client = new Graph('indexer', url.hostname, url.port || 80);
     }
   }
 

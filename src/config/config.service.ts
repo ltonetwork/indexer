@@ -19,7 +19,7 @@ export class ConfigService {
     return this.config.get('api_prefix') + '/api-docs';
   }
 
-  getPort(): string {
+  getPort(): number {
     return this.config.get('port');
   }
 
@@ -31,7 +31,7 @@ export class ConfigService {
     return this.config.get('node.api_key');
   }
 
-  getStartingBlock(): number | string {
+  getStartingBlock(): number {
     return this.config.get('starting_block');
   }
 
@@ -68,7 +68,7 @@ export class ConfigService {
   }
 
   getStorageType(): StorageTypeEnum {
-    return this.config.get('storage.type');
+    return this.config.get('storage.type') as StorageTypeEnum;
   }
 
   isIdentityIndexingEnabled(): boolean {
@@ -96,11 +96,11 @@ export class ConfigService {
   }
 
   getAssociationIndexing(): 'none' | 'trust' | 'all' {
-    return this.config.get('association.indexing');
+    return this.config.get('association.indexing') as 'none' | 'trust' | 'all';
   }
 
   getAnchorIndexing(): 'none' | 'trust' | 'all' {
-    return this.config.get('anchor.indexing');
+    return this.config.get('anchor.indexing') as 'none' | 'trust' | 'all';
   }
 
   isAssociationGraphEnabled(): boolean {

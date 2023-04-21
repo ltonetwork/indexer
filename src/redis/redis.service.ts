@@ -1,12 +1,12 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { REDIS } from '../constants';
-import redis from 'ioredis';
+import redis, { Redis, Cluster } from 'ioredis';
 import delay from 'delay';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
-  public readonly connections: { [key: string]: redis.Redis | redis.Cluster } = {};
+  public readonly connections: { [key: string]: Redis | Cluster } = {};
 
   constructor(
     private readonly logger: LoggerService,
@@ -19,7 +19,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.close();
   }
 
-  async connect(config: string | string[]): Promise<redis.Redis | redis.Cluster> {
+  async connect(config: string | string[]): Promise<Redis | Cluster> {
     const key = Array.isArray(config) ? config.join(';') : config;
 
     if (this.connections[key] && this.connections[key]) {

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { RequestModuleConfig } from './request.module';
 import { RequestService } from './request.service';
 import { AxiosResponse } from 'axios';

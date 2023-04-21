@@ -1,5 +1,4 @@
 import { Graph, ResultSet } from 'redisgraph.js';
-import { mocked } from 'ts-jest/utils';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { RedisGraphService } from './redis-graph.service';
@@ -13,11 +12,11 @@ describe('RedisGraphService', () => {
   let configService: ConfigService;
   let redisGraphService: RedisGraphService;
 
-  const graphMock = mocked(Graph, true);
+  const graphMock = jest.mocked(Graph);
 
   function spy() {
     const config = {
-      getRedisGraph: jest.spyOn(configService, 'getRedisUrl').mockImplementation(() => ('https://host:123')),
+      getRedisUrl: jest.spyOn(configService, 'getRedisUrl').mockImplementation(() => ('https://host:123')),
     };
 
     return { config };
@@ -43,7 +42,7 @@ describe('RedisGraphService', () => {
 
       await redisGraphService.init();
 
-      expect(spies.config.getRedisGraph).toBeCalledTimes(1);
+      expect(spies.config.getRedisUrl).toBeCalledTimes(1);
       expect(graphMock).toBeCalledTimes(1);
       expect(graphMock.mock.calls[0]).toEqual(['indexer', 'host', '123']);
     });
@@ -55,7 +54,7 @@ describe('RedisGraphService', () => {
 
       await redisGraphService.saveAssociation('sender', 'recipient');
 
-      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
+      const query = jest.mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(1);
@@ -69,7 +68,7 @@ describe('RedisGraphService', () => {
 
       await redisGraphService.getAssociations('address');
 
-      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
+      const query = jest.mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
@@ -84,7 +83,7 @@ describe('RedisGraphService', () => {
 
       await redisGraphService.removeAssociation('sender', 'recipient');
 
-      const query = mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
+      const query = jest.mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);

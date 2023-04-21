@@ -56,7 +56,6 @@ describe('StatsService', () => {
       transactions: true,
       supply: true,
       lease: true,
-      generators: true,
     });
 
     block = {

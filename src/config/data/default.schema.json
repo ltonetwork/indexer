@@ -16,7 +16,6 @@
     "env": "API_PREFIX"
   },
   "trust_network": {
-    "doc": "Configuration for the trust network based on roles",
     "indexing": {
       "doc": "Indexing of role associations of the trust network",
       "default": false,
@@ -102,7 +101,6 @@
     }
   },
   "stats": {
-    "doc": "Indexing of blockchain statistics",
     "operations": {
       "doc": "Statistics for operations in the blockchain",
       "default": false,

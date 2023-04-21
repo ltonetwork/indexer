@@ -3,10 +3,20 @@ import util from 'util';
 import path from 'path';
 import fs from 'fs';
 import convict from 'convict';
+import schema from './data/default.schema.json';
+
+type SchemaOf<T extends convict.Schema<any>> = T extends convict.Schema<infer R> ? R : any;
+type Schema = SchemaOf<typeof schema>;
+type Path = convict.Path<SchemaOf<typeof schema>>;
+type PathValue<K extends Path> = K extends null | undefined
+  ? Schema
+  : K extends convict.Path<Schema>
+    ? convict.PathValue<Schema, K>
+    : never;
 
 @Injectable()
 export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
-  private config: convict.Config<object>;
+  private config: convict.Config<Schema>;
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
   private config_reload_interval: NodeJS.Timer;
 
@@ -34,7 +44,7 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     const dir = path.resolve(__dirname, './data');
 
     // @ts-ignore
-    this.config = convict(`${dir}/default.schema.json`);
+    this.config = convict(schema);
     this.config.loadFile(`${dir}/default.config.json`);
 
     const env = `${dir}/${this.config.get('env')}.config.json`;
@@ -43,22 +53,22 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
       this.config.loadFile(env);
     }
 
-    // @todo: determine based on config.provider where to load config from (e.g. dynamodb)
-    // then simply merge the config via convict.config.load()
-    // @todo: support multiple environments by storing envs and their config in a map
-
     await this.validate();
   }
 
-  set(key: string, value: any): void {
+  set(key: Path, value: any): void {
     this.config.set(key, value);
   }
 
-  get(key?: string): any {
+  get<K extends Path>(key: K): PathValue<K> {
     return this.config.get(key);
   }
 
-  has(key: string): boolean {
+  getAll(): Schema {
+    return this.config.get();
+  }
+
+  has(key: Path): boolean {
     return this.config.has(key);
   }
 
