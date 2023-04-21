@@ -8,7 +8,7 @@ describe('VerificationMethodService', () => {
   let module: TestingModule;
   let verificationMethodService: VerificationMethodService;
   let storageService: StorageService;
-  
+
   const mockTimestamp: number = 1623162267;
 
   let transaction: any;
@@ -24,7 +24,7 @@ describe('VerificationMethodService', () => {
   }
 
   beforeEach(async () => {
-    jest.useFakeTimers('modern');
+    jest.useFakeTimers();
     jest.setSystemTime(mockTimestamp);
 
     module = await Test.createTestingModule(IdentityModuleConfig).compile();

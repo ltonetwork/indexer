@@ -1,4 +1,5 @@
-import { Module, HttpModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { requestProviders } from './request.providers';
 import { RequestService } from './request.service';
 import { LoggerModule } from '../logger/logger.module';

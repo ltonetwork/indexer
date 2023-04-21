@@ -4,7 +4,7 @@ import { ConfigService } from '../config/config.service';
 import { StorageInterface } from './interfaces/storage.interface';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import storageServices from './types';
-import PascalCase from 'pascal-case';
+import { pascalCase } from 'pascal-case';
 import { LoggerService } from '../logger/logger.service';
 import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
 import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
@@ -24,10 +24,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     if (this.config.getStorageType() === StorageTypeEnum.Redis) {
-      const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
+      const name = pascalCase(`${StorageTypeEnum.Redis}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     } else {
-      const name = PascalCase(`${StorageTypeEnum.LevelDB}_storage_service`);
+      const name = pascalCase(`${StorageTypeEnum.LevelDB}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     }
 

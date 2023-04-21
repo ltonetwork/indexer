@@ -4,6 +4,7 @@ import { StorageService } from '../storage/storage.service';
 import { IndexMonitorService } from './index-monitor.service';
 import { IndexService } from './index.service';
 import { IndexModuleConfig } from './index.module';
+import { Block } from '../interfaces/block.interface';
 
 describe('IndexMonitorService', () => {
   let module: TestingModule;
@@ -29,7 +30,7 @@ describe('IndexMonitorService', () => {
           height: 100,
           transactions: [],
           timestamp: 123,
-        })),
+        } as any as Block)),
       getBlocks: jest
         .spyOn(nodeService, 'getBlocks')
         .mockImplementation(async () => [{
@@ -38,6 +39,7 @@ describe('IndexMonitorService', () => {
           transactionCount: 0,
           timestamp: 123,
           generator: '2g',
+          generatorReward: 0,
           burnedFees: 0,
         }]),
       getNodeStatus: jest.spyOn(nodeService, 'getNodeStatus'),
@@ -220,6 +222,7 @@ describe('IndexMonitorService', () => {
         transactionCount: 0,
         timestamp: 123,
         generator: '2g',
+        generatorReward: 0,
         burnedFees: 0,
       });
 

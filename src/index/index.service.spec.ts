@@ -44,6 +44,7 @@ describe('IndexService', () => {
         burnedFees: 0,
         timestamp: 1,
         generator: '2s',
+        generatorReward: 0,
         transactionCount: 0,
         transactions: [],
       };

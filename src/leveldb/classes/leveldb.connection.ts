@@ -10,12 +10,12 @@ export class LeveldbConnection {
   private flushCache?: Map<string, string|null>;
   private cache: Map<string, string|null>;
 
-  constructor(private connection: level.Level) {
+  constructor(private connection: level.LevelDB) {
     this.writeLock = new AwaitLock();
     this.cache = new Map();
   }
 
-  private async _get(key: level.KeyType): Promise<string> {
+  private async _get(key: string): Promise<string> {
     return this.connection.get(key).catch(error => {
       if (error.message?.toLowerCase().includes('key not found in database')) {
         return null;
@@ -25,18 +25,18 @@ export class LeveldbConnection {
     });
   }
 
-  async get(key: level.KeyType): Promise<string> {
+  async get(key: string): Promise<string> {
     return this.cache.has(key) ? this.cache.get(key) :
         this.flushCache?.has(key) ? this.flushCache.get(key) :
         this._get(key);
   }
 
-  mget(keys: level.KeyType[]): Promise<string[]> {
+  mget(keys: string[]): Promise<string[]> {
     const promises = keys.map((key: string) => this.get(key));
     return Promise.all(promises);
   }
 
-  async add(key: level.KeyType, value: string): Promise<string> {
+  async add(key: string, value: string): Promise<string> {
     const existing = await this.get(key);
     if (existing) {
       return existing;
@@ -46,12 +46,12 @@ export class LeveldbConnection {
     return value;
   }
 
-  async set(key: level.KeyType, value: string): Promise<string> {
+  async set(key: string, value: string): Promise<string> {
     this.cache.set(key, value);
     return value;
   }
 
-  async del(key: level.KeyType): Promise<0 | 1> {
+  async del(key: string): Promise<0 | 1> {
     this.cache.set(key, null);
     return 1;
   }
@@ -78,7 +78,7 @@ export class LeveldbConnection {
     return value;
   }
 
-  async zaddWithScore(key: level.KeyType, score: string, value: string): Promise<any> {
+  async zaddWithScore(key: string, score: string, value: string): Promise<any> {
     const rand = (Math.random() + 1).toString(36).substring(6);
     const newKey = `${key}!${score}:${rand}`;
     await this.incrCount(key);
@@ -89,7 +89,7 @@ export class LeveldbConnection {
     await this.incr(`${key}:count`);
   }
 
-  async paginate(key: level.KeyType, limit: number, offset: number): Promise<any> {
+  async paginate(key: string, limit: number, offset: number): Promise<any> {
     return new Promise((resolve, reject) => {
       const _arr = [];
       const start = Number(offset + 1);
@@ -118,7 +118,7 @@ export class LeveldbConnection {
     });
   }
 
-  async countTx(key: level.KeyType): Promise<number> {
+  async countTx(key: string): Promise<number> {
     return Number(await this.get(`${key}:count`));
   }
 

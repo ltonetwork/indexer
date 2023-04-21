@@ -18,23 +18,25 @@ describe('ConfigLoaderService', () => {
   });
 
   describe('get()', () => {
-    test('should return all data from config if no key is given', async () => {
-      const config = await configService.get();
-      expect(config).toMatchObject({
-        env: 'test',
-      });
-    });
-
-    test('should return only data from config that matches given key', async () => {
-      const config = await configService.get('env');
+    test('should return only data from config that matches given key', () => {
+      const config = configService.get('env');
       expect(config).toEqual('test');
     });
   });
 
+  describe('getAll()', () => {
+    test('should return all data from config', () => {
+      const config = configService.getAll();
+      expect(config).toMatchObject({
+        env: 'test',
+      });
+    });
+  });
+
   describe('set()', () => {
-    test('should set only data in config that matches given key', async () => {
-      await configService.set('env', 'foo');
-      const config = await configService.get();
+    test('should set only data in config that matches given key', () => {
+      configService.set('env', 'foo');
+      const config = configService.getAll();
       expect(config).toMatchObject({
         env: 'foo',
       });
@@ -43,8 +45,8 @@ describe('ConfigLoaderService', () => {
 
   describe('has()', () => {
     test('should return whether the key in the config exists', async () => {
-      expect(await configService.has('env')).toBe(true);
-      expect(await configService.has('foo')).toBe(false);
+      expect(configService.has('env')).toBe(true);
+      expect(configService.has('foo' as any)).toBe(false);
     });
   });
 });
