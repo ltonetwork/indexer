@@ -19,13 +19,7 @@ RUN rm -rf node_modules/
 
 RUN npm i --only=production
 
-WORKDIR /usr/src/frontend/
-
-RUN npm i
-
-RUN npm run build
-
-FROM node:18
+FROM node:18-alpine
 # Move the build files from build folder to app folder
 WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
