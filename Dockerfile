@@ -1,4 +1,4 @@
-FROM node:16 As build
+FROM node:18 As build
 
 # Create app directory
 WORKDIR /usr/src
@@ -25,7 +25,7 @@ RUN npm i
 
 RUN npm run build
 
-FROM node:dubnium-alpine
+FROM node:18
 # Move the build files from build folder to app folder
 WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
