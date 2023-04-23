@@ -11,7 +11,7 @@ RUN npm i
 # Bundle app source
 COPY . .
 
-RUN echo $(git describe --tags) > ./version.txt
+RUN npm version $(git describe --tags) --no-git-tag-version
 
 RUN npm run build
 
@@ -23,10 +23,7 @@ FROM node:18-alpine
 # Move the build files from build folder to app folder
 WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
-COPY --from=build /usr/src/version.txt ./
 COPY --from=build /usr/src/node_modules ./node_modules/
-
-ADD package.json ./
 
 RUN npm install -g pm2
 

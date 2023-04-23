@@ -5,33 +5,22 @@ import { INestApplication } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
 import cors from 'cors';
 import helmet from 'helmet';
-import * as fs from 'fs';
 import * as path from 'path';
 import { LoggerService } from './logger/logger.service';
 import { IndexMonitorService } from './index/index-monitor.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import fs from 'fs';
 
-async function readVersionFile(): Promise<string> {
-  return new Promise((resolve) => {
-    return fs.readFile(path.join(__dirname, 'version.txt'), 'utf-8', (err, data) => {
-      if (err) {
-        return resolve('unknown');
-      } else {
-        if (data === '') return resolve('unknown');
-        return resolve(data);
-      }
-    });
-  });
-}
+function swagger(app: INestApplication) {
+  const packageJsonFile = fs.existsSync(__dirname + '/package.json') ? './package.json' : '../package.json';
+  const { description, version } =  require(packageJsonFile);
 
-async function swagger(app: INestApplication) {
   const config = app.get<ConfigService>(ConfigService);
-  const version = await readVersionFile();
 
   const options = new DocumentBuilder()
     .setTitle('LTO Network indexer service')
-    .setDescription('Index LTO Network transactions to query information like anchors and DIDs')
-    .setVersion(version)
+    .setDescription(description)
+    .setVersion(version === '0.0.0' ? 'dev' : version)
     .addBearerAuth()
     .build();
 
@@ -45,7 +34,7 @@ async function bootstrap() {
 
   if (config.getApiPrefix() !== '') app.setGlobalPrefix(config.getApiPrefix());
 
-  await swagger(app);
+  swagger(app);
 
   app.use(cors({ exposedHeaders: ['X-Total'] }));
   app.use(helmet());
