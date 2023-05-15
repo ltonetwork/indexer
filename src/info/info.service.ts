@@ -13,7 +13,7 @@ export class InfoService {
 
     return {
       name: json.name,
-      version: json.version,
+      version: json.version !== '0.0.0' ? json.version : 'dev',
       description: json.description,
       env: this.config.getEnv(),
     };

@@ -23,7 +23,7 @@ describe('Application e2e test', () => {
       expect(res.header['content-type']).toMatch(/json/);
       expect(res.body).toMatchObject({
         name: 'indexer',
-        version: '1.1.0',
+        version: 'dev',
         description: 'Index LTO Network transactions to query information like anchors and DIDs',
         env: 'test',
       });
