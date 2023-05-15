@@ -16,7 +16,8 @@ export class ConfigService {
   }
 
   getApiDocsUrl(): string {
-    return this.config.get('api_prefix') + '/api-docs';
+    const prefix = this.config.get('api_prefix');
+    return (prefix ? '/' + prefix : '') + '/api-docs';
   }
 
   getPort(): number {
