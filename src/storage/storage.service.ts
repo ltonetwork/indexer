@@ -58,7 +58,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   async saveMappedAnchor(key: string, hash: string, info: object): Promise<void> {
     await Promise.all([
       this.storage.addToSet(`lto:mapped-anchor:${key.toLowerCase()}`, hash),
-      this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`, info)
+      this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`, info),
     ]);
   }
 

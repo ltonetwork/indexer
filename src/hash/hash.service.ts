@@ -51,24 +51,25 @@ export class HashService
     async verifyAnchors(
         hashes: Array<string>,
         encoding: string,
-    ): Promise<{ verified: boolean, anchors: {[key: string]: boolean} }> {
-        const promises: Array<Promise<[string, boolean]>> = hashes.map(hash => {
+    ): Promise<{ verified: boolean, anchors: {[key: string]: boolean}, txIds: string[] }> {
+        const promises: Array<Promise<[string, string | undefined]>> = hashes.map(hash => {
             const hashHex = this.encoder.hexEncode(this.encoder.decode(hash, encoding));
-            return this.storage.getAnchor(hashHex).then((info: { id: string }) => [hash, !!info.id]);
+            return this.storage.getAnchor(hashHex).then((info: { id: string }) => [hash, info?.id]);
         });
 
-        const result = Object.fromEntries(await Promise.all(promises));
+        const result = await Promise.all(promises);
 
         return {
-            verified: Object.values(result).every(b => b),
-            anchors: result,
+            verified: result.every(([, txId]) => !!txId),
+            anchors: Object.fromEntries(result.map(([hash, txId]) => [hash, !!txId])),
+            txIds: result.map(([, txId]) => txId),
         };
     }
 
     async verifyMappedAnchors(
         hashes: {[key: string]: string|{hash: string, sender?: string|string[]}},
         encoding: string,
-    ): Promise<{ verified: boolean, anchors: {[key: string]: string|null} }> {
+    ): Promise<{ verified: boolean, anchors: {[key: string]: string|null}, txIds: string[]}> {
         const promises = Object.entries(hashes).map(([key, value]) => {
             const keyHex = this.encoder.hexEncode(this.encoder.decode(key, encoding));
             const {hash, sender = null} = typeof value === 'object' && value !== null ? (value as any) : {hash: value};
@@ -80,26 +81,27 @@ export class HashService
         return {
             verified: result.every(({verified}) => verified),
             anchors: Object.fromEntries(result.map(({key, hash}) => [key, hash])),
+            txIds: result.map(({txId}) => txId),
         };
     }
 
     private processMappedAnchor(
-        set: {hash: string, sender: string, timestamp: number, blockHeight: number, position: number}[],
+        set: {hash: string, id: string, sender: string, timestamp: number, blockHeight: number, position: number}[],
         key: string,
         value: string|null,
         encoding: string,
         sender?: string|string[],
-    ): { verified: boolean, key: string, hash: string } {
+    ): { verified: boolean, key: string, hash: string|null, txId: string|null } {
         if (sender) {
             const senders = (typeof sender === 'string') ? [sender] : sender;
             set = set.filter(info => senders.includes(info.sender));
         }
 
-        const {hash: hashHex} = set
+        const {hash: hashHex, id} = set
             .sort((a, b) => b.blockHeight - a.blockHeight || b.position - a.position)
-            [0] || {hash: null};
+            [0] || {hash: null, id: null};
         const hash = hashHex ? this.encoder.encode(this.encoder.hexDecode(hashHex), encoding) : null;
 
-        return { key, verified: hash === value, hash };
+        return { key, verified: hash === value, hash, txId: id };
     }
 }
