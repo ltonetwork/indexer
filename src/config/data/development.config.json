@@ -5,7 +5,7 @@
     "url": "https://testnet.lto.network"
   },
   "log": {
-    "level": "debug"
+    "level": "info"
   },
   "starting_block": -1
 }

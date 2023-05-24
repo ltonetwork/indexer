@@ -2,9 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {NodeService} from '../node/node.service';
 import {EncoderService} from '../encoder/encoder.service';
 import {ConfigService} from '../config/config.service';
-import {LoggerService} from "../logger/logger.service";
-import {Request, Response} from "express";
-import {StorageService} from "../storage/storage.service";
+import {StorageService} from '../storage/storage.service';
 
 @Injectable()
 export class HashService
@@ -51,25 +49,24 @@ export class HashService
     async verifyAnchors(
         hashes: Array<string>,
         encoding: string,
-    ): Promise<{ verified: boolean, anchors: {[key: string]: boolean}, txIds: string[] }> {
+    ): Promise<{ verified: boolean, anchors: Record<string, string|null>}> {
         const promises: Array<Promise<[string, string | undefined]>> = hashes.map(hash => {
             const hashHex = this.encoder.hexEncode(this.encoder.decode(hash, encoding));
-            return this.storage.getAnchor(hashHex).then((info: { id: string }) => [hash, info?.id]);
+            return this.storage.getAnchor(hashHex).then((info: { id: string }) => [hash, info?.id || null]);
         });
 
         const result = await Promise.all(promises);
 
         return {
             verified: result.every(([, txId]) => !!txId),
-            anchors: Object.fromEntries(result.map(([hash, txId]) => [hash, !!txId])),
-            txIds: result.map(([, txId]) => txId),
+            anchors: Object.fromEntries(result),
         };
     }
 
     async verifyMappedAnchors(
         hashes: {[key: string]: string|{hash: string, sender?: string|string[]}},
         encoding: string,
-    ): Promise<{ verified: boolean, anchors: {[key: string]: string|null}, txIds: string[]}> {
+    ): Promise<{ verified: boolean, map: Record<string, string|null>, anchors: Record<string, string|null> }> {
         const promises = Object.entries(hashes).map(([key, value]) => {
             const keyHex = this.encoder.hexEncode(this.encoder.decode(key, encoding));
             const {hash, sender = null} = typeof value === 'object' && value !== null ? (value as any) : {hash: value};
@@ -80,8 +77,8 @@ export class HashService
 
         return {
             verified: result.every(({verified}) => verified),
-            anchors: Object.fromEntries(result.map(({key, hash}) => [key, hash])),
-            txIds: result.map(({txId}) => txId),
+            map: Object.fromEntries(result.map(({key, hash}) => [key, hash])),
+            anchors: Object.fromEntries(result.map(({key, txId}) => [key, txId])),
         };
     }
 
