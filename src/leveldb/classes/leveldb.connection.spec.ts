@@ -7,9 +7,6 @@ describe('LeveldbConnection', () => {
       put: jest.fn(async () => ''),
       del: jest.fn(async () => 1),
       batch: jest.fn(async () => ''),
-      zadd: jest.fn(async () => ''),
-      zrange: jest.fn(async () => ''),
-      zcard: jest.fn(async () => ''),
       close: jest.fn(async () => ''),
     };
 
@@ -171,18 +168,76 @@ describe('LeveldbConnection', () => {
           {key: 'fake_key', value: '43', type: 'put'},
       ]]);
     });
+
+    test('should set a value to 1 in leveldb if it doesn\'t exist yet', async () => {
+      const spies = spy();
+
+      spies.connection.get.mockImplementation(async () => {
+        throw new Error('NotFoundError: Key not found in database [lto:anchor:some-anchor]');
+      });
+      spies.connection.put.mockImplementation(async () => '1');
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      expect(await levelDBConnection.incr('fake_key')).toBe('1');
+      expect(spies.connection.get.mock.calls.length).toBe(1);
+      expect(spies.connection.get.mock.calls[0]).toEqual(['fake_key']);
+
+      await levelDBConnection.flush();
+      expect(spies.connection.batch.mock.calls.length).toBe(1);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[
+        {key: 'fake_key', value: '1', type: 'put'},
+      ]]);
+    });
+  });
+
+  describe('sadd()', () => {
+    it('should generate a key to set an item', async () => {
+      const spies = spy();
+
+      spies.connection.put.mockImplementation(async () => '1');
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      await levelDBConnection.sadd('fake_key', 'fake_value');
+
+      await levelDBConnection.flush();
+      expect(spies.connection.batch.mock.calls.length).toBe(1);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[
+        {key: 'fake_key!fake_value', value: 'fake_value', type: 'put'},
+      ]]);
+    });
+  });
+
+  describe('srem()', () => {
+    it('should generate a key to delete an item', async () => {
+      const spies = spy();
+
+      spies.connection.del.mockImplementation(async () => 1);
+      const levelDBConnection = new LeveldbConnection(spies.connection as any);
+
+      await levelDBConnection.srem('fake_key', 'fake_value');
+
+      await levelDBConnection.flush();
+      expect(spies.connection.batch.mock.calls.length).toBe(1);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[
+        {key: 'fake_key!fake_value', value: null, type: 'del'},
+      ]]);
+    });
+  });
+
+  describe('sget()', () => {
+    test.todo('should load values from leveldb');
   });
 
   describe('zaddWithScore()', () => {
-    test.skip('should add a value with a score to leveldb', async () => {});
+    test.todo('should add a value with a score to leveldb');
   });
 
   describe('paginate()', () => {
-    test.skip('should load values paginated from leveldb', async () => {});
+    test.todo('should load values paginated from leveldb');
   });
 
   describe('countTx()', () => {
-    test.skip('should load a count from leveldb', async () => {});
+    test.todo('should load a count from leveldb');
   });
 
   describe('close()', () => {

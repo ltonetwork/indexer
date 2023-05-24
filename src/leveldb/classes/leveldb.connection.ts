@@ -78,15 +78,42 @@ export class LeveldbConnection {
     return value;
   }
 
+  async sadd(key: string, value: string): Promise<any> {
+    return this.add(`${key}!${value}`, value);
+  }
+
+  async srem(key: string, value: string): Promise<any> {
+    return this.del(`${key}!${value}`);
+  }
+
+  async sget(key: string): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const _arr = [];
+
+      return this.connection
+        .createReadStream({
+          gte: key + '!',
+          lte: key + '~',
+        })
+        .on('data', data => {
+          _arr.push(data.value);
+        })
+        .on('error', err => reject(err))
+        .on('close', () => reject({}))
+        .on('end', () => resolve(_arr));
+    });
+  }
+
   async zaddWithScore(key: string, score: string, value: string): Promise<any> {
     const rand = (Math.random() + 1).toString(36).substring(6);
     const newKey = `${key}!${score}:${rand}`;
+
     await this.incrCount(key);
     return this.set(newKey, value);
   }
 
-  async incrCount(key): Promise<void> {
-    await this.incr(`${key}:count`);
+  async incrCount(key): Promise<number> {
+    return Number(await this.incr(`${key}:count`));
   }
 
   async paginate(key: string, limit: number, offset: number): Promise<any> {
@@ -106,15 +133,9 @@ export class LeveldbConnection {
         .on('data', data => {
           _arr.push(data.value);
         })
-        .on('error', err => {
-          reject(err);
-        })
-        .on('close', () => {
-          reject({});
-        })
-        .on('end', () => {
-          resolve(_arr);
-        });
+        .on('error', err => reject(err))
+        .on('close', () => reject({}))
+        .on('end', () => resolve(_arr));
     });
   }
 

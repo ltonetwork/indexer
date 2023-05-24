@@ -39,9 +39,10 @@ export class MappedAnchorService {
 
       this.logger.debug(`mapped-anchor: save ${hexKey}:${hexValue} with transaction ${transaction.id}`);
 
-      await this.storage.saveMappedAnchor(hexKey, {
-        anchor: hexValue,
+      await this.storage.saveMappedAnchor(hexKey, hexValue, {
+        hash: hexValue,
         id: transaction.id,
+        sender: transaction.sender,
         blockHeight,
         position,
       });

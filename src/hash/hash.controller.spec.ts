@@ -27,7 +27,7 @@ describe('HashController', () => {
 
   function spy() {
     const hash = {
-      anchor: jest.spyOn(hashService, 'anchor').mockImplementation(async () => chainpoint),
+      hash: jest.spyOn(hashService, 'anchor').mockImplementation(async () => chainpoint),
     };
 
     const node = {
@@ -65,9 +65,9 @@ describe('HashController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ chainpoint });
 
-      expect(spies.hash.anchor.mock.calls.length).toBe(1);
-      expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
-      expect(spies.hash.anchor.mock.calls[0][1]).toBe('hex');
+      expect(spies.hash.hash.mock.calls.length).toBe(1);
+      expect(spies.hash.hash.mock.calls[0][0]).toBe(hash);
+      expect(spies.hash.hash.mock.calls[0][1]).toBe('hex');
     });
 
     test('should anchor hash to the blockchain when auth is enabled and given', async () => {
@@ -85,9 +85,9 @@ describe('HashController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ chainpoint });
 
-      expect(spies.hash.anchor.mock.calls.length).toBe(1);
-      expect(spies.hash.anchor.mock.calls[0][0]).toBe(hash);
-      expect(spies.hash.anchor.mock.calls[0][1]).toBe('hex');
+      expect(spies.hash.hash.mock.calls.length).toBe(1);
+      expect(spies.hash.hash.mock.calls[0][0]).toBe(hash);
+      expect(spies.hash.hash.mock.calls[0][1]).toBe('hex');
     });
 
     test('should return an unauthorized when auth is enabled and not given', async () => {

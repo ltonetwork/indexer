@@ -5,14 +5,16 @@ export interface StorageInterface {
   setValue(key: string, value: string): Promise<void>;
   delValue(key: string): Promise<void>;
   incrValue(key: string, amount?: number): Promise<void>;
+
   addObject(key: string, value: object): Promise<void>;
   setObject(key: string, value: object): Promise<void>;
   getObject(key: string): Promise<object>;
 
-  sadd(key: string, value: string): Promise<void>;
-  srem(key: string, value: string): Promise<void>;
-  getArray(key: string): Promise<string[]>;
+  addToSet(key: string, value: string): Promise<void>;
+  delFromSet(key: string, value: string): Promise<void>;
+  getSet(key: string): Promise<string[]>;
 
+  // TODO: Too high level
   countTx(type: string, address: string): Promise<number>;
   indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void>;
   getTx(type: string, address: string, limit: number, offset: number): Promise<string[]>;

@@ -51,11 +51,10 @@ export class HashController {
     try {
       const chainpoint = await this.hash.anchor(hash, encoding);
 
-      if (!chainpoint) {
+      if (!chainpoint)
         res.status(202).end();
-      } else {
+      else
         res.status(200).json({chainpoint});
-      }
     } catch (e) {
       this.logger.error(`hash-controller: failed to anchor '${e}'`, { stack: e.stack });
 

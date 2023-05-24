@@ -7,6 +7,7 @@ import { RedisStorageService } from './types/redis.storage.service';
 import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
+import exp = require("constants");
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -128,21 +129,28 @@ describe('StorageService', () => {
 
     describe('saveMappedAnchor()', () => {
       test('should save the anchor', async () => {
+        const addToSet = jest.spyOn(redisStorageService, 'addToSet').mockImplementation(() => Promise.resolve());
         const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(() => Promise.resolve());
 
         const key = 'C9ED6179884278AF4E0D91286E52B688EF5B6998AF5E33D7E574DA3A719CA3D8';
+        const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
 
         const transaction = {
-          anchor: '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE',
+          hash,
           id: 'fake_transaction',
+          sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
           block: '1',
           position: '10',
         };
 
-        await storageService.saveMappedAnchor(key, transaction);
+        await storageService.saveMappedAnchor(key, transaction.hash, transaction);
+
+        expect(addToSet.mock.calls.length).toBe(1);
+        expect(addToSet.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`)
+        expect(addToSet.mock.calls[0][1]).toBe(hash);
 
         expect(addObject.mock.calls.length).toBe(1);
-        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`);
+        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
         expect(addObject.mock.calls[0][1]).toEqual(transaction);
       });
     });
@@ -153,10 +161,10 @@ describe('StorageService', () => {
             .spyOn(redisStorageService, 'getObject')
             .mockImplementation(() => Promise.resolve({some: 'data'}));
 
-        const result = await storageService.getMappedAnchor('some-anchor');
+        const result = await storageService.getMappedAnchor('some-key', 'some-value');
 
         expect(getObject).toHaveBeenCalledTimes(1);
-        expect(getObject).toHaveBeenCalledWith('lto:mapped-anchor:some-anchor');
+        expect(getObject).toHaveBeenCalledWith('lto:mapped-anchor:some-key:some-value');
         expect(result).toEqual({some: 'data'});
       });
     });
@@ -530,7 +538,7 @@ describe('StorageService', () => {
       describe('saveAssociation()', () => {
         test('should save associations using regular storage', async () => {
           const graphSave = jest.spyOn(redisGraphService, 'saveAssociation').mockImplementation(async () => {});
-          const redisSave = jest.spyOn(redisStorageService, 'sadd').mockImplementation(async () => {});
+          const redisSave = jest.spyOn(redisStorageService, 'addToSet').mockImplementation(async () => {});
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';
@@ -547,7 +555,7 @@ describe('StorageService', () => {
 
       describe('getAssociations()', () => {
         test('should retrieve associations using regular storage', async () => {
-          const redisGet = jest.spyOn(redisStorageService, 'getArray').mockImplementation(async () => []);
+          const redisGet = jest.spyOn(redisStorageService, 'getSet').mockImplementation(async () => []);
           const graphGet = jest.spyOn(redisGraphService, 'getAssociations').mockImplementation(async () => {
             return { children: [], parents: [] };
           });
@@ -568,7 +576,7 @@ describe('StorageService', () => {
 
       describe('removeAssociation()', () => {
         test('should remove associations using regular storage', async () => {
-          const redisRemove = jest.spyOn(redisStorageService, 'srem').mockImplementation(async () => {});
+          const redisRemove = jest.spyOn(redisStorageService, 'delFromSet').mockImplementation(async () => {});
           const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
 
           const sender = 'some-sender';
@@ -595,7 +603,7 @@ describe('StorageService', () => {
       describe('saveAssociation()', () => {
         test('should save associations using redis graph', async () => {
           const graphSave = jest.spyOn(redisGraphService, 'saveAssociation').mockImplementation(async () => {});
-          const redisSave = jest.spyOn(redisStorageService, 'sadd').mockImplementation(async () => {});
+          const redisSave = jest.spyOn(redisStorageService, 'addToSet').mockImplementation(async () => {});
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';
@@ -612,7 +620,7 @@ describe('StorageService', () => {
 
       describe('getAssociations()', () => {
         test('should retrieve associations using redis graph', async () => {
-          const redisGet = jest.spyOn(redisStorageService, 'getArray').mockImplementation(async () => []);
+          const redisGet = jest.spyOn(redisStorageService, 'getSet').mockImplementation(async () => []);
           const graphGet = jest.spyOn(redisGraphService, 'getAssociations').mockImplementation(async () => {
             return { children: [], parents: [] };
           });
@@ -632,7 +640,7 @@ describe('StorageService', () => {
 
       describe('removeAssociation()', () => {
         test('should remove associations using redis graph', async () => {
-          const redisRemove = jest.spyOn(redisStorageService, 'srem').mockImplementation(async () => {});
+          const redisRemove = jest.spyOn(redisStorageService, 'delFromSet').mockImplementation(async () => {});
           const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
 
           const sender = 'some-sender';
