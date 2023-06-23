@@ -1,6 +1,6 @@
-import { chainIdOf } from "@lto-network/lto-crypto";
-import {KeyType, MethodMap} from "../enums/verification-method.enum";
-import { DIDVerificationMethod } from "../../interfaces/identity.interface";
+import { chainIdOf } from '@lto-network/lto-crypto';
+import {KeyType, MethodMap} from '../enums/verification-method.enum';
+import { DIDVerificationMethod } from '../../interfaces/identity.interface';
 
 export interface MethodObject {
     sender: string;
