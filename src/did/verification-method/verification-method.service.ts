@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../../logger/logger.service';
-import { IndexDocumentType } from '../../index/model/index.model';
 import { StorageService } from '../../storage/storage.service';
 import { VerificationMethod } from './model/verification-method.model';
 
@@ -12,7 +11,7 @@ export class VerificationMethodService {
     private readonly storage: StorageService,
   ) {
   }
-  
+
   async getMethodsFor(address: string): Promise<VerificationMethod[]> {
     return this.storage.getVerificationMethods(address);
   }

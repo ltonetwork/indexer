@@ -9,7 +9,7 @@ import { IndexDocumentType } from '../index/model/index.model';
 import {KeyType} from './verification-method/enums/verification-method.enum';
 
 @Injectable()
-export class IdentityService {
+export class DidService {
   constructor(
     readonly logger: LoggerService,
     readonly config: ConfigService,
@@ -19,7 +19,7 @@ export class IdentityService {
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
-    const { id, sender, senderPublicKey, senderKeyType, recipient, associationType } = transaction;
+    const { sender, senderPublicKey, senderKeyType, recipient, associationType } = transaction;
 
     this.logger.debug(`identity: saving ${senderKeyType} public key ${senderPublicKey} for address ${sender}`);
     await this.storage.savePublicKey(sender, senderPublicKey, senderKeyType);
@@ -27,7 +27,9 @@ export class IdentityService {
     if ( transaction.type === 20) {
       await Promise.all(transaction.accounts.map( account => {
         const address = buildAddress(base58decode(account.publicKey), chainIdOf(sender));
-        this.logger.debug(`identity: register ${account.keyType} public key ${account.publicKey} for address ${address}`);
+        this.logger.debug(
+          `identity: register ${account.keyType} public key ${account.publicKey} for address ${address}`,
+        );
         return this.storage.savePublicKey(address, account.publicKey, account.keyType);
       }));
     }

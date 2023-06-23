@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IdentityModuleConfig } from '../identity.module';
+import { IdentityModuleConfig } from '../did.module';
 import { VerificationMethodService } from './verification-method.service';
 import { StorageService } from '../../storage/storage.service';
 import { VerificationMethod } from './model/verification-method.model';
@@ -16,8 +16,12 @@ describe('VerificationMethodService', () => {
 
   function spy() {
     const storage = {
-      saveVerificationMethod: jest.spyOn(storageService, 'saveVerificationMethod').mockImplementation(async () => { }),
-      getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods').mockImplementation(async () => [ expectedMethod ]),
+      saveVerificationMethod: jest.spyOn(storageService, 'saveVerificationMethod').mockImplementation(
+        async () => { },
+      ),
+      getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods').mockImplementation(
+        async () => [ expectedMethod ],
+      ),
     };
 
     return { storage };
@@ -41,7 +45,12 @@ describe('VerificationMethodService', () => {
       associationType: 0x0107,
     };
 
-    expectedMethod = new VerificationMethod(transaction.associationType, transaction.sender, transaction.recipient, Math.floor(mockTimestamp / 1000));
+    expectedMethod = new VerificationMethod(
+      transaction.associationType,
+      transaction.sender,
+      transaction.recipient,
+      Math.floor(mockTimestamp / 1000),
+    );
   });
 
   afterEach(async () => {
