@@ -4,10 +4,9 @@ import { StorageModuleConfig } from './storage.module';
 import { StorageService } from './storage.service';
 import { ConfigService } from '../config/config.service';
 import { RedisStorageService } from './types/redis.storage.service';
-import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
+import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
-import exp = require("constants");
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -146,7 +145,7 @@ describe('StorageService', () => {
         await storageService.saveMappedAnchor(key, transaction.hash, transaction);
 
         expect(addToSet.mock.calls.length).toBe(1);
-        expect(addToSet.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`)
+        expect(addToSet.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`);
         expect(addToSet.mock.calls[0][1]).toBe(hash);
 
         expect(addObject.mock.calls.length).toBe(1);

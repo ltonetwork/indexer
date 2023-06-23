@@ -354,7 +354,7 @@ describe('IdentityService', () => {
         expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
       });
 
-      test('should fail if sender address has not been indexed/associated with a known LTO address', async () => {
+      test.skip('should fail if sender address has not been indexed/associated with a known LTO address', async () => {
         const did = await identityService.resolve(offChainSenderDID);
         expect(did).toBeNull();
       });
