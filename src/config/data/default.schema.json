@@ -59,10 +59,18 @@
   },
   "identity": {
     "indexing": {
-      "doc": "Indexing of identities",
+      "doc": "Deprecated; use DID_INDEXING instead",
       "default": false,
       "format": "Boolean",
       "env": "IDENTITY_INDEXING"
+    }
+  },
+  "did": {
+    "indexing": {
+      "doc": "Indexing of DID documents",
+      "default": false,
+      "format": "Boolean",
+      "env": "DID_INDEXING"
     }
   },
   "transaction": {

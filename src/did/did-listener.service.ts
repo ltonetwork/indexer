@@ -8,23 +8,22 @@ import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 
 @Injectable()
 export class DidListenerService implements OnModuleInit {
-
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
-    private readonly identityService: DidService,
+    private readonly didService: DidService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
   ) { }
 
   async onModuleInit() {
-    if (!this.config.isIdentityIndexingEnabled()) {
+    if (!this.config.isDIDIndexingEnabled()) {
       this.logger.debug(`transaction-listener: Not processing identities`);
       return;
     }
 
     this.indexEmitter.on(
       IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.identityService.index(val),
+      (val: IndexEventsReturnType['IndexTransaction']) => this.didService.index(val),
     );
   }
 }

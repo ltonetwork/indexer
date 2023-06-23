@@ -72,8 +72,8 @@ export class ConfigService {
     return this.config.get('storage.type') as StorageTypeEnum;
   }
 
-  isIdentityIndexingEnabled(): boolean {
-    return !!this.config.get('identity.indexing');
+  isDIDIndexingEnabled(): boolean {
+    return !!this.config.get('did.indexing') || !!this.config.get('identity.indexing');
   }
 
   isTransactionIndexingEnabled(): boolean {
