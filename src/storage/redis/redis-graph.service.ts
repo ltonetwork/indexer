@@ -3,7 +3,6 @@ import { Graph, ResultSet } from 'redisgraph.js';
 
 import { ConfigService } from '../../config/config.service';
 import { LoggerService } from '../../logger/logger.service';
-import { RedisService } from '../../redis/redis.service';
 
 @Injectable()
 export class RedisGraphService {

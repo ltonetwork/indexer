@@ -50,6 +50,8 @@
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.4.0",
     "@nestjs/swagger": "^6.3.0",
+    "@noble/hashes": "^1.3.1",
+    "@scure/base": "^1.1.1",
     "await-lock": "^2.2.2",
     "axios": "^1.3.6",
     "convict": "^6.2.4",

@@ -39,6 +39,11 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     return this.connection.mget(keys);
   }
 
+  async addValue(key: string, value: string): Promise<void> {
+    await this.init();
+    await this.connection.add(key, value);
+  }
+
   async setValue(key: string, value: string): Promise<void> {
     await this.init();
     await this.connection.set(key, value);
@@ -68,16 +73,21 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     return res ? JSON.parse(res) : {};
   }
 
-  async addToSet(key: string, value: string): Promise<void> {
+  async addToSet(key: string, value: string | Buffer): Promise<void> {
     await this.connection.sadd(key, value);
   }
 
-  async delFromSet(key: string, value: string): Promise<void> {
+  async delFromSet(key: string, value: string | Buffer): Promise<void> {
     await this.connection.srem(key, value);
   }
 
   async getSet(key: string): Promise<string[]> {
     return this.connection.sget(key);
+  }
+
+  async getBufferSet(key: string): Promise<Buffer[]> {
+    const values = await this.connection.sget(key);
+    return values.map(value => Buffer.from(value));
   }
 
   async countTx(type: string, address: string): Promise<number> {

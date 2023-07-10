@@ -3,7 +3,7 @@ import { RedisService } from '../redis/redis.service';
 import { StorageModuleConfig } from './storage.module';
 import { StorageService } from './storage.service';
 import { ConfigService } from '../config/config.service';
-import { RedisStorageService } from './types/redis.storage.service';
+import { RedisStorageService } from './redis/redis.storage.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
 import { RedisGraphService } from './redis-graph/redis-graph.service';

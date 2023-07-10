@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
-import {chainIdOf, deriveAddress, convertED2KeyToX2, buildAddress, base58decode} from '@lto-network/lto-crypto';
+import {chainIdOf, buildAddress, base58decode } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
-import { DIDDocument } from './interfaces/identity.interface';
+import { DIDDocument, DIDResolution } from './interfaces/identity.interface';
 import { IndexDocumentType } from '../index/model/index.model';
-import {KeyType} from './verification-method/enums/verification-method.enum';
+import {KeyType} from './verification-method/model/verification-method.types';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class DidService {
@@ -19,172 +20,132 @@ export class DidService {
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
-    const { sender, senderPublicKey, senderKeyType, recipient, associationType } = transaction;
+    const { sender, senderPublicKey, senderKeyType, associationType, timestamp } = transaction;
 
     this.logger.debug(`identity: saving ${senderKeyType} public key ${senderPublicKey} for address ${sender}`);
-    await this.storage.savePublicKey(sender, senderPublicKey, senderKeyType);
+    await this.storage.savePublicKey(sender, senderPublicKey, senderKeyType, timestamp);
 
-    if ( transaction.type === 20) {
-      await Promise.all(transaction.accounts.map( account => {
-        const address = buildAddress(base58decode(account.publicKey), chainIdOf(sender));
-        this.logger.debug(
-          `identity: register ${account.keyType} public key ${account.publicKey} for address ${address}`,
-        );
-        return this.storage.savePublicKey(address, account.publicKey, account.keyType);
-      }));
-    }
-
-    if (recipient && associationType >= 0x0100 && associationType <= 0x0110) {
-      await this.verificationMethodService.save(associationType, sender, recipient);
+    if (transaction.type === 20) {
+      await this.indexRegister(transaction);
+    } else if (transaction.type === 16 && associationType >= 0x0100 && associationType <= 0x0120) {
+      await this.indexIssue(transaction);
+    } else if (transaction.type === 17 && associationType >= 0x0100 && associationType <= 0x0120) {
+      await this.indexRevoke(transaction);
     }
   }
 
-  async resolve(did: string): Promise<DIDDocument> {
-    if (did.match(/^did:ltox:/)) {
-      return this.resolveCrossChain(did);
-    }
-
-    const { address } = did.match(/^(?:did:lto:)?(?<address>\w+)(?::derived:(?<secret>\w+))?$/).groups;
-
-    const { publicKey, keyType } = await this.storage.getPublicKey(address);
-    const id = `did:lto:${address}`;
-
-    if (!publicKey) {
-      return null;
-    }
-
-    return this.asDidDocument(id, address, publicKey, keyType);
+  private async indexRegister(tx: Transaction): Promise<void> {
+    await Promise.all(tx.accounts.map( account => {
+      const address = buildAddress(base58decode(account.publicKey), chainIdOf(tx.sender));
+      this.logger.debug(
+        `identity: register ${account.keyType} public key ${account.publicKey} for address ${address}`,
+      );
+      return this.storage.savePublicKey(address, account.publicKey, account.keyType, tx.timestamp);
+    }));
   }
 
-  // TODO: This is wrong. The ltox address must be generated from the public key and indexed.
-  async resolveCrossChain(did: string): Promise<DIDDocument> {
-    const address = did.replace(/^(?:did:ltox:\w+:\w+:)?/, '');
-
-    const associations = await this.storage.getAssociations(address);
-
-    if (!associations.children || associations.children.length === 0) {
-      this.logger.debug(`identity-service: Cross chain address has no association to a known LTO address`);
-      return null;
-    }
-
-    const alias = associations.children[0];
-    const { publicKey, keyType } = await this.storage.getPublicKey(alias);
-
-    const alsoKnownAs = associations.children.map(each => `did:lto:${each}`);
-
-    return this.asDidDocument(did, alias, publicKey, keyType, alsoKnownAs);
+  private async indexIssue(tx: Transaction): Promise<void> {
+    const data = Object.fromEntries(tx.data.map(({ key, value }) => [key, !!value]));
+    await this.verificationMethodService.save(tx.associationType, tx.sender, tx.recipient, data, tx.timestamp);
   }
 
-  async getAddress(did: string): Promise<string> {
-    const { address, secret } = did.match(/(?:did:lto:)?(?<addr>\w+)(?::derived:(?<secret>\w+))?/).groups;
-
-    if (!secret) {
-      return address;
-    }
-
-    const { publicKey } = await this.storage.getPublicKey(address);
-
-    return deriveAddress({ public: publicKey }, secret, chainIdOf(address));
+  private async indexRevoke(tx: Transaction): Promise<void> {
+    await this.verificationMethodService.revoke(tx.sender, tx.recipient, tx.timestamp);
   }
 
-  async getDerivedIdentity(address: string, secret: string): Promise<DIDDocument> {
-    const { publicKey, keyType } = await this.storage.getPublicKey(address);
+  async resolve(did: string, versionTime?: Date): Promise<DIDResolution> {
+    versionTime ??= new Date();
+    const address = did.replace(/^did:lto:/, '');
 
-    if (!publicKey) {
-      return null;
-    }
-
-    return this.asDidDocument(`${address}:derived:${secret}`, address, publicKey, keyType);
-  }
-
-  async asDidDocument(
-      id: string,
-      address: string,
-      publicKey: string,
-      keyType: string,
-      alsoKnownAs?: string[],
-  ): Promise<DIDDocument> {
-    const didDocument: DIDDocument = {
+    const created = await this.storage.getAccountCreated(address);
+    if (!created || created > versionTime.getTime()) return {
       '@context': 'https://www.w3.org/ns/did/v1',
-      id,
-      'verificationMethod': [
-        {
-          id: `did:lto:${address}#sign`,
-          type: KeyType[keyType],
-          controller: `did:lto:${address}`,
-          publicKeyBase58: publicKey,
-          blockchainAccountId: `${address}@lto:${chainIdOf(address)}`,
-        },
-      ],
+      'didDocument': {},
+      'didDocumentMetadata': {},
+      'didResolutionMetadata': {
+        didUrl: this.config.getNodeUrl() + '/identifiers/' + did,
+        error: 'notFound', // TODO: notFound or invalidDid
+      },
     };
 
-    if (alsoKnownAs && alsoKnownAs.length > 0) {
-      didDocument.alsoKnownAs = alsoKnownAs;
-    }
+    // TODO: deactivated
+    // TODO: next update
 
-    const verificationMethods = await this.verificationMethodService.getMethodsFor(address);
-    let hasConfiguredOwn = false;
+    return {
+      '@context': 'https://www.w3.org/ns/did/v1',
+      'didDocument': this.asDidDocument(`did:lto:${address}`, address, versionTime),
+      'didDocumentMetadata': {
+        created: created ? new Date(created) : null,
+        updated: false,
+        deactivated: false,
+      },
+      'didResolutionMetadata': {
+        didUrl: this.config.getNodeUrl() + '/identifiers/' + did,
+        method: 'lto',
+        networkId: chainIdOf(address),
+      },
+    };
+  }
+
+  async resolveDocument(did: string, versionTime?: Date): Promise<DIDDocument | null> {
+    versionTime ??= new Date();
+    const address = did.replace(/^did:lto:/, '');
+
+    const created = await this.storage.getAccountCreated(address);
+    if (!created || created > versionTime.getTime()) return null;
+
+    // TODO: deactivated
+
+    return this.asDidDocument(`did:lto:${address}`, address, versionTime);
+  }
+
+  private async asDidDocument(id: string, address: string, versionTime: Date): Promise<DIDDocument> {
+    const didDocument: DIDDocument = { '@context': 'https://www.w3.org/ns/did/v1', id, 'verificationMethod': [] };
+    const verificationMethods = await this.verificationMethodService.getMethodsFor(address, versionTime.getTime());
 
     for (const verificationMethod of verificationMethods) {
       const {publicKey: recipientPublicKey, keyType: recipientKeyType} =
           await this.storage.getPublicKey(verificationMethod.recipient);
 
       if (!recipientPublicKey) {
-        this.logger.warn(`Skipping verification method of ${verificationMethod.recipient} for did:lto:${address}. Public key unknown`);
+        this.logger.warn(
+          `Skipping verification method of ${verificationMethod.recipient} for did:lto:${address}. Public key unknown`,
+        );
         continue;
       }
 
       const didVerificationMethod = verificationMethod.asDidMethod(recipientPublicKey, KeyType[recipientKeyType]);
 
-      if (verificationMethod.recipient !== verificationMethod.sender) {
-        didDocument.verificationMethod.push(didVerificationMethod);
-      } else {
-        hasConfiguredOwn = true;
-      }
+      didDocument.verificationMethod.push(didVerificationMethod);
 
       if (verificationMethod.isAuthentication()) {
-        didDocument.authentication = didDocument.authentication
-          ? [...didDocument.authentication, didVerificationMethod.id]
-          : [didVerificationMethod.id];
+        didDocument.authentication ??= [];
+        didDocument.authentication.push(didVerificationMethod.id);
       }
 
       if (verificationMethod.isAssertionMethod()) {
-        didDocument.assertionMethod = didDocument.assertionMethod
-          ? [...didDocument.assertionMethod, didVerificationMethod.id]
-          : [didVerificationMethod.id];
+        didDocument.assertionMethod ??= [];
+        didDocument.assertionMethod.push(didVerificationMethod.id);
       }
 
-      if (verificationMethod.isKeyAgreement() && recipientKeyType === 'ed25519') {
-        const keyAgreement = {
-          id: `${didVerificationMethod.controller}#encrypt`,
-          type: 'X25519KeyAgreementKey2019',
-          controller: didVerificationMethod.controller,
-          publicKeyBase58: convertED2KeyToX2(recipientPublicKey),
-          blockchainAccountId: didVerificationMethod.blockchainAccountId,
-        };
-
-        didDocument.keyAgreement = didDocument.keyAgreement
-          ? [...didDocument.keyAgreement, keyAgreement]
-          : [keyAgreement];
+      if (verificationMethod.isKeyAgreement()) {
+        didDocument.keyAgreement ??= [];
+        didDocument.keyAgreement.push(
+          recipientKeyType === 'ed25519'
+            ? verificationMethod.asDidMethod(recipientPublicKey, KeyType.x25519)
+            : didVerificationMethod.id,
+        );
       }
 
       if (verificationMethod.isCapabilityInvocation()) {
-        didDocument.capabilityInvocation = didDocument.capabilityInvocation
-          ? [...didDocument.capabilityInvocation, didVerificationMethod.id]
-          : [didVerificationMethod.id];
+        didDocument.capabilityInvocation ??= [];
+        didDocument.capabilityInvocation.push(didVerificationMethod.id);
       }
 
       if (verificationMethod.isCapabilityDelegation()) {
-        didDocument.capabilityDelegation = didDocument.capabilityDelegation
-          ? [...didDocument.capabilityDelegation, didVerificationMethod.id]
-          : [didVerificationMethod.id];
+        didDocument.capabilityDelegation ??= [];
+        didDocument.capabilityDelegation.push(didVerificationMethod.id);
       }
-    }
-
-    if (!hasConfiguredOwn) {
-      didDocument.authentication = [`did:lto:${address}#sign`, ...(didDocument.authentication || [])];
-      didDocument.assertionMethod = [`did:lto:${address}#sign`, ...(didDocument.assertionMethod || [])];
-      didDocument.capabilityInvocation = [`did:lto:${address}#sign`, ...(didDocument.capabilityInvocation || [])];
     }
 
     return didDocument;

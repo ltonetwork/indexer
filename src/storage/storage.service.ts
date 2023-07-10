@@ -3,12 +3,12 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { StorageInterface } from './interfaces/storage.interface';
 import { StorageTypeEnum } from '../config/enums/storage.type.enum';
-import storageServices from './types';
+import storageServices from './index';
 import { pascalCase } from 'pascal-case';
 import { LoggerService } from '../logger/logger.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
 import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
-import { RedisGraphService } from './redis-graph/redis-graph.service';
+import { RedisGraphService } from './redis/redis-graph.service';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -62,35 +62,35 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
-    return this.storage.getObject(`lto:pubkey:${address}`)
-        .catch(() => {
-          const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
-          return publicKey ? {publicKey, keyType: 'ed25519'} : {};
-        })
-        .then(r => r ? r as {publicKey: string, keyType: string} : {});
+  getAccountCreated(address: string): Promise<number | null> {
+    return this.storage.getValue(`lto:created:${address}`)
+      .catch(() => null)
+      .then((r) => Number(r));
   }
 
-  savePublicKey(address: string, publicKey: string, keyType: string) {
-    return this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType});
+  getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
+    return this.storage.getObject(`lto:pubkey:${address}`)
+      .catch(() => {
+        const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
+        return publicKey ? {publicKey, keyType: 'ed25519'} : {};
+      })
+      .then(r => r ? r as {publicKey: string, keyType: string} : {});
+  }
+
+  savePublicKey(address: string, publicKey: string, keyType: string, timestamp: number) {
+    return Promise.all([
+      this.storage.addValue(`lto:created:${address}`, String(timestamp)),
+      this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType}),
+    ]);
   }
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
-    const methods = await this.storage.getObject(`lto:verification:${address}`);
-
-    return Object.values(methods)
-      .filter(data => !data.revokedAt)
-      .map(data => new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt));
+    const set = await this.storage.getBufferSet(`lto:did-methods:${address}`);
+    return set.map((buf) => VerificationMethod.from(buf));
   }
 
   async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
-    const data = await this.storage.getObject(`lto:verification:${address}`);
-
-    const newData = verificationMethod.json();
-
-    data[newData.recipient] = newData;
-
-    return this.storage.setObject(`lto:verification:${address}`, data);
+    return this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
   }
 
   async getRolesFor(address: string): Promise<RawRole | {}> {
@@ -230,8 +230,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   private formatPeriod(date: Date): string {
     const year = String(date.getUTCFullYear());
-    const month = ('0' + (date.getUTCMonth() + 1)).substr(-2);
-    const day = ('0' + date.getUTCDate()).substr(-2);
+    const month = ('0' + (date.getUTCMonth() + 1)).slice(-2);
+    const day = ('0' + date.getUTCDate()).slice(-2);
 
     return `${year}-${month}-${day} 00:00:00`;
   }

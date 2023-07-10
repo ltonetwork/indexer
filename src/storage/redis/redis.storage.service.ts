@@ -42,6 +42,11 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     return this.connection.mget(keys);
   }
 
+  async addValue(key: string, value: string): Promise<void> {
+    await this.init();
+    await this.connection.setnx(key, value);
+  }
+
   async setValue(key: string, value: string): Promise<void> {
     await this.init();
     await this.connection.set(key, value);
@@ -60,23 +65,21 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
   async addObject(key: string, value: object): Promise<void> {
     await this.init();
 
-    const promises = Object.keys(value).map(field => this.connection.hsetnx(key, field, value[field]));
+    const promises = Object.entries(value).map(([f, v]) => this.connection.hsetnx(key, f, v));
     await Promise.all(promises);
   }
 
   async setObject(key: string, value: object): Promise<void> {
     await this.init();
-
-    const promises = Object.keys(value).map(field => this.connection.hset(key, field, value[field]));
-    await Promise.all(promises);
+    await this.connection.hset(key, ...Object.entries(value).flat());
   }
 
-  async addToSet(key: string, value: string): Promise<void> {
+  async addToSet(key: string, value: string | Buffer): Promise<void> {
     await this.init();
     await this.connection.sadd(key, value);
   }
 
-  async delFromSet(key: string, value: string): Promise<void> {
+  async delFromSet(key: string, value: string | Buffer): Promise<void> {
     await this.init();
     await this.connection.srem(key, value);
   }
@@ -85,6 +88,13 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     await this.init();
 
     const res = await this.connection.smembers(key);
+    return res ?? [];
+  }
+
+  async getBufferSet(key: string): Promise<Buffer[]> {
+    await this.init();
+
+    const res = await this.connection.smembersBuffer(key);
     return res ?? [];
   }
 

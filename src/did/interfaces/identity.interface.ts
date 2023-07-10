@@ -2,18 +2,33 @@ export interface DIDVerificationMethod {
   id: string;
   type: string;
   controller: string;
-  publicKeyBase58: string;
-  blockchainAccountId: string;
+  publicKeyMultibase: string;
 }
 
 export interface DIDDocument {
   '@context': string;
   id: string;
-  alsoKnownAs?: string[];
   verificationMethod: DIDVerificationMethod[];
   authentication?: string[];
   assertionMethod?: string[];
-  keyAgreement?: DIDVerificationMethod[];
-  capabilityInvocation?: string[];
+  keyAgreement?: Array<string | DIDVerificationMethod>;
+  capabilityInvocation?: Array<string | DIDVerificationMethod>;
   capabilityDelegation?: string[];
+}
+
+export interface DIDResolution {
+  '@context': string;
+  didDocument: DIDDocument | {};
+  didDocumentMetadata: {
+    created: string;
+    updated: boolean;
+    deactivated: boolean;
+    nextUpdate?: string;
+  } | {};
+  didResolutionMetadata: {
+    didUrl: string;
+    error?: string;
+    method?: 'lto';
+    networkId?: string;
+  };
 }
