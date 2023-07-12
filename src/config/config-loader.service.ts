@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import util from 'util';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
 import convict from 'convict';
 import schema from './data/default.schema.json';
 
@@ -47,10 +46,16 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     this.config = convict(schema);
     this.config.loadFile(`${dir}/default.config.json`);
 
-    const env = `${dir}/${this.config.get('env')}.config.json`;
+    const files = [
+      `${dir}/${this.config.get('env')}.config.json`,
+      '/etc/lto-index/config.json',
+      `${dir}/local.config.json`,
+    ];
 
-    if (await util.promisify(fs.exists)(env)) {
-      this.config.loadFile(env);
+    for (const file of files) {
+      if (await fs.access(file, fs.constants.F_OK).then(() => true, () => false)) {
+        this.config.loadFile(file);
+      }
     }
 
     await this.validate();

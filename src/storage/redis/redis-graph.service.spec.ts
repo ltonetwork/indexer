@@ -50,8 +50,6 @@ describe('RedisGraphService', () => {
 
   describe('saveAssociation()', () => {
     test('should save an association', async () => {
-      const spies = spy();
-
       await redisGraphService.saveAssociation('sender', 'recipient');
 
       const query = jest.mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
@@ -64,8 +62,6 @@ describe('RedisGraphService', () => {
 
   describe('getAssociations()', () => {
     test('should return the associations from an address', async () => {
-      const spies = spy();
-
       await redisGraphService.getAssociations('address');
 
       const query = jest.mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
@@ -79,8 +75,6 @@ describe('RedisGraphService', () => {
 
   describe('removeAssociation()', () => {
     test('should remove the associations from an address and the child', async () => {
-      const spies = spy();
-
       await redisGraphService.removeAssociation('sender', 'recipient');
 
       const query = jest.mocked(graphMock.mock.instances[0].query).mockImplementation(async () => ({} as ResultSet));
