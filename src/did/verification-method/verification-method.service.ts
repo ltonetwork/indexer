@@ -11,14 +11,15 @@ export class VerificationMethodService {
     private readonly storage: StorageService,
   ) {}
 
-  async getMethodsFor(address: string, timestamp?: number): Promise<VerificationMethod[]> {
-    timestamp ??= Date.now();
+  async getMethodsFor(address: string, versionTime?: Date): Promise<VerificationMethod[]> {
+    versionTime ??= new Date();
+    const timestamp = Math.floor(versionTime.getTime() / 1000);
 
     const methods = (await this.storage.getVerificationMethods(address))
       .sort((a, b) => b.timestamp - a.timestamp);
     const map = new Map<string, VerificationMethod>();
 
-    methods.unshift(new VerificationMethod(0x11f, address, address, timestamp));
+    methods.unshift(new VerificationMethod(0x11f, address, timestamp));
 
     for (const method of methods) {
       if (method.timestamp <= timestamp) map.set(method.recipient, method);
@@ -44,20 +45,19 @@ export class VerificationMethodService {
   ): Promise<void> {
     const verificationMethod = new VerificationMethod(
       type | this.getTypeForRelationship(data),
-      sender,
       recipient,
       Math.floor(timestamp / 1000),
       expires ? Math.floor(expires / 1000) : undefined,
     );
 
-    this.logger.debug(`identity: 'did:lto${sender}' add verification method 'did:lto:${recipient}'`);
+    this.logger.debug(`DID: 'did:lto:${sender}' add verification method '${recipient}'`);
     await this.storage.saveVerificationMethod(sender, verificationMethod);
   }
 
   async revoke(sender: string, recipient: string, timestamp: number): Promise<void> {
-    const verificationMethod = new VerificationMethod(0, sender, recipient, timestamp);
+    const verificationMethod = new VerificationMethod(0, recipient, timestamp);
 
-    this.logger.debug(`identity: 'did:lto${sender}' revoke verification method 'did:lto:${recipient}'`);
+    this.logger.debug(`DID: 'did:lto${sender}' revoke verification method '${recipient}'`);
     await this.storage.saveVerificationMethod(sender, verificationMethod);
   }
 }

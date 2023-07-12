@@ -1,16 +1,21 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 
-import { DidService } from './did.service';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
+import { IndexDocumentType } from '../index/model/index.model';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { base58decode, buildAddress, chainIdOf } from '@lto-network/lto-crypto';
+import { StorageService } from '../storage/storage.service';
+import { VerificationMethodService } from './verification-method/verification-method.service';
 
 @Injectable()
 export class DidListenerService implements OnModuleInit {
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
-    private readonly didService: DidService,
+    private readonly storage: StorageService,
+    private readonly verificationMethodService: VerificationMethodService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
   ) { }
@@ -23,7 +28,42 @@ export class DidListenerService implements OnModuleInit {
 
     this.indexEmitter.on(
       IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.didService.index(val),
+      (val: IndexEventsReturnType['IndexTransaction']) => this.index(val),
     );
+  }
+
+  async index(index: IndexDocumentType): Promise<void> {
+    const { transaction } = index;
+    const { sender, senderPublicKey, senderKeyType, associationType, timestamp } = transaction;
+
+    this.logger.debug(`DID: saving ${senderKeyType} public key ${senderPublicKey} for address ${sender}`);
+    await this.storage.savePublicKey(sender, senderPublicKey, senderKeyType, timestamp);
+
+    if (transaction.type === 20) {
+      await this.indexRegister(transaction);
+    } else if (transaction.type === 16 && associationType >= 0x0100 && associationType <= 0x0120) {
+      await this.indexIssue(transaction);
+    } else if (transaction.type === 17 && associationType >= 0x0100 && associationType <= 0x0120) {
+      await this.indexRevoke(transaction);
+    }
+  }
+
+  private async indexRegister(tx: Transaction): Promise<void> {
+    await Promise.all(tx.accounts.map( account => {
+      const address = buildAddress(base58decode(account.publicKey), chainIdOf(tx.sender));
+      this.logger.debug(
+        `DID: register ${account.keyType} public key ${account.publicKey} for address ${address}`,
+      );
+      return this.storage.savePublicKey(address, account.publicKey, account.keyType, tx.timestamp);
+    }));
+  }
+
+  private async indexIssue(tx: Transaction): Promise<void> {
+    const data = Object.fromEntries((tx.data ?? []).map(({ key, value }) => [key, !!value]));
+    await this.verificationMethodService.save(tx.associationType, tx.sender, tx.recipient, data, tx.timestamp);
+  }
+
+  private async indexRevoke(tx: Transaction): Promise<void> {
+    await this.verificationMethodService.revoke(tx.sender, tx.recipient, tx.timestamp);
   }
 }

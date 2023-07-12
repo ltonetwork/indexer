@@ -1,8 +1,6 @@
 import level from 'level';
 import offsetStream from 'offset-stream';
 import AwaitLock from 'await-lock';
-import { sha256 } from '@noble/hashes/sha256';
-import { bytesToHex } from '@noble/hashes/utils';
 
 /**
  * Stored all values in memory until flush() is called.
@@ -80,14 +78,12 @@ export class LeveldbConnection {
     return value;
   }
 
-  async sadd(key: string, value: string | Buffer): Promise<any> {
-    const subkey = typeof value === 'string' ? value : bytesToHex(sha256(value));
-    return this.add(`${key}!${subkey}`, value.toString());
+  async sadd(key: string, value: string): Promise<any> {
+    return this.add(`${key}!${value}`, value);
   }
 
-  async srem(key: string, value: string | Buffer): Promise<any> {
-    const subkey = typeof value === 'string' ? value : bytesToHex(sha256(value));
-    return this.del(`${key}!${subkey}`);
+  async srem(key: string, value: string): Promise<any> {
+    return this.del(`${key}!${value}`);
   }
 
   async sget(key: string): Promise<string[]> {

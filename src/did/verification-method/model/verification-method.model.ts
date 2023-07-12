@@ -5,7 +5,6 @@ import { base58 } from '@scure/base';
 export class VerificationMethod {
   constructor(
     public relationships: number,
-    public sender: string,
     public recipient: string,
     public timestamp: number,
     public expires?: number,
@@ -23,9 +22,9 @@ export class VerificationMethod {
   }
 
   public toBuffer() {
-    const buf = Buffer.alloc(32);
+    const buf = Buffer.alloc(38);
     buf.writeUInt32BE(this.relationships, 0);
-    Buffer.from(base58.decode(this.sender)).copy(buf, 4, 26);
+    Buffer.from(base58.decode(this.recipient)).copy(buf, 4, 0, 26);
     buf.writeUInt32BE(this.timestamp, 30);
     buf.writeUInt32BE(this.expires ?? 0, 34);
 
@@ -34,11 +33,11 @@ export class VerificationMethod {
 
   public static from(buf: Buffer): VerificationMethod {
     const relationships = buf.readUInt32BE(0);
-    const sender = base58.encode(buf.slice(4, 30));
+    const recipient = base58.encode(buf.slice(4, 30));
     const timestamp = buf.readUInt32BE(30);
     const expires = buf.readUInt32BE(34);
 
-    return new VerificationMethod(relationships, sender, sender, timestamp, expires || undefined);
+    return new VerificationMethod(relationships, recipient, timestamp, expires || undefined);
   }
 
   private bitCompare(set: number, mask: number): boolean {

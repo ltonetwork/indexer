@@ -128,7 +128,7 @@ describe('IdentityService', () => {
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyBase58: sender.ed25519PublicKey,
             blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
@@ -165,14 +165,14 @@ describe('IdentityService', () => {
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyBase58: sender.ed25519PublicKey,
             blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
           },
           {
             id: `did:lto:${recipient.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${recipient.address}`,
             publicKeyBase58: recipient.ed25519PublicKey,
             blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
@@ -223,7 +223,7 @@ describe('IdentityService', () => {
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyBase58: sender.ed25519PublicKey,
             blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
@@ -270,21 +270,21 @@ describe('IdentityService', () => {
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyBase58: sender.ed25519PublicKey,
             blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
           },
           {
             id: `did:lto:${recipient.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${recipient.address}`,
             publicKeyBase58: recipient.ed25519PublicKey,
             blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
           },
           {
             id: `did:lto:${secondRecipient.address}#sign`,
-            type: 'Ed25519VerificationKey2018',
+            type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${secondRecipient.address}`,
             publicKeyBase58: secondRecipient.ed25519PublicKey,
             blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
@@ -339,7 +339,7 @@ describe('IdentityService', () => {
           'verificationMethod': [
             {
               id: `did:lto:${sender.address}#sign`,
-              type: 'Ed25519VerificationKey2018',
+              type: 'Ed25519VerificationKey2020',
               controller: `did:lto:${sender.address}`,
               publicKeyBase58: sender.ed25519PublicKey,
               blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,

@@ -108,11 +108,6 @@ export class ConfigService {
     return !!this.config.get('association.use_graph');
   }
 
-  // @todo: add support for more chains (only eip155 for now)
-  isEip155IndexingEnabled(): boolean {
-    return !!this.config.get('cross_chain.eip155.indexing');
-  }
-
   isAnchorBatched(): boolean {
     return !!this.config.get('anchor.batch');
   }

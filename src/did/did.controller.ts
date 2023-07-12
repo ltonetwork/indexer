@@ -99,7 +99,7 @@ export class DidController {
       },
     },
   })
-  async getIdentity(
+  async resolve(
     @Param('did') did: string,
     @Req() req: Request,
     @Res() res: Response,

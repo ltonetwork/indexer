@@ -74,11 +74,11 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
   }
 
   async addToSet(key: string, value: string | Buffer): Promise<void> {
-    await this.connection.sadd(key, value);
+    await this.connection.sadd(key, value instanceof Buffer ? value.toString('base64') : value);
   }
 
   async delFromSet(key: string, value: string | Buffer): Promise<void> {
-    await this.connection.srem(key, value);
+    await this.connection.srem(key, value instanceof Buffer ? value.toString('base64') : value);
   }
 
   async getSet(key: string): Promise<string[]> {
@@ -87,7 +87,7 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async getBufferSet(key: string): Promise<Buffer[]> {
     const values = await this.connection.sget(key);
-    return values.map(value => Buffer.from(value));
+    return values.map(value => Buffer.from(value, 'base64'));
   }
 
   async countTx(type: string, address: string): Promise<number> {

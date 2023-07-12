@@ -26,7 +26,6 @@ export interface DIDResolution {
     nextUpdate?: string;
   } | {};
   didResolutionMetadata: {
-    didUrl: string;
     error?: string;
     method?: 'lto';
     networkId?: string;
