@@ -103,22 +103,22 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     return this.connection.hgetall(key);
   }
 
-  async countTx(type: string, address: string): Promise<number> {
+  async countSortedSet(key: string): Promise<number> {
     await this.init();
-    return this.connection.zcard(`lto:tx:${type}:${address}`);
+    return this.connection.zcard(key);
   }
 
-  async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
+  async addToSortedSet(key: string, value: string, score: number): Promise<void> {
     await this.init();
-    await this.connection.zadd(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
+    await this.connection.zadd(key, score, value);
   }
 
-  async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
+  async getSortedSet(key, limit?: number, offset?: number): Promise<string[]> {
     await this.init();
 
-    const start = Number(offset);
-    const stop = (Number(limit) - 1) + start;
+    const start = Number(offset ?? 0);
+    const stop = limit !== undefined ? (Number(limit) - 1) + start : -1;
 
-    return this.connection.zrevrange(`lto:tx:${type}:${address}`, start, stop);
+    return this.connection.zrevrange(key, start, stop);
   }
 }

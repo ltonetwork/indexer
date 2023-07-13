@@ -237,15 +237,15 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   countTx(type: string, address: string): Promise<number> {
-    return this.storage.countTx(type, address);
+    return this.storage.countSortedSet(`lto:tx:${type}:${address}`);
   }
 
   indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
-    return this.storage.indexTx(type, address, transactionId, timestamp);
+    return this.storage.addToSortedSet(`lto:tx:${type}:${address}`, transactionId, timestamp);
   }
 
   getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
-    return this.storage.getTx(type, address, limit, offset);
+    return this.storage.getSortedSet(`lto:tx:${type}:${address}`, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {

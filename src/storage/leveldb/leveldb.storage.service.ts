@@ -90,18 +90,18 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
     return values.map(value => Buffer.from(value, 'base64'));
   }
 
-  async countTx(type: string, address: string): Promise<number> {
+  async countSortedSet(key: string): Promise<number> {
     await this.init();
-    return this.connection.countTx(`lto:tx:${type}:${address}`);
+    return this.connection.zcount(key);
   }
 
-  async getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
+  async getSortedSet(key: string, limit?: number, offset?: number): Promise<string[]> {
     await this.init();
-    return this.connection.paginate(`lto:tx:${type}:${address}`, limit, offset);
+    return this.connection.paginate(key, limit, offset);
   }
 
-  async indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
+  async addToSortedSet(key: string, value: string, score: number): Promise<void> {
     await this.init();
-    await this.connection.zaddWithScore(`lto:tx:${type}:${address}`, String(timestamp), transactionId);
+    await this.connection.zaddWithScore(key, String(score), value);
   }
 }

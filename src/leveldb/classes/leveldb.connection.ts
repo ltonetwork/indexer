@@ -139,7 +139,7 @@ export class LeveldbConnection {
     });
   }
 
-  async countTx(key: string): Promise<number> {
+  async zcount(key: string): Promise<number> {
     return Number(await this.get(`${key}:count`));
   }
 

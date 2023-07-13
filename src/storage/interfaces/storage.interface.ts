@@ -15,8 +15,7 @@ export interface StorageInterface {
   getSet(key: string): Promise<string[]>;
   getBufferSet(key: string): Promise<Buffer[]>;
 
-  // TODO: Too high level
-  countTx(type: string, address: string): Promise<number>;
-  indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void>;
-  getTx(type: string, address: string, limit: number, offset: number): Promise<string[]>;
+  countSortedSet(key: string): Promise<number>;
+  addToSortedSet(key: string, value: string, score: number): Promise<void>;
+  getSortedSet(key: string, limit?: number, offset?: number): Promise<string[]>;
 }
