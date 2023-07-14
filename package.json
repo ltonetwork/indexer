@@ -13,7 +13,7 @@
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "start:dev": "nodemon",
     "build": "rm -rf dist && tsc",
-    "postbuild": "cp -r src/common/config/data dist/config/; cp package.json dist/",
+    "postbuild": "cp -r src/data dist/config/; cp package.json dist/",
     "prestart:prod": "npm run build",
     "start:prod": "node dist/main.js",
     "start:hmr": "node dist/server",

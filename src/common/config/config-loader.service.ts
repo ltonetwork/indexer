@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import path from 'path';
 import fs from 'fs/promises';
 import convict from 'convict';
-import schema from './data/default.schema.json';
+import schema from '../../config/default.schema.json';
 
 type SchemaOf<T extends convict.Schema<any>> = T extends convict.Schema<infer R> ? R : any;
 type Schema = SchemaOf<typeof schema>;
@@ -40,7 +40,7 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async load(): Promise<void> {
-    const dir = path.resolve(__dirname, './data');
+    const dir = path.resolve(__dirname, '../../config');
 
     // @ts-ignore
     this.config = convict(schema);
