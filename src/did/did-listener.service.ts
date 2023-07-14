@@ -45,15 +45,15 @@ export class DidListenerService implements OnModuleInit {
       await this.indexIssue(transaction);
     } else if (transaction.type === 17 && associationType >= 0x0100 && associationType <= 0x0120) {
       await this.indexRevoke(transaction);
+    } else if (transaction.type === 12) {
+      await this.indexServices(transaction);
     }
   }
 
   private async indexRegister(tx: Transaction): Promise<void> {
     await Promise.all(tx.accounts.map( account => {
       const address = buildAddress(base58decode(account.publicKey), chainIdOf(tx.sender));
-      this.logger.debug(
-        `DID: register ${account.keyType} public key ${account.publicKey} for address ${address}`,
-      );
+      this.logger.debug(`DID: register ${account.keyType} public key ${account.publicKey} for address ${address}`);
       return this.storage.savePublicKey(address, account.publicKey, account.keyType, tx.timestamp);
     }));
   }
@@ -65,5 +65,20 @@ export class DidListenerService implements OnModuleInit {
 
   private async indexRevoke(tx: Transaction): Promise<void> {
     await this.verificationMethodService.revoke(tx.sender, tx.recipient, tx.timestamp);
+  }
+
+  private async indexServices(tx: Transaction): Promise<void> {
+    const services: Record<string, any> = tx.data!
+      .filter(({ key }) => key.startsWith('did:service:'))
+      .map(({ key, value }) => ({
+        id: `did:lto:${tx.sender}#` + key.replace(/^did:service:/, ''),
+        ...(typeof value === 'string' ? JSON.parse(value) : {}),
+        timestamp: tx.timestamp,
+      }));
+
+    await Promise.all(services.map(async (service) => {
+      this.logger.debug(`DID: 'did:lto:${tx.sender}' add service '${service.id.replace(/^did:lto:\w+#/, '')}'`);
+      await this.storage.saveService(tx.sender, service);
+    }));
   }
 }

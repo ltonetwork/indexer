@@ -12,20 +12,19 @@ export class VerificationMethodService {
   ) {}
 
   async getMethodsFor(address: string, versionTime?: Date): Promise<VerificationMethod[]> {
-    versionTime ??= new Date();
-    const timestamp = Math.floor(versionTime.getTime() / 1000);
+    const versionTimestamp = versionTime?.getTime() ?? Date.now();
 
     const methods = (await this.storage.getVerificationMethods(address))
       .sort((a, b) => b.timestamp - a.timestamp);
     const map = new Map<string, VerificationMethod>();
 
-    methods.unshift(new VerificationMethod(0x11f, address, timestamp));
+    methods.unshift(new VerificationMethod(0x11f, address, versionTimestamp));
 
     for (const method of methods) {
-      if (method.timestamp <= timestamp) map.set(method.recipient, method);
+      if (method.timestamp <= versionTimestamp) map.set(method.recipient, method);
     }
 
-    return Array.from(map.values()).filter((method) => method.isActive(timestamp));
+    return Array.from(map.values()).filter((method) => method.isActive(versionTimestamp));
   }
 
   private getTypeForRelationship(methods: Record<string, boolean>): number {
@@ -43,12 +42,8 @@ export class VerificationMethodService {
     timestamp: number,
     expires?: number,
   ): Promise<void> {
-    const verificationMethod = new VerificationMethod(
-      type | this.getTypeForRelationship(data),
-      recipient,
-      Math.floor(timestamp / 1000),
-      expires ? Math.floor(expires / 1000) : undefined,
-    );
+    type = type | this.getTypeForRelationship(data);
+    const verificationMethod = new VerificationMethod(type, recipient, timestamp, expires);
 
     this.logger.debug(`DID: 'did:lto:${sender}' add verification method '${recipient}'`);
     await this.storage.saveVerificationMethod(sender, verificationMethod);

@@ -104,6 +104,32 @@ export class LeveldbConnection {
     });
   }
 
+  async hset(key: string, field: string, value: string): Promise<any> {
+    return this.set(`${key}!${field}`, value);
+  }
+
+  async hget(key: string, field: string): Promise<string> {
+    return this.get(`${key}!${field}`);
+  }
+
+  async hgetall(key: string): Promise<Record<string, string>> {
+    const _obj = {};
+
+    return new Promise((resolve, reject) => {
+      return this.connection
+        .createReadStream({
+          gte: key + '!',
+          lte: key + '~',
+        })
+        .on('data', data => {
+          _obj[data.key.replace(/^.+!/, '')] = data.value;
+        })
+        .on('error', err => reject(err))
+        .on('close', () => reject({}))
+        .on('end', () => resolve(_obj));
+    });
+  }
+
   async zaddWithScore(key: string, score: string, value: string): Promise<any> {
     const rand = (Math.random() + 1).toString(36).substring(6);
     const newKey = `${key}!${score}:${rand}`;

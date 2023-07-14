@@ -4,7 +4,7 @@ import { ConfigService } from '../config/config.service';
 import { StorageService } from '../storage/storage.service';
 import {chainIdOf } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
-import { DIDDocument, DIDResolution } from './interfaces/identity.interface';
+import { DIDDocument, DIDResolution, DIDService } from './interfaces/identity.interface';
 import {KeyType} from './verification-method/model/verification-method.types';
 
 @Injectable()
@@ -111,6 +111,24 @@ export class DidService {
       }
     }
 
+    didDocument.service = await this.getServices(address, versionTime);
+
     return didDocument;
+  }
+
+  private async getServices(address: string, versionTime: Date): Promise<DIDService[]> {
+    const versionTimestamp = versionTime?.getTime() ?? Date.now();
+
+    const services = (await this.storage.getServices(address))
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    const map = new Map<string, DIDService>();
+
+    for (const serviceWithTimestamp of services) {
+      const { timestamp, ...service } = serviceWithTimestamp;
+      if (timestamp <= versionTimestamp) map.set(service.id, service);
+    }
+
+    return Array.from(map.values()).filter((service) => !!service.type);
   }
 }

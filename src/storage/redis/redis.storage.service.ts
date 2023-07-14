@@ -62,16 +62,21 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     await this.connection.incrby(key, amount);
   }
 
-  async addObject(key: string, value: object): Promise<void> {
+  async addObject(key: string, value: Record<string | number, any>): Promise<void> {
     await this.init();
 
     const promises = Object.entries(value).map(([f, v]) => this.connection.hsetnx(key, f, v));
     await Promise.all(promises);
   }
 
-  async setObject(key: string, value: object): Promise<void> {
+  async setObject(key: string, value: Record<string | number, any>): Promise<void> {
     await this.init();
     await this.connection.hset(key, ...Object.entries(value).flat());
+  }
+
+  async getObject(key: string): Promise<Record<string | number, any>> {
+    await this.init();
+    return this.connection.hgetall(key);
   }
 
   async addToSet(key: string, value: string | Buffer): Promise<void> {
@@ -96,11 +101,6 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
 
     const res = await this.connection.smembersBuffer(key);
     return res ?? [];
-  }
-
-  async getObject(key: string): Promise<object> {
-    await this.init();
-    return this.connection.hgetall(key);
   }
 
   async countSortedSet(key: string): Promise<number> {

@@ -6,9 +6,9 @@ export interface StorageInterface {
   delValue(key: string): Promise<void>;
   incrValue(key: string, amount?: number): Promise<void>;
 
-  addObject(key: string, value: object): Promise<void>;
-  setObject(key: string, value: object): Promise<void>;
-  getObject(key: string): Promise<object>;
+  addObject(key: string, value: Record<string | number, any>): Promise<void>;
+  setObject(key: string, value: Record<string | number, any>): Promise<void>;
+  getObject(key: string): Promise<Record<string | number, any>>;
 
   addToSet(key: string, value: string | Buffer): Promise<void>;
   delFromSet(key: string, value: string | Buffer): Promise<void>;

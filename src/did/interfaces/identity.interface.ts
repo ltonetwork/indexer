@@ -14,6 +14,7 @@ export interface DIDDocument {
   keyAgreement?: Array<string | DIDVerificationMethod>;
   capabilityInvocation?: Array<string | DIDVerificationMethod>;
   capabilityDelegation?: string[];
+  service?: DIDService[];
 }
 
 export interface DIDResolution {
@@ -30,4 +31,11 @@ export interface DIDResolution {
     method?: 'lto';
     networkId?: string;
   };
+}
+
+export interface DIDService {
+  id: string;
+  type: string;
+  serviceEndpoint: string | Record<string, any> | Array<string | Record<string, any>>;
+  [key: string]: any;
 }

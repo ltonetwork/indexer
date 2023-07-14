@@ -9,7 +9,7 @@ describe('VerificationMethodService', () => {
   let verificationMethodService: VerificationMethodService;
   let storageService: StorageService;
 
-  const mockTimestamp: number = 1623162267;
+  const mockTimestamp: number = 1623162267000;
 
   let transaction: any;
   let expectedMethod: VerificationMethod;
@@ -49,7 +49,7 @@ describe('VerificationMethodService', () => {
       transaction.associationType,
       transaction.sender,
       transaction.recipient,
-      Math.floor(mockTimestamp / 1000),
+      mockTimestamp,
     );
   });
 
@@ -61,7 +61,13 @@ describe('VerificationMethodService', () => {
     test('should save a new verification method', async () => {
       const spies = spy();
 
-      await verificationMethodService.save(transaction.associationType, transaction.sender, transaction.recipient);
+      await verificationMethodService.save(
+        transaction.associationType,
+        transaction.sender,
+        transaction.recipient,
+        {},
+        mockTimestamp,
+      );
 
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveVerificationMethod).toHaveBeenNthCalledWith(1, transaction.sender, expectedMethod);
@@ -75,8 +81,7 @@ describe('VerificationMethodService', () => {
       const result = await verificationMethodService.getMethodsFor(transaction.sender);
 
       expect(spies.storage.getVerificationMethods.mock.calls.length).toBe(1);
-      expect(spies.storage.getVerificationMethods.mock.calls[0][0])
-        .toBe(transaction.sender);
+      expect(spies.storage.getVerificationMethods.mock.calls[0][0]).toBe(transaction.sender);
       expect(result).toStrictEqual([expectedMethod]);
     });
   });
@@ -87,19 +92,16 @@ describe('VerificationMethodService', () => {
 
       const expectedRevokedMethod = new VerificationMethod(
         transaction.associationType,
-        transaction.sender,
         transaction.recipient,
-        Math.floor(mockTimestamp / 1000),
-        Math.floor(mockTimestamp / 1000),
+        mockTimestamp,
+        mockTimestamp,
       );
 
-      await verificationMethodService.revoke(expectedMethod);
+      await verificationMethodService.revoke(transaction.sender, transaction.recipient, mockTimestamp);
 
       expect(spies.storage.saveVerificationMethod.mock.calls.length).toBe(1);
-      expect(spies.storage.saveVerificationMethod.mock.calls[0][0])
-        .toBe(transaction.sender);
-      expect(spies.storage.saveVerificationMethod.mock.calls[0][1])
-        .toStrictEqual(expectedRevokedMethod);
+      expect(spies.storage.saveVerificationMethod.mock.calls[0][0]).toBe(transaction.sender);
+      expect(spies.storage.saveVerificationMethod.mock.calls[0][1]).toStrictEqual(expectedRevokedMethod);
     });
   });
 });

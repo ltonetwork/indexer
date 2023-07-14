@@ -22,11 +22,11 @@ export class VerificationMethod {
   }
 
   public toBuffer() {
-    const buf = Buffer.alloc(38);
+    const buf = Buffer.alloc(46);
     buf.writeUInt32BE(this.relationships, 0);
     Buffer.from(base58.decode(this.recipient)).copy(buf, 4, 0, 26);
-    buf.writeUInt32BE(this.timestamp, 30);
-    buf.writeUInt32BE(this.expires ?? 0, 34);
+    buf.writeBigUInt64BE(BigInt(this.timestamp), 30);
+    buf.writeBigUInt64BE(BigInt(this.expires ?? 0), 38);
 
     return buf;
   }
@@ -34,8 +34,8 @@ export class VerificationMethod {
   public static from(buf: Buffer): VerificationMethod {
     const relationships = buf.readUInt32BE(0);
     const recipient = base58.encode(buf.slice(4, 30));
-    const timestamp = buf.readUInt32BE(30);
-    const expires = buf.readUInt32BE(34);
+    const timestamp = Number(buf.readBigUInt64BE(30));
+    const expires = Number(buf.readBigUInt64BE(38));
 
     return new VerificationMethod(relationships, recipient, timestamp, expires || undefined);
   }
