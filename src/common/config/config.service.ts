@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
-import { RawRole } from '../../trust-network/interfaces/trust-network.interface';
+import { RawRoles } from '../../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {
@@ -88,12 +88,12 @@ export class ConfigService {
     return !!this.config.get(`stats.${token}`);
   }
 
-  getRoles(): RawRole {
-    return this.config.get('trust_network.roles');
+  getRoles(): RawRoles {
+    return this.config.get('trust_network');
   }
 
   isTrustNetworkIndexingEnabled(): boolean {
-    return !!this.config.get('trust_network.indexing');
+    return Object.keys(this.config.get('trust_network')).length > 1;
   }
 
   getAssociationIndexing(): 'none' | 'trust' | 'all' {

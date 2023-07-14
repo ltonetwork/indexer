@@ -16,20 +16,12 @@
     "env": "API_PREFIX"
   },
   "trust_network": {
-    "indexing": {
-      "doc": "Indexing of role associations of the trust network",
-      "default": false,
-      "format": "Boolean",
-      "env": "TRUST_NETWORK_INDEXING"
-    },
-    "roles": {
-      "doc": "Configuration for roles on trust network",
-      "format": "Object",
-      "env": "TRUST_NETWORK_ROLES",
-      "default": {
-        "root": {
-          "description": "The root role"
-        }
+    "doc": "Configuration for roles of trust network",
+    "format": "Object",
+    "env": "TRUST_NETWORK",
+    "default": {
+      "root": {
+        "description": "The root role"
       }
     }
   },
