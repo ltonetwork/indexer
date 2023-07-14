@@ -65,9 +65,5 @@ describe('ConfigService', () => {
         },
       });
     });
-
-    test('isEip155IndexingEnabled()', () => {
-      expect(configService.isEip155IndexingEnabled()).toBe(false);
-    });
   });
 });

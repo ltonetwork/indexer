@@ -14,7 +14,7 @@ export interface DIDDocument {
   keyAgreement?: Array<string | DIDVerificationMethod>;
   capabilityInvocation?: Array<string | DIDVerificationMethod>;
   capabilityDelegation?: string[];
-  service?: DIDService[];
+  service?: DIDDocumentService[];
 }
 
 export interface DIDResolution {
@@ -33,7 +33,7 @@ export interface DIDResolution {
   };
 }
 
-export interface DIDService {
+export interface DIDDocumentService {
   id: string;
   type: string;
   serviceEndpoint: string | Record<string, any> | Array<string | Record<string, any>>;

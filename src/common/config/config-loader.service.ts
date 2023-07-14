@@ -46,10 +46,13 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     this.config = convict(schema);
     this.config.loadFile(`${dir}/default.config.json`);
 
+    const env = this.config.get('env');
+
     const files = [
-      `${dir}/${this.config.get('env')}.config.json`,
+      `${dir}/${env}.config.json`,
       '/etc/lto-index/config.json',
-      `${dir}/local.config.json`,
+      `${dir}/local/default.config.json`,
+      `${dir}/local/${env}.config.json`,
     ];
 
     for (const file of files) {

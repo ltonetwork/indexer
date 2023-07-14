@@ -50,4 +50,4 @@ volumes
 lto-index
 
 # Local configuration
-local.config.json
+/src/config/local

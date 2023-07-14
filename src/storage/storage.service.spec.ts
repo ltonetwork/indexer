@@ -6,7 +6,7 @@ import { ConfigService } from '../common/config/config.service';
 import { RedisStorageService } from './redis/redis.storage.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
 import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
-import { RedisGraphService } from './redis-graph/redis-graph.service';
+import { RedisGraphService } from './redis/redis-graph.service';
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -157,8 +157,8 @@ describe('StorageService', () => {
     describe('getMappedAnchor()', () => {
       test('should get the anchor from database', async () => {
         const getObject = jest
-            .spyOn(redisStorageService, 'getObject')
-            .mockImplementation(() => Promise.resolve({some: 'data'}));
+          .spyOn(redisStorageService, 'getObject')
+          .mockImplementation(() => Promise.resolve({some: 'data'}));
 
         const result = await storageService.getMappedAnchor('some-key', 'some-value');
 
@@ -171,25 +171,28 @@ describe('StorageService', () => {
     describe('indexTx()', () => {
       test('should index transaction type for address', async () => {
         const transaction = 'fake_transaction';
-        const indexTx = jest.spyOn(redisStorageService, 'indexTx').mockImplementation(() => Promise.resolve());
+        const addToSortedSet = jest
+          .spyOn(redisStorageService, 'addToSortedSet')
+          .mockImplementation(() => Promise.resolve());
 
         const type = 'anchor';
         const address = 'fake_address_WITH_CAPS';
         const timestamp = 1;
         await storageService.indexTx(type, address, transaction, timestamp);
 
-        expect(indexTx.mock.calls.length).toBe(1);
-        expect(indexTx.mock.calls[0][0]).toBe(type);
-        expect(indexTx.mock.calls[0][1]).toBe(address);
-        expect(indexTx.mock.calls[0][2]).toBe(transaction);
-        expect(indexTx.mock.calls[0][3]).toBe(timestamp);
+        expect(addToSortedSet.mock.calls.length).toBe(1);
+        expect(addToSortedSet.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
+        expect(addToSortedSet.mock.calls[0][1]).toBe(transaction);
+        expect(addToSortedSet.mock.calls[0][2]).toBe(timestamp);
       });
     });
 
     describe('getTx()', () => {
       test('should get transaction type for address', async () => {
         const transactions = ['fake_transaction'];
-        const getTx = jest.spyOn(redisStorageService, 'getTx').mockImplementation(async () => transactions);
+        const getSortedSet = jest
+          .spyOn(redisStorageService, 'getSortedSet')
+          .mockImplementation(async () => transactions);
 
         const type = 'anchor';
         const address = 'fake_address';
@@ -197,25 +200,23 @@ describe('StorageService', () => {
         const offset = 0;
         expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
 
-        expect(getTx.mock.calls.length).toBe(1);
-        expect(getTx.mock.calls[0][0]).toBe(type);
-        expect(getTx.mock.calls[0][1]).toBe(address);
-        expect(getTx.mock.calls[0][2]).toBe(limit);
-        expect(getTx.mock.calls[0][3]).toBe(offset);
+        expect(getSortedSet.mock.calls.length).toBe(1);
+        expect(getSortedSet.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
+        expect(getSortedSet.mock.calls[0][1]).toBe(limit);
+        expect(getSortedSet.mock.calls[0][2]).toBe(offset);
       });
     });
 
     describe('countTx()', () => {
       test('should count transaction type for address', async () => {
-        const countTx = jest.spyOn(redisStorageService, 'countTx').mockImplementation(async () => 3);
+        const countSortedSet = jest.spyOn(redisStorageService, 'countSortedSet').mockImplementation(async () => 3);
 
         const type = 'anchor';
         const address = 'fake_address';
         expect(await storageService.countTx(type, address)).toEqual(3);
 
-        expect(countTx.mock.calls.length).toBe(1);
-        expect(countTx.mock.calls[0][0]).toBe(type);
-        expect(countTx.mock.calls[0][1]).toBe(address);
+        expect(countSortedSet.mock.calls.length).toBe(1);
+        expect(countSortedSet.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
       });
     });
 
@@ -338,7 +339,6 @@ describe('StorageService', () => {
 
           const mockVerificationMethod = new VerificationMethod(
             mockMethod.relationships,
-            mockMethod.sender,
             mockMethod.recipient,
             mockMethod.createdAt,
           );
@@ -372,7 +372,6 @@ describe('StorageService', () => {
 
           const mockVerificationMethod = new VerificationMethod(
             mockMethod.relationships,
-            mockMethod.sender,
             'some-other-recipient',
             mockMethod.createdAt,
           );
@@ -386,7 +385,7 @@ describe('StorageService', () => {
           expect(setObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
           expect(setObject.mock.calls[0][1]).toStrictEqual({
             'mock-recipient': mockMethod,
-            'some-other-recipient': mockVerificationMethod.json(),
+            'some-other-recipient': mockVerificationMethod,
           });
         });
 
@@ -400,7 +399,6 @@ describe('StorageService', () => {
 
           const mockVerificationMethod = new VerificationMethod(
             0x0107,
-            mockMethod.sender,
             mockMethod.recipient,
             mockMethod.createdAt,
           );

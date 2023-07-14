@@ -2,14 +2,14 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { IdentityModuleConfig } from './did.module';
-import { DidService } from './did.service';
+import { DIDService } from './did.service';
 import { ConfigService } from '../common/config/config.service';
 import { LoggerService } from '../common/logger/logger.service';
 
 describe('DidController', () => {
   let module: TestingModule;
   let loggerService: LoggerService;
-  let identityService: DidService;
+  let identityService: DIDService;
   let configService: ConfigService;
   let app: INestApplication;
 
@@ -32,7 +32,7 @@ describe('DidController', () => {
 
     configService = module.get<ConfigService>(ConfigService);
     loggerService = module.get<LoggerService>(LoggerService);
-    identityService = module.get<DidService>(DidService);
+    identityService = module.get<DIDService>(DIDService);
   });
 
   afterEach(async () => {

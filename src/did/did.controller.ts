@@ -2,14 +2,14 @@ import { Controller, Res, Get, Param, Req } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { LoggerService } from '../common/logger/logger.service';
-import { DidService } from './did.service';
+import { DIDService } from './did.service';
 
 @Controller('identifiers')
 @ApiTags('DID')
 export class DidController {
   constructor(
     private readonly logger: LoggerService,
-    private readonly service: DidService,
+    private readonly service: DIDService,
   ) {}
 
   @Get(':did')

@@ -4,11 +4,11 @@ import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import {chainIdOf } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
-import { DIDDocument, DIDResolution, DIDService } from './interfaces/identity.interface';
+import { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/identity.interface';
 import {KeyType} from './verification-method/model/verification-method.types';
 
 @Injectable()
-export class DidService {
+export class DIDService {
   constructor(
     readonly logger: LoggerService,
     readonly config: ConfigService,
@@ -116,13 +116,13 @@ export class DidService {
     return didDocument;
   }
 
-  private async getServices(address: string, versionTime: Date): Promise<DIDService[]> {
+  private async getServices(address: string, versionTime: Date): Promise<DIDDocumentService[]> {
     const versionTimestamp = versionTime?.getTime() ?? Date.now();
 
     const services = (await this.storage.getServices(address))
       .sort((a, b) => b.timestamp - a.timestamp);
 
-    const map = new Map<string, DIDService>();
+    const map = new Map<string, DIDDocumentService>();
 
     for (const serviceWithTimestamp of services) {
       const { timestamp, ...service } = serviceWithTimestamp;

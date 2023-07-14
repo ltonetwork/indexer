@@ -11,7 +11,7 @@ import { StorageService } from '../storage/storage.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 
 @Injectable()
-export class DidListenerService implements OnModuleInit {
+export class DIDListenerService implements OnModuleInit {
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
     private readonly storage: StorageService,

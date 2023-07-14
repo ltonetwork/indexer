@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IdentityModuleConfig } from './did.module';
-import { DidService } from './did.service';
+import { DIDService } from './did.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { VerificationMethod } from './verification-method/model/verification-method.model';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 
-describe('IdentityService', () => {
+describe('DIDService', () => {
   let module: TestingModule;
   let storageService: StorageService;
-  let identityService: DidService;
+  let service: DIDService;
   let verificationMethodService: VerificationMethodService;
 
   let transaction: Transaction;
@@ -42,7 +42,7 @@ describe('IdentityService', () => {
     };
 
     const storage = {
-      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation(async () => {}),
+      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation((async () => {}) as any),
       getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async (address: string) => {
         if (address === sender.address) return { publicKey: sender.ed25519PublicKey, keyType: 'ed25519' };
         if (address === recipient.address) return { publicKey: recipient.ed25519PublicKey, keyType: 'ed25519' };
@@ -62,7 +62,7 @@ describe('IdentityService', () => {
     module = await Test.createTestingModule(IdentityModuleConfig).compile();
 
     storageService = module.get<StorageService>(StorageService);
-    identityService = module.get<DidService>(DidService);
+    service = module.get<DIDService>(DIDService);
     verificationMethodService = module.get<VerificationMethodService>(VerificationMethodService);
 
     // @ts-ignore
@@ -81,46 +81,11 @@ describe('IdentityService', () => {
     await module.close();
   });
 
-  describe('index', () => {
-    test('should save public key of transaction sender', async () => {
-      const spies = spy();
-
-      await identityService.index({ transaction, blockHeight: 1, position: 0 });
-
-      expect(spies.verificationMethod.save).toHaveBeenCalledTimes(0);
-
-      expect(spies.storage.savePublicKey).toHaveBeenCalledTimes(1);
-      expect(spies.storage.savePublicKey)
-          .toHaveBeenNthCalledWith(1, transaction.sender, transaction.senderPublicKey, transaction.senderKeyType);
-    });
-
-    test('should save verification method if transaction has "recipient" property', async () => {
-      const spies = spy();
-
-      // @ts-ignore
-      // noinspection JSConstantReassignment
-      transaction.associationType = 0x0107;
-      // @ts-ignore
-      // noinspection JSConstantReassignment
-      transaction.recipient = '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ';
-
-      await identityService.index({ transaction, blockHeight: 1, position: 0 });
-
-      expect(spies.verificationMethod.save).toHaveBeenCalledTimes(1);
-      expect(spies.verificationMethod.save).toHaveBeenNthCalledWith(
-        1,
-        transaction.associationType,
-        transaction.sender,
-        transaction.recipient,
-      );
-    });
-  });
-
   describe('resolve()', () => {
     test('should resolve the identity with NO additional verification methods', async () => {
       const spies = spy();
 
-      const did = await identityService.resolve(sender.address);
+      const did = await service.resolve(sender.address);
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
@@ -148,13 +113,12 @@ describe('IdentityService', () => {
 
       spies.verificationMethod.getMethodsFor = jest
         .spyOn(verificationMethodService, 'getMethodsFor')
-        .mockImplementation(async (address: string) => {
+        .mockImplementation(async () => {
           const relationships = 0x0107; // authentication, assertion, key agreement
-
-          return [new VerificationMethod(relationships, address, recipient.address, 123456)];
+          return [new VerificationMethod(relationships, recipient.address, 0)];
         });
 
-      const did = await identityService.resolve(sender.address);
+      const did = await service.resolve(sender.address);
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
@@ -206,13 +170,12 @@ describe('IdentityService', () => {
 
       spies.verificationMethod.getMethodsFor = jest
           .spyOn(verificationMethodService, 'getMethodsFor')
-          .mockImplementation(async (address: string) => {
+          .mockImplementation(async () => {
             const relationships = 0x0105; // authentication, key agreement
-
-            return [new VerificationMethod(relationships, address, sender.address, 123456)];
+            return [new VerificationMethod(relationships, sender.address, 0)];
           });
 
-      const did = await identityService.resolve(sender.address);
+      const did = await service.resolve(sender.address);
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
@@ -249,17 +212,17 @@ describe('IdentityService', () => {
 
       spies.verificationMethod.getMethodsFor = jest
         .spyOn(verificationMethodService, 'getMethodsFor')
-        .mockImplementation(async (address: string) => {
+        .mockImplementation(async () => {
           const relationships = 0x0107; // authentication, assertion, key agreement
           const secondRelationships = 0x0115; // authentication, assertion, key agreement, capability delegation
 
           return [
-            new VerificationMethod(relationships, address, recipient.address, 123456),
-            new VerificationMethod(secondRelationships, address, secondRecipient.address, 123456),
+            new VerificationMethod(relationships, recipient.address, 0),
+            new VerificationMethod(secondRelationships, secondRecipient.address, 0),
           ];
         });
 
-      const did = await identityService.resolve(sender.address);
+      const did = await service.resolve(sender.address);
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(3);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
@@ -330,7 +293,7 @@ describe('IdentityService', () => {
           return { children: [sender.address], parents: [] };
         });
 
-        const did = await identityService.resolve(offChainSenderDID);
+        const did = await service.resolve(offChainSenderDID);
 
         expect(did).toEqual({
           '@context': 'https://www.w3.org/ns/did/v1',
@@ -355,7 +318,7 @@ describe('IdentityService', () => {
       });
 
       test.skip('should fail if sender address has not been indexed/associated with a known LTO address', async () => {
-        const did = await identityService.resolve(offChainSenderDID);
+        const did = await service.resolve(offChainSenderDID);
         expect(did).toBeNull();
       });
     });
