@@ -4,8 +4,8 @@ import { DidController } from './did.controller';
 import { DidService } from './did.service';
 import { DidListenerService } from './did-listener.service';
 
-import { LoggerModule } from '../logger/logger.module';
-import { ConfigModule } from '../config/config.module';
+import { LoggerModule } from '../common/logger/logger.module';
+import { ConfigModule } from '../common/config/config.module';
 import { EmitterModule } from '../emitter/emitter.module';
 import { StorageModule } from '../storage/storage.module';
 import { VerificationMethodService } from './verification-method/verification-method.service';

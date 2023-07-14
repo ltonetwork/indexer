@@ -4,7 +4,7 @@ import { NodeService } from './node.service';
 import { NodeApiService } from './node-api.service';
 import { StorageService } from '../storage/storage.service';
 import { AxiosResponse } from 'axios';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 
 describe('NodeService', () => {
   let module: TestingModule;

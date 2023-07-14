@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RequestService } from '../request/request.service';
+import { RequestService } from '../common/request/request.service';
 import { NodeModuleConfig } from './node.module';
 import { NodeApiService } from './node-api.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { AxiosResponse } from 'axios';
 
 describe('NodeApiService', () => {

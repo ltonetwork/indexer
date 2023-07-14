@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedisService } from '../../redis/redis.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { StorageModuleConfig } from '../storage.module';
-import { ConfigService } from '../../config/config.service';
+import { ConfigService } from '../../common/config/config.service';
 import { RedisStorageService } from './redis.storage.service';
 
 describe('RedisStorageService', () => {

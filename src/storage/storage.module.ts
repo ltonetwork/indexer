@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { StorageService } from './storage.service';
-import { LoggerModule } from '../logger/logger.module';
-import { ConfigModule } from '../config/config.module';
-import { RedisModule } from '../redis/redis.module';
-import { LeveldbModule } from '../leveldb/leveldb.module';
+import { LoggerModule } from '../common/logger/logger.module';
+import { ConfigModule } from '../common/config/config.module';
+import { RedisModule } from '../common/redis/redis.module';
+import { LeveldbModule } from '../common/leveldb/leveldb.module';
 import { RedisGraphService } from './redis/redis-graph.service';
 import { tokens } from './index';
 

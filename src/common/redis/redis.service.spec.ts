@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisModuleConfig } from './redis.module';
 import { RedisService } from './redis.service';
-import { REDIS } from '../constants';
+import { REDIS } from '../../constants';
 
 describe('RedisService', () => {
   let module: TestingModule;

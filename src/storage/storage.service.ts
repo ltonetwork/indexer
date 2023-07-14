@@ -1,11 +1,11 @@
 import { ModuleRef } from '@nestjs/core';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { StorageInterface } from './interfaces/storage.interface';
-import { StorageTypeEnum } from '../config/enums/storage.type.enum';
+import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
 import storageServices from './index';
 import { pascalCase } from 'pascal-case';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
 import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis/redis-graph.service';

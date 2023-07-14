@@ -1,5 +1,5 @@
 import redis from 'ioredis';
-import { REDIS } from '../constants';
+import { REDIS } from '../../constants';
 
 export const redisProviders = [
   {

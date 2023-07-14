@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../logger/logger.service';
-import { ConfigService } from '../config/config.service';
+import { LoggerService } from '../common/logger/logger.service';
+import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import {chainIdOf } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';

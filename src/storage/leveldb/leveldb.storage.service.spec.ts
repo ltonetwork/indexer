@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StorageModuleConfig } from '../storage.module';
-import { LeveldbService } from '../../leveldb/leveldb.service';
+import { LeveldbService } from '../../common/leveldb/leveldb.service';
 import { LeveldbStorageService } from './leveldb.storage.service';
 
 describe('LevelDbStorageService', () => {

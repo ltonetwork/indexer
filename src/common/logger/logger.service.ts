@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { WINSTON } from '../constants';
+import { WINSTON } from '../../constants';
 import winston from 'winston';
 import moment from 'moment';
 import util from 'util';

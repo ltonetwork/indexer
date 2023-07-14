@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
 import { Role, RoleData } from './interfaces/trust-network.interface';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 

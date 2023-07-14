@@ -3,7 +3,7 @@ import { leveldbProviders } from './leveldb.providers';
 import { LeveldbService } from './leveldb.service';
 import { LoggerModule } from '../logger/logger.module';
 import { ConfigModule } from '../config/config.module';
-import { EmitterModule } from '../emitter/emitter.module';
+import { EmitterModule } from '../../emitter/emitter.module';
 
 export const LevelModuleConfig = {
   imports: [LoggerModule, ConfigModule, EmitterModule],

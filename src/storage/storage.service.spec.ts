@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedisService } from '../redis/redis.service';
+import { RedisService } from '../common/redis/redis.service';
 import { StorageModuleConfig } from './storage.module';
 import { StorageService } from './storage.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { RedisStorageService } from './redis/redis.storage.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
-import { StorageTypeEnum } from '../config/enums/storage.type.enum';
+import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
 import { RedisGraphService } from './redis-graph/redis-graph.service';
 
 describe('StorageService', () => {

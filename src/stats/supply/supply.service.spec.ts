@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AxiosResponse } from 'axios';
 import { NodeService, ActivationStatus } from '../../node/node.service';
-import { RequestService } from '../../request/request.service';
+import { RequestService } from '../../common/request/request.service';
 import { StorageService } from '../../storage/storage.service';
 import { StatsModuleConfig } from '../stats.module';
 import { SupplyService } from './supply.service';

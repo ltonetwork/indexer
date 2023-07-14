@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
-import { ConfigService } from '../config/config.service';
-import { RequestService } from '../request/request.service';
+import { ConfigService } from '../common/config/config.service';
+import { RequestService } from '../common/request/request.service';
 
 @Injectable()
 export class NodeApiService {

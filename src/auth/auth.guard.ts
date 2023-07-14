@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import {ConfigService} from '../config/config.service';
+import {ConfigService} from '../common/config/config.service';
 
 @Injectable()
 export class BearerAuthGuard extends AuthGuard('bearer') {

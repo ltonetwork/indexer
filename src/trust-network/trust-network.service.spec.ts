@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TrustNetworkModuleConfig } from './trust-network.module';
 import { TrustNetworkService } from './trust-network.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
 import { RoleData } from './interfaces/trust-network.interface';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('TrustNetworkService', () => {

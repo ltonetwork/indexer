@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import util from 'util';
 import fs from 'fs';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 
 @Injectable()
 export class InfoService {

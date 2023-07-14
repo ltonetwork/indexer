@@ -1,7 +1,7 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
 import { LeveldbConnection } from './classes/leveldb.connection';
-import { LEVEL } from '../constants';
+import { LEVEL } from '../../constants';
 import level from 'level';
 import delay from 'delay';
 import {setInterval} from 'timers';

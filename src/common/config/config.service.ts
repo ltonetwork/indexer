@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigLoaderService } from './config-loader.service';
 import { StorageTypeEnum } from './enums/storage.type.enum';
-import { RawRole } from '../trust-network/interfaces/trust-network.interface';
+import { RawRole } from '../../trust-network/interfaces/trust-network.interface';
 
 @Injectable()
 export class ConfigService {

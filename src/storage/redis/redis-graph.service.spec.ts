@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { RedisGraphService } from './redis-graph.service';
 import { StorageModuleConfig } from '../storage.module';
-import { ConfigService } from '../../config/config.service';
+import { ConfigService } from '../../common/config/config.service';
 
 jest.mock('redisgraph.js');
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IndexDocumentType } from './model/index.model';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from './index.events';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { Block } from '../transaction/interfaces/block.interface';
 
 @Injectable()

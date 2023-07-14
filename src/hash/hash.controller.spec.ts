@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { HashModuleConfig } from './hash.module';
 import { NodeService } from '../node/node.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { HashService } from './hash.service';
 
 describe('HashController', () => {

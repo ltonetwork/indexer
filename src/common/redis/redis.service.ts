@@ -1,6 +1,6 @@
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { LoggerService } from '../logger/logger.service';
-import { REDIS } from '../constants';
+import { REDIS } from '../../constants';
 import redis, { Redis, Cluster } from 'ioredis';
 import delay from 'delay';
 

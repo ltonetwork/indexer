@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { SupplyService } from './supply/supply.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { TransactionService } from '../transaction/transaction.service';
 import { Block } from '../transaction/interfaces/block.interface';

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import TransactionTypes from './const/types.const';
 import { IndexDocumentType } from '../index/model/index.model';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { StorageService } from '../storage/storage.service';
 
 @Injectable()

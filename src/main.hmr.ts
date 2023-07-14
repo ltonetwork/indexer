@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
-import { ConfigService } from './config/config.service';
+import { ConfigService } from './common/config/config.service';
 import { join } from 'path';
 import { IndexMonitorService } from './index/index-monitor.service';
 import { NestExpressApplication } from '@nestjs/platform-express';

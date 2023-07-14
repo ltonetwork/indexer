@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '../config/config.service';
 import { LoggerService } from '../logger/logger.service';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class RequestService {
@@ -12,12 +13,12 @@ export class RequestService {
     private readonly logger: LoggerService,
   ) { }
 
-  send(config: AxiosRequestConfig): Promise<AxiosResponse | Error> {
+  async send(config: AxiosRequestConfig): Promise<AxiosResponse | Error> {
     const url = config.url;
     const method = config.method;
 
     try {
-      return this.http.request(config as any).toPromise();
+      return await lastValueFrom(this.http.request(config));
     } catch (e) {
       this.log(e, method, url);
       return e;
@@ -64,7 +65,7 @@ export class RequestService {
   }
 
   private log(e, method, url) {
-    this.logger.error(`request: failed send '${method}: ${url}', error: '${e}'`, {
+    this.logger.debug(`${method.toUpperCase()} ${url} failed`, {
       stack: e.stack,
       response: e.response ? e.response.data : undefined,
     });

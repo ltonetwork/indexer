@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { IdentityModuleConfig } from './did.module';
 import { DidService } from './did.service';
-import { ConfigService } from '../config/config.service';
-import { LoggerService } from '../logger/logger.service';
+import { ConfigService } from '../common/config/config.service';
+import { LoggerService } from '../common/logger/logger.service';
 
 describe('DidController', () => {
   let module: TestingModule;

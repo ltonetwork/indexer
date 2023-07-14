@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NodeApiService } from './node-api.service';
-import { LoggerService } from '../logger/logger.service';
-import { EncoderService } from '../encoder/encoder.service';
+import { LoggerService } from '../common/logger/logger.service';
+import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';

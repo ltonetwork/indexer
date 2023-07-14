@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Graph, ResultSet } from 'redisgraph.js';
 
-import { ConfigService } from '../../config/config.service';
-import { LoggerService } from '../../logger/logger.service';
+import { ConfigService } from '../../common/config/config.service';
+import { LoggerService } from '../../common/logger/logger.service';
 
 @Injectable()
 export class RedisGraphService {

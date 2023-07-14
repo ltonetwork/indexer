@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {NodeService} from '../node/node.service';
-import {EncoderService} from '../encoder/encoder.service';
-import {ConfigService} from '../config/config.service';
+import {EncoderService} from '../common/encoder/encoder.service';
+import {ConfigService} from '../common/config/config.service';
 import {StorageService} from '../storage/storage.service';
 
 @Injectable()

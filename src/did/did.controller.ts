@@ -1,7 +1,7 @@
 import { Controller, Res, Get, Param, Req } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { DidService } from './did.service';
 
 @Controller('identifiers')

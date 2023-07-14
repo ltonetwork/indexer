@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
-import { EncoderService } from '../encoder/encoder.service';
+import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 @Injectable()

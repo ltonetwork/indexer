@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LevelModuleConfig } from './leveldb.module';
 import { LeveldbService } from './leveldb.service';
-import { LEVEL } from '../constants';
+import { LEVEL } from '../../constants';
 
 describe('LevelDbService', () => {
   let module: TestingModule;

@@ -1,8 +1,8 @@
 import { StorageInterface } from '../interfaces/storage.interface';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '../../config/config.service';
-import { LeveldbConnection } from '../../leveldb/classes/leveldb.connection';
-import { LeveldbService } from '../../leveldb/leveldb.service';
+import { ConfigService } from '../../common/config/config.service';
+import { LeveldbConnection } from '../../common/leveldb/classes/leveldb.connection';
+import { LeveldbService } from '../../common/leveldb/leveldb.service';
 
 @Injectable()
 export class LeveldbStorageService implements StorageInterface, OnModuleInit, OnModuleDestroy {

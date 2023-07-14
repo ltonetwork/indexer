@@ -1,5 +1,5 @@
 import winston from 'winston';
-import { WINSTON } from '../constants';
+import { WINSTON } from '../../constants';
 
 export const loggerProviders = [
   {

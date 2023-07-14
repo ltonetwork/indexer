@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../../logger/logger.service';
+import { LoggerService } from '../../common/logger/logger.service';
 import { StorageService } from '../../storage/storage.service';
 import { VerificationMethod } from './model/verification-method.model';
 import { RelationshipType } from './model/verification-method.types';
