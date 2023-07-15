@@ -562,8 +562,9 @@ describe('StorageService', () => {
 
       describe('removeAssociation()', () => {
         test('should remove associations using regular storage', async () => {
-          const redisRemove = jest.spyOn(redisStorageService, 'delFromSet').mockImplementation(async () => {});
-          const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
+          jest.spyOn(redisStorageService, 'getSet').mockResolvedValue([]);
+          const redisRemove = jest.spyOn(redisStorageService, 'delFromSet').mockResolvedValue(undefined);
+          const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockResolvedValue(undefined);
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';
