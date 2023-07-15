@@ -27,4 +27,5 @@ export interface Transaction {
     publicKey: string;
   }>;
   readonly leaseId?: string;
+  readonly expires?: number;
 }

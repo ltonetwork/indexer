@@ -1,5 +1,5 @@
 import { KeyType, RelationshipType } from './verification-method.types';
-import { DIDVerificationMethod } from '../../interfaces/identity.interface';
+import { DIDVerificationMethod } from '../../interfaces/did.interface';
 import { base58 } from '@scure/base';
 
 export class VerificationMethod {
@@ -11,7 +11,7 @@ export class VerificationMethod {
   ) {}
 
   public asDidMethod(publicKey: string, keyType = KeyType.ed25519): DIDVerificationMethod {
-    const tag = keyType === KeyType.ed25519 ? '#sign' : (keyType === KeyType.x25519 ? '#encrypt' : '');
+    const tag = keyType === KeyType.x25519 ? '#encrypt' : '#sign';
 
     return {
       id: `did:lto:${this.recipient}${tag}`,

@@ -30,29 +30,34 @@ describe('DIDService', () => {
 
   const secondRecipient = {
     chainId: 'T',
-    address: '3N2kNjWiCMuTgdGcLzx8uHiwBKY2J7Sd3t4',
-    ed25519PublicKey: 'DeAxCdh1pYXpU7h41ieyqTDrTyQmhJWZarqxTtkmJv99',
-    x25519PublicKey: 'E6C6H2pfFvjwxELHK63kcekh2ADhFM2Zt5wqKkStSAxX',
+    address: '3MsE8Jfjkh2zaZ1LCGqaDzB5nAYw5FXhfCx',
+    secp256k1PublicKey: 'DeAxCdh1pYXpU7h41ieyqTDrTyQmhJWZarqxTtkmJv99',
   };
+
+  const defaultVerificationMethod = new VerificationMethod(0x11f, sender.address, 0);
 
   function spy() {
     const verificationMethod = {
-      save: jest.spyOn(verificationMethodService, 'save').mockImplementation(async () => {}),
-      getMethodsFor: jest.spyOn(verificationMethodService, 'getMethodsFor').mockImplementation(async () => []),
+      save: jest.spyOn(verificationMethodService, 'save').mockResolvedValue(undefined),
+      getMethodsFor: jest.spyOn(verificationMethodService, 'getMethodsFor')
+        .mockResolvedValue([defaultVerificationMethod]),
     };
 
     const storage = {
-      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockImplementation((async () => {}) as any),
+      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockResolvedValue(undefined),
       getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async (address: string) => {
         if (address === sender.address) return { publicKey: sender.ed25519PublicKey, keyType: 'ed25519' };
         if (address === recipient.address) return { publicKey: recipient.ed25519PublicKey, keyType: 'ed25519' };
-        if (address === secondRecipient.address) return { publicKey: secondRecipient.ed25519PublicKey, keyType: 'ed25519' };
+        if (address === secondRecipient.address) return { publicKey: secondRecipient.secp256k1PublicKey, keyType: 'secp256k1' };
 
-        return {publicKey: '', keyType: ''};
+        return null;
       }),
-      getAssociations: jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
-        return { children: [], parents: [] };
+      getAccountCreated: jest.spyOn(storageService, 'getAccountCreated').mockImplementation(async (address: string) => {
+        return [sender.address, recipient.address, secondRecipient.address].includes(address)
+          ? new Date('2023-01-01').getTime()
+          : null;
       }),
+      getDIDServices: jest.spyOn(storageService, 'getDIDServices').mockResolvedValue([]),
     };
 
     return { verificationMethod, storage };
@@ -81,44 +86,55 @@ describe('DIDService', () => {
     await module.close();
   });
 
-  describe('resolve()', () => {
-    test('should resolve the identity with NO additional verification methods', async () => {
+  describe('resolve DID verification methods', () => {
+    test('should return an implicit DID document', async () => {
       const spies = spy();
-
-      const did = await service.resolve(sender.address);
+      const did = await service.resolveDocument(sender.address);
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
         'id': `did:lto:${sender.address}`,
+        'service': [],
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
-            publicKeyBase58: sender.ed25519PublicKey,
-            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
         'authentication': [`did:lto:${sender.address}#sign`],
         'assertionMethod': [`did:lto:${sender.address}#sign`],
+        'keyAgreement': [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+        ],
         'capabilityInvocation': [`did:lto:${sender.address}#sign`],
+        'capabilityDelegation': [`did:lto:${sender.address}#sign`],
       });
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
     });
 
-    test('should resolve the identity with ONE additional verification method', async () => {
+    test('should return a document with ONE additional verification method', async () => {
       const spies = spy();
 
       spies.verificationMethod.getMethodsFor = jest
         .spyOn(verificationMethodService, 'getMethodsFor')
         .mockImplementation(async () => {
           const relationships = 0x0107; // authentication, assertion, key agreement
-          return [new VerificationMethod(relationships, recipient.address, 0)];
+          return [
+            defaultVerificationMethod,
+            new VerificationMethod(relationships, recipient.address, new Date('2023-02-01').getTime()),
+          ];
         });
 
-      const did = await service.resolve(sender.address);
+      const did = await service.resolveDocument(sender.address);
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
@@ -126,20 +142,19 @@ describe('DIDService', () => {
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
         'id': `did:lto:${sender.address}`,
+        'service': [],
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
-            publicKeyBase58: sender.ed25519PublicKey,
-            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
           {
             id: `did:lto:${recipient.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${recipient.address}`,
-            publicKeyBase58: recipient.ed25519PublicKey,
-            blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
+            publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
           },
         ],
         'authentication': [
@@ -150,79 +165,74 @@ describe('DIDService', () => {
           `did:lto:${sender.address}#sign`,
           `did:lto:${recipient.address}#sign`,
         ],
-        'capabilityInvocation': [
-          `did:lto:${sender.address}#sign`,
-        ],
-        'keyAgreement': [
-          {
-            id: `did:lto:${recipient.address}#encrypt`,
-            type: 'X25519KeyAgreementKey2019',
-            controller: `did:lto:${recipient.address}`,
-            publicKeyBase58: recipient.x25519PublicKey,
-            blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
-          },
-        ],
-      });
-    });
-
-    test('should resolve the identity with reconfigured default verification method', async () => {
-      const spies = spy();
-
-      spies.verificationMethod.getMethodsFor = jest
-          .spyOn(verificationMethodService, 'getMethodsFor')
-          .mockImplementation(async () => {
-            const relationships = 0x0105; // authentication, key agreement
-            return [new VerificationMethod(relationships, sender.address, 0)];
-          });
-
-      const did = await service.resolve(sender.address);
-
-      expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
-      expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
-
-      expect(did).toEqual({
-        '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'verificationMethod': [
-          {
-            id: `did:lto:${sender.address}#sign`,
-            type: 'Ed25519VerificationKey2020',
-            controller: `did:lto:${sender.address}`,
-            publicKeyBase58: sender.ed25519PublicKey,
-            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
-          },
-        ],
-        'authentication': [
-          `did:lto:${sender.address}#sign`,
-        ],
         'keyAgreement': [
           {
             id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
-            publicKeyBase58: sender.x25519PublicKey,
-            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+          {
+            id: `did:lto:${recipient.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${recipient.address}`,
+            publicKeyMultibase: `z${recipient.x25519PublicKey}`,
           },
         ],
+        'capabilityInvocation': [`did:lto:${sender.address}#sign`],
+        'capabilityDelegation': [`did:lto:${sender.address}#sign`],
       });
     });
 
-    test('should resolve the identity with MULTIPLE additional verification methods', async () => {
+    test('should return a document with reconfigured default verification method', async () => {
+      const spies = spy();
+
+      spies.verificationMethod.getMethodsFor = jest
+        .spyOn(verificationMethodService, 'getMethodsFor')
+        .mockImplementation(async () => {
+          const relationships = 0x0118; // capabilityInvocation, capabilityDelegation
+          return [new VerificationMethod(relationships, sender.address, new Date('2023-02-01').getTime())];
+        });
+
+      const did = await service.resolveDocument(sender.address);
+
+      expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
+      expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
+
+      expect(did).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        'id': `did:lto:${sender.address}`,
+        'service': [],
+        'verificationMethod': [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+        ],
+        'capabilityInvocation': [`did:lto:${sender.address}#sign`],
+        'capabilityDelegation': [`did:lto:${sender.address}#sign`],
+      });
+    });
+
+    test('should return a document with MULTIPLE additional verification methods', async () => {
       const spies = spy();
 
       spies.verificationMethod.getMethodsFor = jest
         .spyOn(verificationMethodService, 'getMethodsFor')
         .mockImplementation(async () => {
           const relationships = 0x0107; // authentication, assertion, key agreement
-          const secondRelationships = 0x0115; // authentication, assertion, key agreement, capability delegation
+          const secondRelationships = 0x0114; // assertion, key agreement, capability delegation
 
           return [
+            defaultVerificationMethod,
             new VerificationMethod(relationships, recipient.address, 0),
             new VerificationMethod(secondRelationships, secondRecipient.address, 0),
           ];
         });
 
-      const did = await service.resolve(sender.address);
+      const did = await service.resolveDocument(sender.address);
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(3);
       expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
@@ -230,33 +240,30 @@ describe('DIDService', () => {
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
         'id': `did:lto:${sender.address}`,
+        'service': [],
         'verificationMethod': [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
-            publicKeyBase58: sender.ed25519PublicKey,
-            blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
           {
             id: `did:lto:${recipient.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${recipient.address}`,
-            publicKeyBase58: recipient.ed25519PublicKey,
-            blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
+            publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
           },
           {
             id: `did:lto:${secondRecipient.address}#sign`,
-            type: 'Ed25519VerificationKey2020',
+            type: 'EcdsaSecp256k1VerificationKey2019',
             controller: `did:lto:${secondRecipient.address}`,
-            publicKeyBase58: secondRecipient.ed25519PublicKey,
-            blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
+            publicKeyMultibase: `z${secondRecipient.secp256k1PublicKey}`,
           },
         ],
         'authentication': [
           `did:lto:${sender.address}#sign`,
           `did:lto:${recipient.address}#sign`,
-          `did:lto:${secondRecipient.address}#sign`,
         ],
         'assertionMethod': [
           `did:lto:${sender.address}#sign`,
@@ -264,63 +271,105 @@ describe('DIDService', () => {
         ],
         'keyAgreement': [
           {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+          {
             id: `did:lto:${recipient.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${recipient.address}`,
-            publicKeyBase58: recipient.x25519PublicKey,
-            blockchainAccountId: `${recipient.address}@lto:${recipient.chainId}`,
+            publicKeyMultibase: `z${recipient.x25519PublicKey}`,
           },
-          {
-            id: `did:lto:${secondRecipient.address}#encrypt`,
-            type: 'X25519KeyAgreementKey2019',
-            controller: `did:lto:${secondRecipient.address}`,
-            publicKeyBase58: secondRecipient.x25519PublicKey,
-            blockchainAccountId: `${secondRecipient.address}@lto:${secondRecipient.chainId}`,
-          },
+          `did:lto:${secondRecipient.address}#sign`,
         ],
         'capabilityInvocation': [`did:lto:${sender.address}#sign`],
-        'capabilityDelegation': [`did:lto:${secondRecipient.address}#sign`],
+        'capabilityDelegation': [
+          `did:lto:${sender.address}#sign`,
+          `did:lto:${secondRecipient.address}#sign`,
+        ],
       });
     });
+  });
 
-    describe('cross chain identities', () => {
-      const offChainSenderDID = 'did:ltox:eip155:1:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb';
+  describe('resolve DID services', () => {
+    let spies: ReturnType<typeof spy>;
 
-      test('should resolve a cross chain identity', async () => {
-        const spies = spy();
+    const service1a = {
+      id: `did:lto:${sender.address}#lto-relay`,
+      type: 'LTORelay',
+      serviceEndpoint: 'ampq://relay.lto.network',
+    };
+    const service1b = {
+      id: `did:lto:${sender.address}#lto-relay`,
+      type: 'LTORelay',
+      serviceEndpoint: 'ampq://relay.example.com',
+    };
+    const service2 = {
+      id: `example.com`,
+      type: 'LinkedDomains',
+      serviceEndpoint: 'https://example.com',
+    };
 
-        spies.storage.getAssociations = jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
-          return { children: [sender.address], parents: [] };
+    beforeEach(() => {
+      spies = spy();
+
+      spies.storage.getDIDServices = jest
+        .spyOn(storageService, 'getDIDServices')
+        .mockResolvedValue([
+          { ...service1a, timestamp: new Date('2023-02-01').getTime() },
+          { ...service1b, timestamp: new Date('2023-03-01').getTime() },
+          { ...service2, timestamp: new Date('2023-03-01').getTime() },
+        ]);
+
+      spies.verificationMethod.getMethodsFor = jest
+        .spyOn(verificationMethodService, 'getMethodsFor')
+        .mockImplementation(async () => {
+          return [new VerificationMethod(0x100, sender.address, 0)];
         });
+    });
 
-        const did = await service.resolve(offChainSenderDID);
+    test('should return a DID document with services', async () => {
+      const did = await service.resolveDocument(sender.address);
 
-        expect(did).toEqual({
-          '@context': 'https://www.w3.org/ns/did/v1',
-          'id': offChainSenderDID,
-          'alsoKnownAs': [`did:lto:${sender.address}`],
-          'verificationMethod': [
-            {
-              id: `did:lto:${sender.address}#sign`,
-              type: 'Ed25519VerificationKey2020',
-              controller: `did:lto:${sender.address}`,
-              publicKeyBase58: sender.ed25519PublicKey,
-              blockchainAccountId: `${sender.address}@lto:${sender.chainId}`,
-            },
-          ],
-          'authentication': [`did:lto:${sender.address}#sign`],
-          'assertionMethod': [`did:lto:${sender.address}#sign`],
-          'capabilityInvocation': [`did:lto:${sender.address}#sign`],
-        });
-
-        expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
-        expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
+      expect(did).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        'id': `did:lto:${sender.address}`,
+        'service': [ service1b, service2 ],
+        'verificationMethod': [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+        ],
       });
 
-      test.skip('should fail if sender address has not been indexed/associated with a known LTO address', async () => {
-        const did = await service.resolve(offChainSenderDID);
-        expect(did).toBeNull();
+      expect(spies.storage.getDIDServices).toBeCalled();
+      expect(spies.storage.getDIDServices.mock.calls[0][0]).toEqual(sender.address);
+    });
+
+    test('should return a DID document using a version time', async () => {
+      const did = await service.resolveDocument(sender.address, new Date('2023-02-15'));
+
+      expect(did).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        'id': `did:lto:${sender.address}`,
+        'service': [ service1a ],
+        'verificationMethod': [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+        ],
       });
+
+      expect(spies.storage.getDIDServices).toBeCalled();
+      expect(spies.storage.getDIDServices.mock.calls[0][0]).toEqual(sender.address);
     });
   });
 });

@@ -7,9 +7,9 @@ import storageServices from './index';
 import { pascalCase } from 'pascal-case';
 import { LoggerService } from '../common/logger/logger.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
-import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
+import { Role, RawRoles } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis/redis-graph.service';
-import { DIDDocumentService } from '../did/interfaces/identity.interface';
+import { DIDDocumentService } from '../did/interfaces/did.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -94,15 +94,15 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
   }
 
-  async saveService(address: string, service: DIDDocumentService & { timestamp: number }): Promise<void> {
-    return this.storage.addToSet(`lto:did-service:${address}`, JSON.stringify(service));
+  async saveDIDService(address: string, service: DIDDocumentService & { timestamp: number }): Promise<void> {
+    return this.storage.addToSet(`lto:did-services:${address}`, JSON.stringify(service));
   }
 
-  async getServices(address: string): Promise<Array<DIDDocumentService & { timestamp: number }>> {
-    return (await this.storage.getSet(`lto:did-service:${address}`)).map((s) => JSON.parse(s));
+  async getDIDServices(address: string): Promise<Array<DIDDocumentService & { timestamp: number }>> {
+    return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
   }
 
-  async getRolesFor(address: string): Promise<RawRole | {}> {
+  async getRolesFor(address: string): Promise<RawRoles | {}> {
     return this.storage.getObject(`lto:roles:${address}`);
   }
 

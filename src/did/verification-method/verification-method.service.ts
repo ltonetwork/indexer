@@ -11,18 +11,21 @@ export class VerificationMethodService {
     private readonly storage: StorageService,
   ) {}
 
-  async getMethodsFor(address: string, versionTime?: Date): Promise<VerificationMethod[]> {
-    const versionTimestamp = versionTime?.getTime() ?? Date.now();
+  async getMethodsFor(address: string, versionTime?: Date | number): Promise<VerificationMethod[]> {
+    const versionTimestamp = typeof versionTime === 'number' ? versionTime : versionTime?.getTime() ?? Date.now();
 
     const methods = (await this.storage.getVerificationMethods(address))
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .sort((a, b) => a.timestamp - b.timestamp);
     const map = new Map<string, VerificationMethod>();
 
-    methods.unshift(new VerificationMethod(0x11f, address, versionTimestamp));
+    const defaultMethod = new VerificationMethod(0x11f, address, 0);
+    methods.unshift(defaultMethod);
 
     for (const method of methods) {
       if (method.timestamp <= versionTimestamp) map.set(method.recipient, method);
     }
+
+    if (!map.get(address).isActive(versionTimestamp)) map.set(address, defaultMethod);
 
     return Array.from(map.values()).filter((method) => method.isActive(versionTimestamp));
   }
@@ -50,7 +53,8 @@ export class VerificationMethodService {
   }
 
   async revoke(sender: string, recipient: string, timestamp: number): Promise<void> {
-    const verificationMethod = new VerificationMethod(0, recipient, timestamp);
+    const relationships = sender === recipient ? 0x11f : 0;
+    const verificationMethod = new VerificationMethod(relationships, recipient, timestamp);
 
     this.logger.debug(`DID: 'did:lto${sender}' revoke verification method '${recipient}'`);
     await this.storage.saveVerificationMethod(sender, verificationMethod);

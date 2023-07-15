@@ -60,7 +60,14 @@ export class DIDListenerService implements OnModuleInit {
 
   private async indexIssue(tx: Transaction): Promise<void> {
     const data = Object.fromEntries((tx.data ?? []).map(({ key, value }) => [key, !!value]));
-    await this.verificationMethodService.save(tx.associationType, tx.sender, tx.recipient, data, tx.timestamp);
+    await this.verificationMethodService.save(
+      tx.associationType,
+      tx.sender,
+      tx.recipient,
+      data,
+      tx.timestamp,
+      tx.expires,
+    );
   }
 
   private async indexRevoke(tx: Transaction): Promise<void> {
@@ -78,7 +85,7 @@ export class DIDListenerService implements OnModuleInit {
 
     await Promise.all(services.map(async (service) => {
       this.logger.debug(`DID: 'did:lto:${tx.sender}' add service '${service.id.replace(/^did:lto:\w+#/, '')}'`);
-      await this.storage.saveService(tx.sender, service);
+      await this.storage.saveDIDService(tx.sender, service);
     }));
   }
 }

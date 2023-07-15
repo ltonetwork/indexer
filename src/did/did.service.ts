@@ -4,8 +4,10 @@ import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import {chainIdOf } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
-import { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/identity.interface';
+import { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/did.interface';
 import {KeyType} from './verification-method/model/verification-method.types';
+import ed2curve from '@lto-network/lto-crypto/dist/libs/ed2curve';
+import { base58 } from '@scure/base';
 
 @Injectable()
 export class DIDService {
@@ -93,11 +95,12 @@ export class DIDService {
 
       if (verificationMethod.isKeyAgreement()) {
         didDocument.keyAgreement ??= [];
-        didDocument.keyAgreement.push(
-          recipientKeyType === 'ed25519'
-            ? verificationMethod.asDidMethod(recipientPublicKey, KeyType.x25519)
-            : didVerificationMethod.id,
-        );
+        if (recipientKeyType === 'ed25519') {
+          const publicKey = base58.encode(ed2curve.convertPublicKey(base58.decode(recipientPublicKey)));
+          didDocument.keyAgreement.push(verificationMethod.asDidMethod(publicKey, KeyType.x25519));
+        } else {
+          didDocument.keyAgreement.push(didVerificationMethod.id);
+        }
       }
 
       if (verificationMethod.isCapabilityInvocation()) {
@@ -116,11 +119,11 @@ export class DIDService {
     return didDocument;
   }
 
-  private async getServices(address: string, versionTime: Date): Promise<DIDDocumentService[]> {
+  async getServices(address: string, versionTime: Date): Promise<DIDDocumentService[]> {
     const versionTimestamp = versionTime?.getTime() ?? Date.now();
 
-    const services = (await this.storage.getServices(address))
-      .sort((a, b) => b.timestamp - a.timestamp);
+    const services = (await this.storage.getDIDServices(address))
+      .sort((a, b) => a.timestamp - b.timestamp);
 
     const map = new Map<string, DIDDocumentService>();
 

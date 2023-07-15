@@ -19,7 +19,6 @@ describe('StorageService', () => {
   function spy() {
     const redisConnection = {
       quit: jest.fn(),
-      smembers: jest.fn(),
     };
 
     const redis = {
@@ -321,93 +320,83 @@ describe('StorageService', () => {
 
     describe('verification methods', () => {
       const mockMethod = {
-        recipient: 'mock-recipient',
+        sender: '3N9ChkxWXqgdWLLErWFrSwjqARB6NtYsvZh',
+        recipient: '3NBcx7AQqDopBj3WfwCVARNYuZyt1L9xEVM',
         relationships: 0x0101,
-        sender: 'mock-sender',
         createdAt: 123456,
       };
 
       describe('getVerificationMethods()', () => {
         test('should return the verification methods from database', async () => {
-          const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': mockMethod,
-            };
-          });
-
-          const result = await storageService.getVerificationMethods('mock-sender');
-
           const mockVerificationMethod = new VerificationMethod(
             mockMethod.relationships,
             mockMethod.recipient,
             mockMethod.createdAt,
           );
 
-          expect(getObject.mock.calls.length).toBe(1);
-          expect(getObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
-          expect(result).toStrictEqual([mockVerificationMethod]);
-        });
+          const getBufferSet = jest.spyOn(redisStorageService, 'getBufferSet')
+            .mockResolvedValue([mockVerificationMethod.toBuffer()]);
 
-        test('should skip revoked verification methods', async () => {
-          jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': { ...mockMethod, revokedAt: 123456 },
-            };
-          });
+          const result = await storageService.getVerificationMethods(mockMethod.sender);
 
-          const result = await storageService.getVerificationMethods('mock-sender');
-
-          expect(result).toStrictEqual([]);
+          expect(getBufferSet.mock.calls.length).toBe(1);
+          expect(getBufferSet.mock.calls[0][0]).toBe(`lto:did-methods:${mockMethod.sender}`);
+          expect(result).toContainEqual(mockVerificationMethod);
         });
       });
 
       describe('saveVerificationMethod()', () => {
         test('should save a new verification method', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
-          const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': mockMethod,
-            };
-          });
+          const addToSet = jest.spyOn(redisStorageService, 'addToSet').mockImplementation(async () => {});
 
           const mockVerificationMethod = new VerificationMethod(
             mockMethod.relationships,
-            'some-other-recipient',
-            mockMethod.createdAt,
-          );
-
-          await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
-
-          expect(getObject.mock.calls.length).toBe(1);
-          expect(getObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
-
-          expect(setObject.mock.calls.length).toBe(1);
-          expect(setObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
-          expect(setObject.mock.calls[0][1]).toStrictEqual({
-            'mock-recipient': mockMethod,
-            'some-other-recipient': mockVerificationMethod,
-          });
-        });
-
-        test('should overwrite an existing verification method for the same sender', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
-          jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': mockMethod,
-            };
-          });
-
-          const mockVerificationMethod = new VerificationMethod(
-            0x0107,
             mockMethod.recipient,
             mockMethod.createdAt,
           );
 
-          await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
+          await storageService.saveVerificationMethod(mockMethod.sender, mockVerificationMethod);
 
-          expect(setObject.mock.calls[0][1]).toStrictEqual({
-            'mock-recipient': { ...mockMethod, relationships: 0x0107 },
+          expect(addToSet.mock.calls.length).toBe(1);
+          expect(addToSet.mock.calls[0][0]).toBe(`lto:did-methods:${mockMethod.sender}`);
+          expect(addToSet.mock.calls[0][1]).toEqual(mockVerificationMethod.toBuffer());
+        });
+      });
+    });
+
+    describe('DID services', () => {
+      describe('getDIDServices()', () => {
+        it('should return the services from database', async () => {
+          const getSet = jest.spyOn(redisStorageService, 'getSet').mockImplementation(async () => {
+            return [
+              JSON.stringify({ id: 'foo1', type: 'bar1', serviceEndpoint: 'baz1', timestamp: 123456 }),
+              JSON.stringify({ id: 'foo2', type: 'bar2', serviceEndpoint: 'baz2', timestamp: 123456 }),
+            ];
           });
+
+          const result = await storageService.getDIDServices('mock-sender');
+
+          expect(getSet.mock.calls.length).toBe(1);
+          expect(getSet.mock.calls[0][0]).toBe(`lto:did-services:mock-sender`);
+
+          expect(result).toEqual([
+            { id: 'foo1', type: 'bar1', serviceEndpoint: 'baz1', timestamp: 123456 },
+            { id: 'foo2', type: 'bar2', serviceEndpoint: 'baz2', timestamp: 123456 },
+          ]);
+        });
+      });
+
+      describe('saveDIDService()', () => {
+        it('should return the services from database', async () => {
+          const addToSet = jest.spyOn(redisStorageService, 'addToSet').mockImplementation(async () => {
+          });
+          const mockService = { id: 'foo', type: 'bar', serviceEndpoint: 'baz', timestamp: 123456 };
+
+          await storageService.saveDIDService('mock-sender', mockService);
+
+          expect(addToSet.mock.calls.length).toBe(1);
+          expect(addToSet.mock.calls[0][0]).toBe(`lto:did-services:mock-sender`);
+          expect(addToSet.mock.calls[0][1]).toEqual(JSON.stringify(mockService));
         });
       });
     });
