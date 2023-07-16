@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../common/logger/logger.service';
 import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { chainIdOf } from '@lto-network/lto-crypto';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/did.interface';
 import { KeyType } from './verification-method/model/verification-method.types';
-import ed2curve from '@lto-network/lto-crypto/dist/libs/ed2curve';
 import { base58 } from '@scure/base';
+import * as ed2curve from 'ed2curve';
+import { networkId } from '../utils/crypto';
 
 type DIDDocumentVerificationMethods = Pick<
   DIDDocument,
@@ -62,7 +62,7 @@ export class DIDService {
         },
         didResolutionMetadata: {
           method: 'lto',
-          networkId: chainIdOf(address),
+          networkId: networkId(address),
         },
       };
     }
@@ -82,7 +82,7 @@ export class DIDService {
       },
       didResolutionMetadata: {
         method: 'lto',
-        networkId: chainIdOf(address),
+        networkId: networkId(address),
       },
     };
   }

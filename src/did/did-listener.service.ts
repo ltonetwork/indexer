@@ -6,9 +6,9 @@ import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { IndexDocumentType } from '../index/model/index.model';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
-import { base58decode, buildAddress, chainIdOf } from '@lto-network/lto-crypto';
 import { StorageService } from '../storage/storage.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
+import { buildAddress, networkId } from '../utils/crypto';
 
 @Injectable()
 export class DIDListenerService implements OnModuleInit {
@@ -54,7 +54,7 @@ export class DIDListenerService implements OnModuleInit {
   private async indexRegister(tx: Transaction): Promise<void> {
     await Promise.all(
       tx.accounts.map((account) => {
-        const address = buildAddress(base58decode(account.publicKey), chainIdOf(tx.sender));
+        const address = buildAddress(account.publicKey, networkId(tx.sender));
         this.logger.debug(`DID: register ${account.keyType} public key ${account.publicKey} for address ${address}`);
         return this.storage.savePublicKey(address, account.publicKey, account.keyType, tx.timestamp);
       }),
