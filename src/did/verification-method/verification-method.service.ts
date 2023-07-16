@@ -29,6 +29,8 @@ export class VerificationMethodService {
       }
     }
 
+    if (!map.has(address) || !map.get(address).isActive(versionTimestamp)) map.set(address, defaultMethod);
+
     return Array.from(map.values()).filter((method) => method.isActive(versionTimestamp));
   }
 

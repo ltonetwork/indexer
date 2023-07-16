@@ -8,13 +8,13 @@ export function networkId(address: string): string {
 }
 
 function secureHash(input: Uint8Array): Uint8Array {
-  return sha256(blake2b(input));
+  return sha256(blake2b(input, { dkLen: 32 }));
 }
 
 export function buildAddress(publicKey: Uint8Array | string, networkId: string): string {
   const publicKeyBytes = typeof publicKey === 'string' ? base58.decode(publicKey) : publicKey;
 
-  const prefix = new Uint8Array([1, networkId.charCodeAt(0)]);
+  const prefix = new Uint8Array([0x1, networkId.charCodeAt(0)]);
   const publicKeyHashPart = secureHash(publicKeyBytes).slice(0, 20);
   const rawAddress = concatBytes(prefix, publicKeyHashPart);
   const addressHash = secureHash(rawAddress).slice(0, 4);

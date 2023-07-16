@@ -22,10 +22,7 @@ describe('LevelDbStorageService', () => {
       incrCount: jest.fn(),
     };
     const leveldb = {
-      connect: jest
-        .spyOn(leveldbService, 'connect')
-        // @ts-ignore
-        .mockImplementation(async () => leveldbConnection),
+      connect: jest.spyOn(leveldbService, 'connect').mockResolvedValue(leveldbConnection as any),
     };
 
     return { leveldb, leveldbConnection };

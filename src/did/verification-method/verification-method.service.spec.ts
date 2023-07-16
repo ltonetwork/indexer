@@ -37,6 +37,7 @@ describe('VerificationMethodService', () => {
     const storage = {
       saveVerificationMethod: jest.spyOn(storageService, 'saveVerificationMethod').mockResolvedValue(undefined),
       getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods').mockResolvedValue([]),
+      getDeactivateMethods: jest.spyOn(storageService, 'getDeactivateMethods').mockResolvedValue([]),
     };
 
     return { storage };
@@ -76,13 +77,7 @@ describe('VerificationMethodService', () => {
     test('should save a new verification method based on association type', async () => {
       const spies = spy();
 
-      await verificationMethodService.save(
-        0x103,
-        sender.address,
-        recipient.address,
-        {},
-        mockTimestamp,
-      );
+      await verificationMethodService.save(0x103, sender.address, recipient.address, {}, mockTimestamp);
 
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledWith(
@@ -96,7 +91,7 @@ describe('VerificationMethodService', () => {
     test('should add a revoke method with relationship zero', async () => {
       const spies = spy();
 
-      await verificationMethodService.revoke(sender.address, recipient.address, mockTimestamp);
+      await verificationMethodService.revoke(0x100, sender.address, recipient.address, mockTimestamp);
 
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledWith(
@@ -108,7 +103,7 @@ describe('VerificationMethodService', () => {
     test('should add a method with all relationships for own address', async () => {
       const spies = spy();
 
-      await verificationMethodService.revoke(sender.address, sender.address, mockTimestamp);
+      await verificationMethodService.revoke(0x100, sender.address, sender.address, mockTimestamp);
 
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveVerificationMethod).toHaveBeenCalledWith(
@@ -126,9 +121,7 @@ describe('VerificationMethodService', () => {
 
       expect(spies.storage.getVerificationMethods).toHaveBeenCalledTimes(1);
       expect(spies.storage.getVerificationMethods).toHaveBeenCalledWith(sender.address);
-      expect(result).toStrictEqual([
-        new VerificationMethod(0x11f, sender.address, 0),
-      ]);
+      expect(result).toStrictEqual([new VerificationMethod(0x11f, sender.address, 0)]);
     });
 
     test('should return the latest methods for an address', async () => {

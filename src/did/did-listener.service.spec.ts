@@ -176,11 +176,7 @@ describe('DIDListenerService', () => {
       await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
 
       expect(spies.verificationMethod.revoke).toHaveBeenCalledTimes(1);
-      expect(spies.verificationMethod.revoke).toHaveBeenCalledWith(
-        tx.sender,
-        tx.recipient,
-        tx.timestamp,
-      );
+      expect(spies.verificationMethod.revoke).toHaveBeenCalledWith(0x100, tx.sender, tx.recipient, tx.timestamp);
     });
 
     test('should ignore other associations', async () => {

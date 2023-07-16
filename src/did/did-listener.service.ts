@@ -79,7 +79,7 @@ export class DIDListenerService implements OnModuleInit {
   }
 
   private async indexRevoke(tx: Transaction): Promise<void> {
-    await this.verificationMethodService.revoke(tx.type, tx.sender, tx.recipient, tx.timestamp);
+    await this.verificationMethodService.revoke(tx.associationType, tx.sender, tx.recipient, tx.timestamp);
   }
 
   private async indexDeactivation(tx: Transaction): Promise<void> {
