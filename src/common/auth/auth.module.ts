@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '../common/config/config.module';
+import { ConfigModule } from '../config/config.module';
 import { AuthService } from './auth.service';
 import { HttpStrategy } from './http.strategy';
 import { BearerAuthGuard } from './auth.guard';

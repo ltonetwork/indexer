@@ -3,7 +3,7 @@ import { AssociationsController } from './associations.controller';
 import { AssociationsService } from './associations.service';
 import { ConfigModule } from '../common/config/config.module';
 import { LoggerModule } from '../common/logger/logger.module';
-import { AuthModule } from '../auth/auth.module';
+import { AuthModule } from '../common/auth/auth.module';
 import { AssociationsListenerService } from './associations-listener.service';
 import { StorageModule } from '../storage/storage.module';
 import { EmitterModule } from '../emitter/emitter.module';

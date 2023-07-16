@@ -5,7 +5,7 @@ import { LoggerService } from '../common/logger/logger.service';
 import { HashDto } from './dto/hash.dto';
 import { NodeService } from '../node/node.service';
 import { EncoderService } from '../common/encoder/encoder.service';
-import { BearerAuthGuard } from '../auth/auth.guard';
+import { BearerAuthGuard } from '../common/auth/auth.guard';
 import { HashService } from './hash.service';
 
 @Controller('hash')

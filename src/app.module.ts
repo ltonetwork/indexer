@@ -12,7 +12,7 @@ import { RequestModule } from './common/request/request.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './health/health.module';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './common/auth/auth.module';
 import { IndexModule } from './index/index.module';
 import { EmitterModule } from './emitter/emitter.module';
 import { AssociationsModule } from './associations/associations.module';
