@@ -15,12 +15,13 @@ export interface Transaction {
     type: string;
     value: string | number | boolean;
   }>;
-  readonly anchors?: string[]|{[_: string]: string};
+  readonly anchors?: string[] | { [_: string]: string };
   readonly transfers: Array<{
     recipient: string;
     amount: number;
   }>;
   readonly associationType?: number;
+  readonly statementType?: number;
   readonly hash?: string;
   readonly accounts?: Array<{
     keyType: string;

@@ -94,6 +94,24 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
   }
 
+  async getDeactivateMethods(address: string): Promise<VerificationMethod[]> {
+    const set = await this.storage.getBufferSet(`lto:did-deactivate-methods:${address}`);
+    return set.map((buf) => VerificationMethod.from(buf));
+  }
+
+  async saveDeactivateMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
+    return this.storage.addToSet(`lto:did-deactivate-methods:${address}`, verificationMethod.toBuffer());
+  }
+
+  async deactivateDID(address: string, sender: string, timestamp: number) {
+    await this.storage.setObject(`lto:did-deactivated:${address}`, { sender, timestamp });
+  }
+
+  async isDIDDeactivated(address: string): Promise<{ sender: string; timestamp: number } | undefined> {
+    const record = await this.storage.getObject(`lto:did-deactivated:${address}`);
+    return record as { sender: string; timestamp: number } | undefined;
+  }
+
   async saveDIDService(address: string, service: DIDDocumentService & { timestamp: number }): Promise<void> {
     return this.storage.addToSet(`lto:did-services:${address}`, JSON.stringify(service));
   }
