@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+// TODO: Remove this service, just use the @scure/base package
+
 @Injectable()
 export class EncoderService {
   private alphabet: string;
