@@ -41,6 +41,7 @@ export class DIDService {
         didDocument: {},
         didDocumentMetadata: {},
         didResolutionMetadata: {
+          contentType: 'application/did+ld+json',
           error: isValidAddress(address) ? 'notFound' : 'invalidDid',
         },
       };
@@ -60,8 +61,10 @@ export class DIDService {
           nextUpdate: isoDate(created),
         },
         didResolutionMetadata: {
+          contentType: 'application/did+ld+json',
           method: 'lto',
           networkId: networkId(address),
+          address,
         },
       };
     }
@@ -82,6 +85,7 @@ export class DIDService {
           deactivatedBy: `did:lto:${deactivated.sender}`,
         },
         didResolutionMetadata: {
+          contentType: 'application/did+ld+json',
           method: 'lto',
           networkId: networkId(address),
           address,
@@ -104,8 +108,10 @@ export class DIDService {
         lastUpdate: lastUpdate ? isoDate(lastUpdate) : undefined,
       },
       didResolutionMetadata: {
+        contentType: 'application/did+ld+json',
         method: 'lto',
         networkId: networkId(address),
+        address,
       },
     };
   }

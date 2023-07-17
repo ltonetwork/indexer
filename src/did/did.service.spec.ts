@@ -458,6 +458,7 @@ describe('DIDService', () => {
       expect(resolution.didResolutionMetadata).toEqual({
         method: 'lto',
         networkId: 'T',
+        address: sender.address,
       });
     });
 
@@ -525,6 +526,7 @@ describe('DIDService', () => {
       expect(resolution.didResolutionMetadata).toEqual({
         method: 'lto',
         networkId: 'T',
+        address: sender.address,
       });
     });
 
@@ -579,7 +581,7 @@ describe('DIDService', () => {
         lastUpdate: '2023-02-01T00:00:00Z',
       });
 
-      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T' });
+      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T', address: sender.address });
 
       expect(spies.verificationMethod.getMethodsFor).toHaveBeenCalledWith(sender.address, versionTime);
     });
@@ -629,7 +631,7 @@ describe('DIDService', () => {
         deactivated: false,
         nextUpdate: '2023-01-01T00:00:00Z',
       });
-      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T' });
+      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T', address: sender.address });
     });
 
     test('should resolve a deactivated DID', async () => {
@@ -652,7 +654,7 @@ describe('DIDService', () => {
         deactivated: true,
         deactivatedBy: `did:lto:${sender.address}`,
       });
-      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T' });
+      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T', address: sender.address });
     });
 
     test('should resolve the DID document is version time is before deactivation', async () => {
@@ -704,6 +706,7 @@ describe('DIDService', () => {
       expect(resolution.didResolutionMetadata).toEqual({
         method: 'lto',
         networkId: 'T',
+        address: sender.address,
       });
     });
   });

@@ -31,9 +31,11 @@ export interface DIDResolution {
       }
     | Record<string, never>;
   didResolutionMetadata: {
+    contentType: string;
     error?: string;
     method?: 'lto';
     networkId?: string;
+    address?: string;
   };
 }
 
