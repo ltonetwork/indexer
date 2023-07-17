@@ -64,8 +64,12 @@ export class VerificationMethod {
     return this.bitCompare(this.relationships, RelationshipType.capabilityDelegation);
   }
 
+  public isOnlyDeactivateCapability() {
+    return this.relationships === 0x1108;
+  }
+
   public isActive(timestamp?: Date | number) {
-    const now = (timestamp instanceof Date) ? timestamp.getTime() : timestamp ?? Date.now();
+    const now = timestamp instanceof Date ? timestamp.getTime() : timestamp ?? Date.now();
     return this.relationships > 0 && this.timestamp <= now && (!this.expires || this.expires >= now);
   }
 }

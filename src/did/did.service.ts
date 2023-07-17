@@ -131,7 +131,14 @@ export class DIDService {
 
   private async getVerificationMethods(address: string, versionTime: Date): Promise<DIDDocumentVerificationMethods> {
     const methods = await this.verificationMethodService.getMethodsFor(address, versionTime);
-    const didDocument: DIDDocumentVerificationMethods = { verificationMethod: [] };
+    const didDocument: DIDDocumentVerificationMethods = {
+      verificationMethod: [],
+      authentication: [],
+      assertionMethod: [],
+      keyAgreement: [],
+      capabilityInvocation: [],
+      capabilityDelegation: [],
+    };
 
     for (const method of methods) {
       const { publicKey: recipientPublicKey, keyType: recipientKeyType } = await this.storage.getPublicKey(
@@ -145,20 +152,17 @@ export class DIDService {
 
       const didVerificationMethod = method.asDidMethod(recipientPublicKey, KeyType[recipientKeyType]);
 
+      if (method.isOnlyDeactivateCapability()) {
+        didDocument.capabilityInvocation.push(didVerificationMethod);
+        continue;
+      }
+
       didDocument.verificationMethod.push(didVerificationMethod);
 
-      if (method.isAuthentication()) {
-        didDocument.authentication ??= [];
-        didDocument.authentication.push(didVerificationMethod.id);
-      }
-
-      if (method.isAssertionMethod()) {
-        didDocument.assertionMethod ??= [];
-        didDocument.assertionMethod.push(didVerificationMethod.id);
-      }
+      if (method.isAuthentication()) didDocument.authentication.push(didVerificationMethod.id);
+      if (method.isAssertionMethod()) didDocument.assertionMethod.push(didVerificationMethod.id);
 
       if (method.isKeyAgreement()) {
-        didDocument.keyAgreement ??= [];
         if (recipientKeyType === 'ed25519') {
           const publicKey = base58.encode(ed2curve.convertPublicKey(base58.decode(recipientPublicKey)));
           didDocument.keyAgreement.push(method.asDidMethod(publicKey, KeyType.x25519));
@@ -167,15 +171,8 @@ export class DIDService {
         }
       }
 
-      if (method.isCapabilityInvocation()) {
-        didDocument.capabilityInvocation ??= [];
-        didDocument.capabilityInvocation.push(didVerificationMethod.id);
-      }
-
-      if (method.isCapabilityDelegation()) {
-        didDocument.capabilityDelegation ??= [];
-        didDocument.capabilityDelegation.push(didVerificationMethod.id);
-      }
+      if (method.isCapabilityInvocation()) didDocument.capabilityInvocation.push(didVerificationMethod.id);
+      if (method.isCapabilityDelegation()) didDocument.capabilityDelegation.push(didVerificationMethod.id);
     }
 
     return didDocument;

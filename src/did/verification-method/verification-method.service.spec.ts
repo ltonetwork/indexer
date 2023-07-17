@@ -37,6 +37,7 @@ describe('VerificationMethodService', () => {
     const storage = {
       saveVerificationMethod: jest.spyOn(storageService, 'saveVerificationMethod').mockResolvedValue(undefined),
       getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods').mockResolvedValue([]),
+      saveDeactivateMethod: jest.spyOn(storageService, 'saveDeactivateMethod').mockResolvedValue(undefined),
       getDeactivateMethods: jest.spyOn(storageService, 'getDeactivateMethods').mockResolvedValue([]),
     };
 
@@ -85,6 +86,25 @@ describe('VerificationMethodService', () => {
         new VerificationMethod(0x103, recipient.address, mockTimestamp),
       );
     });
+
+    test('should save a deactivate method', async () => {
+      const spies = spy();
+
+      await verificationMethodService.save(0x108, sender.address, recipient.address, {}, mockTimestamp);
+
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledWith(
+        sender.address,
+        new VerificationMethod(0x108, recipient.address, mockTimestamp),
+      );
+    });
+
+    test('should not be possible to save a deactivate method for own address', async () => {
+      const spies = spy();
+
+      await verificationMethodService.save(0x108, sender.address, sender.address, {}, mockTimestamp);
+      expect(spies.storage.saveDeactivateMethod).not.toHaveBeenCalled();
+    });
   });
 
   describe('revoke', () => {
@@ -111,6 +131,25 @@ describe('VerificationMethodService', () => {
         new VerificationMethod(0x11f, sender.address, mockTimestamp),
       );
     });
+
+    test('should revoke a deactivate method', async () => {
+      const spies = spy();
+
+      await verificationMethodService.revoke(0x108, sender.address, recipient.address, mockTimestamp);
+
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledWith(
+        sender.address,
+        new VerificationMethod(0, recipient.address, mockTimestamp),
+      );
+    });
+
+    test('should not be possible to revoke a deactivate method for own address', async () => {
+      const spies = spy();
+
+      await verificationMethodService.save(0x108, sender.address, sender.address, {}, mockTimestamp);
+      expect(spies.storage.saveDeactivateMethod).not.toHaveBeenCalled();
+    });
   });
 
   describe('getMethodsFor', () => {
@@ -121,6 +160,7 @@ describe('VerificationMethodService', () => {
 
       expect(spies.storage.getVerificationMethods).toHaveBeenCalledTimes(1);
       expect(spies.storage.getVerificationMethods).toHaveBeenCalledWith(sender.address);
+
       expect(result).toStrictEqual([new VerificationMethod(0x11f, sender.address, 0)]);
     });
 
@@ -136,9 +176,6 @@ describe('VerificationMethodService', () => {
       ]);
 
       const result = await verificationMethodService.getMethodsFor(sender.address);
-
-      expect(spies.storage.getVerificationMethods).toHaveBeenCalledTimes(1);
-      expect(spies.storage.getVerificationMethods).toHaveBeenCalledWith(sender.address);
 
       expect(result).toHaveLength(2);
       expect(result).toContainEqual(new VerificationMethod(0x118, sender.address, mockTimestamp + 1000));
@@ -157,9 +194,6 @@ describe('VerificationMethodService', () => {
       ]);
 
       const result = await verificationMethodService.getMethodsFor(sender.address, mockTimestamp + 1);
-
-      expect(spies.storage.getVerificationMethods).toHaveBeenCalledTimes(1);
-      expect(spies.storage.getVerificationMethods).toHaveBeenCalledWith(sender.address);
 
       expect(result).toHaveLength(3);
       expect(result).toContainEqual(new VerificationMethod(0x11f, sender.address, 0));
@@ -202,6 +236,114 @@ describe('VerificationMethodService', () => {
       const result2 = await verificationMethodService.getMethodsFor(sender.address, mockTimestamp + 2000);
       expect(result2).toHaveLength(1);
       expect(result2).toContainEqual(new VerificationMethod(0x11f, sender.address, 0));
+    });
+
+    test('should include deactivation method', async () => {
+      const spies = spy();
+
+      spies.storage.getDeactivateMethods.mockResolvedValue([
+        new VerificationMethod(0x108, recipient.address, mockTimestamp),
+      ]);
+
+      const result = await verificationMethodService.getMethodsFor(sender.address);
+
+      expect(spies.storage.getVerificationMethods).toHaveBeenCalledTimes(1);
+      expect(spies.storage.getVerificationMethods).toHaveBeenCalledWith(sender.address);
+      expect(spies.storage.getDeactivateMethods).toHaveBeenCalledTimes(1);
+      expect(spies.storage.getDeactivateMethods).toHaveBeenCalledWith(sender.address);
+
+      expect(result).toHaveLength(2);
+      expect(result).toContainEqual(new VerificationMethod(0x11f, sender.address, 0));
+      expect(result).toContainEqual(new VerificationMethod(0x1108, recipient.address, mockTimestamp));
+    });
+
+    test('should merge verification and deactivation method', async () => {
+      const spies = spy();
+
+      spies.storage.getVerificationMethods.mockResolvedValue([
+        new VerificationMethod(0x101, recipient.address, mockTimestamp),
+      ]);
+      spies.storage.getDeactivateMethods.mockResolvedValue([
+        new VerificationMethod(0x108, recipient.address, mockTimestamp + 1000),
+      ]);
+
+      const result = await verificationMethodService.getMethodsFor(sender.address);
+
+      expect(result).toHaveLength(2);
+      expect(result).toContainEqual(new VerificationMethod(0x11f, sender.address, 0));
+      expect(result).toContainEqual(new VerificationMethod(0x109, recipient.address, mockTimestamp + 1000));
+    });
+
+    test('should use only deactivation method if verification method is expired', async () => {
+      const spies = spy();
+
+      spies.storage.getVerificationMethods.mockResolvedValue([
+        new VerificationMethod(0x101, recipient.address, mockTimestamp, mockTimestamp + 2000),
+      ]);
+      spies.storage.getDeactivateMethods.mockResolvedValue([
+        new VerificationMethod(0x108, recipient.address, mockTimestamp),
+      ]);
+
+      const result = await verificationMethodService.getMethodsFor(sender.address, mockTimestamp + 5000);
+
+      expect(result).toHaveLength(2);
+      expect(result).toContainEqual(new VerificationMethod(0x11f, sender.address, 0));
+      expect(result).toContainEqual(new VerificationMethod(0x1108, recipient.address, mockTimestamp));
+    });
+
+    test('should use only verification method if deactivation method is expired', async () => {
+      const spies = spy();
+
+      spies.storage.getVerificationMethods.mockResolvedValue([
+        new VerificationMethod(0x101, recipient.address, mockTimestamp),
+      ]);
+      spies.storage.getDeactivateMethods.mockResolvedValue([
+        new VerificationMethod(0x108, recipient.address, mockTimestamp, mockTimestamp + 2000),
+      ]);
+
+      const result = await verificationMethodService.getMethodsFor(sender.address, mockTimestamp + 5000);
+
+      expect(result).toHaveLength(2);
+      expect(result).toContainEqual(new VerificationMethod(0x11f, sender.address, 0));
+      expect(result).toContainEqual(new VerificationMethod(0x101, recipient.address, mockTimestamp));
+    });
+  });
+
+  describe('hasDeactivateCapability', () => {
+    it('should return true for own address', async () => {
+      spy();
+
+      const result = await verificationMethodService.hasDeactivateCapability(sender.address, sender.address);
+      expect(result).toBe(true);
+    });
+
+    it('should return true if the sender is a deactivation method', async () => {
+      const spies = spy();
+
+      spies.storage.getDeactivateMethods.mockResolvedValue([
+        new VerificationMethod(0x108, recipient.address, mockTimestamp),
+      ]);
+
+      const result = await verificationMethodService.hasDeactivateCapability(sender.address, recipient.address);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if the sender isn't a deactivation method", async () => {
+      spy();
+
+      const result = await verificationMethodService.hasDeactivateCapability(sender.address, recipient.address);
+      expect(result).toBe(false);
+    });
+
+    it('should return false if deactivation method is expired', async () => {
+      const spies = spy();
+
+      spies.storage.getDeactivateMethods.mockResolvedValue([
+        new VerificationMethod(0x108, recipient.address, mockTimestamp, mockTimestamp + 1000),
+      ]);
+
+      const result = await verificationMethodService.hasDeactivateCapability(sender.address, recipient.address);
+      expect(result).toBe(false);
     });
   });
 });

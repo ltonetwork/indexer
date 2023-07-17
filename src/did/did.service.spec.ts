@@ -1,18 +1,17 @@
+// noinspection DuplicatedCode
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { IdentityModuleConfig } from './did.module';
 import { DIDService } from './did.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { VerificationMethod } from './verification-method/model/verification-method.model';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('DIDService', () => {
   let module: TestingModule;
   let storageService: StorageService;
   let service: DIDService;
   let verificationMethodService: VerificationMethodService;
-
-  let transaction: Transaction;
 
   const sender = {
     chainId: 'T',
@@ -39,7 +38,8 @@ describe('DIDService', () => {
   function spy() {
     const verificationMethod = {
       save: jest.spyOn(verificationMethodService, 'save').mockResolvedValue(undefined),
-      getMethodsFor: jest.spyOn(verificationMethodService, 'getMethodsFor')
+      getMethodsFor: jest
+        .spyOn(verificationMethodService, 'getMethodsFor')
         .mockResolvedValue([defaultVerificationMethod]),
     };
 
@@ -48,7 +48,8 @@ describe('DIDService', () => {
       getPublicKey: jest.spyOn(storageService, 'getPublicKey').mockImplementation(async (address: string) => {
         if (address === sender.address) return { publicKey: sender.ed25519PublicKey, keyType: 'ed25519' };
         if (address === recipient.address) return { publicKey: recipient.ed25519PublicKey, keyType: 'ed25519' };
-        if (address === secondRecipient.address) return { publicKey: secondRecipient.secp256k1PublicKey, keyType: 'secp256k1' };
+        if (address === secondRecipient.address)
+          return { publicKey: secondRecipient.secp256k1PublicKey, keyType: 'secp256k1' };
 
         return null;
       }),
@@ -70,15 +71,6 @@ describe('DIDService', () => {
     service = module.get<DIDService>(DIDService);
     verificationMethodService = module.get<VerificationMethodService>(VerificationMethodService);
 
-    // @ts-ignore
-    transaction = {
-      id: 'fake_transaction',
-      type: 1,
-      sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      senderPublicKey: 'AVXUh6yvPG8XYqjbUgvKeEJQDQM7DggboFjtGKS8ETRG',
-      senderKeyType: 'ed25519',
-    };
-
     await module.init();
   });
 
@@ -93,9 +85,9 @@ describe('DIDService', () => {
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'service': [],
-        'verificationMethod': [
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -103,9 +95,9 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        'authentication': [`did:lto:${sender.address}#sign`],
-        'assertionMethod': [`did:lto:${sender.address}#sign`],
-        'keyAgreement': [
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
+        keyAgreement: [
           {
             id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
@@ -113,8 +105,8 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
           },
         ],
-        'capabilityInvocation': [`did:lto:${sender.address}#sign`],
-        'capabilityDelegation': [`did:lto:${sender.address}#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
@@ -141,9 +133,9 @@ describe('DIDService', () => {
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'service': [],
-        'verificationMethod': [
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -157,15 +149,9 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
           },
         ],
-        'authentication': [
-          `did:lto:${sender.address}#sign`,
-          `did:lto:${recipient.address}#sign`,
-        ],
-        'assertionMethod': [
-          `did:lto:${sender.address}#sign`,
-          `did:lto:${recipient.address}#sign`,
-        ],
-        'keyAgreement': [
+        authentication: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        keyAgreement: [
           {
             id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
@@ -179,8 +165,8 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.x25519PublicKey}`,
           },
         ],
-        'capabilityInvocation': [`did:lto:${sender.address}#sign`],
-        'capabilityDelegation': [`did:lto:${sender.address}#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
     });
 
@@ -201,9 +187,9 @@ describe('DIDService', () => {
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'service': [],
-        'verificationMethod': [
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -211,8 +197,11 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        'capabilityInvocation': [`did:lto:${sender.address}#sign`],
-        'capabilityDelegation': [`did:lto:${sender.address}#sign`],
+        assertionMethod: [],
+        authentication: [],
+        keyAgreement: [],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
     });
 
@@ -222,8 +211,8 @@ describe('DIDService', () => {
       spies.verificationMethod.getMethodsFor = jest
         .spyOn(verificationMethodService, 'getMethodsFor')
         .mockImplementation(async () => {
-          const relationships = 0x0107; // authentication, assertion, key agreement
-          const secondRelationships = 0x0114; // assertion, key agreement, capability delegation
+          const relationships = 0x107; // authentication, assertion, key agreement
+          const secondRelationships = 0x114; // assertion, key agreement, capability delegation
 
           return [
             defaultVerificationMethod,
@@ -239,9 +228,9 @@ describe('DIDService', () => {
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'service': [],
-        'verificationMethod': [
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -261,15 +250,9 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${secondRecipient.secp256k1PublicKey}`,
           },
         ],
-        'authentication': [
-          `did:lto:${sender.address}#sign`,
-          `did:lto:${recipient.address}#sign`,
-        ],
-        'assertionMethod': [
-          `did:lto:${sender.address}#sign`,
-          `did:lto:${recipient.address}#sign`,
-        ],
-        'keyAgreement': [
+        authentication: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        keyAgreement: [
           {
             id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
@@ -284,11 +267,58 @@ describe('DIDService', () => {
           },
           `did:lto:${secondRecipient.address}#sign`,
         ],
-        'capabilityInvocation': [`did:lto:${sender.address}#sign`],
-        'capabilityDelegation': [
-          `did:lto:${sender.address}#sign`,
-          `did:lto:${secondRecipient.address}#sign`,
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`, `did:lto:${secondRecipient.address}#sign`],
+      });
+    });
+
+    test('should return a document with a deactivation method', async () => {
+      const spies = spy();
+
+      spies.verificationMethod.getMethodsFor = jest
+        .spyOn(verificationMethodService, 'getMethodsFor')
+        .mockResolvedValue([
+          defaultVerificationMethod,
+          new VerificationMethod(0x1108, recipient.address, new Date('2023-02-01').getTime()),
+        ]);
+
+      const did = await service.resolveDocument(sender.address);
+
+      expect(spies.storage.getPublicKey.mock.calls.length).toBe(2);
+      expect(spies.verificationMethod.getMethodsFor.mock.calls.length).toBe(1);
+
+      expect(did).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
         ],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
+        keyAgreement: [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+        ],
+        capabilityInvocation: [
+          `did:lto:${sender.address}#sign`,
+          {
+            id: `did:lto:${recipient.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${recipient.address}`,
+            publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
+          },
+        ],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
     });
   });
@@ -315,13 +345,11 @@ describe('DIDService', () => {
     beforeEach(() => {
       spies = spy();
 
-      spies.storage.getDIDServices = jest
-        .spyOn(storageService, 'getDIDServices')
-        .mockResolvedValue([
-          { ...service1a, timestamp: new Date('2023-02-01').getTime() },
-          { ...service1b, timestamp: new Date('2023-03-01').getTime() },
-          { ...service2, timestamp: new Date('2023-03-01').getTime() },
-        ]);
+      spies.storage.getDIDServices = jest.spyOn(storageService, 'getDIDServices').mockResolvedValue([
+        { ...service1a, timestamp: new Date('2023-02-01').getTime() },
+        { ...service1b, timestamp: new Date('2023-03-01').getTime() },
+        { ...service2, timestamp: new Date('2023-03-01').getTime() },
+      ]);
 
       spies.verificationMethod.getMethodsFor = jest
         .spyOn(verificationMethodService, 'getMethodsFor')
@@ -335,9 +363,9 @@ describe('DIDService', () => {
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'service': [ service1b, service2 ],
-        'verificationMethod': [
+        id: `did:lto:${sender.address}`,
+        service: [service1b, service2],
+        verificationMethod: [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -345,6 +373,11 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
+        authentication: [],
+        assertionMethod: [],
+        keyAgreement: [],
+        capabilityInvocation: [],
+        capabilityDelegation: [],
       });
 
       expect(spies.storage.getDIDServices).toBeCalled();
@@ -356,9 +389,9 @@ describe('DIDService', () => {
 
       expect(did).toEqual({
         '@context': 'https://www.w3.org/ns/did/v1',
-        'id': `did:lto:${sender.address}`,
-        'service': [ service1a ],
-        'verificationMethod': [
+        id: `did:lto:${sender.address}`,
+        service: [service1a],
+        verificationMethod: [
           {
             id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -366,6 +399,11 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
+        authentication: [],
+        assertionMethod: [],
+        keyAgreement: [],
+        capabilityInvocation: [],
+        capabilityDelegation: [],
       });
 
       expect(spies.storage.getDIDServices).toBeCalled();

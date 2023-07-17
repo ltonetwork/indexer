@@ -18,16 +18,7 @@ export class VerificationMethodService {
     );
 
     const deactivateMethods = this.currentMethods(await this.storage.getDeactivateMethods(address), versionTimestamp);
-
-    for (const method of deactivateMethods.values()) {
-      const currentMethod = map.get(method.recipient);
-
-      if (currentMethod) {
-        currentMethod.relationships = currentMethod.relationships | method.relationships;
-      } else {
-        map.set(method.recipient, method);
-      }
-    }
+    this.mergeMethods(map, deactivateMethods.values(), versionTimestamp);
 
     if (!map.has(address) || !map.get(address).isActive(versionTimestamp)) map.set(address, defaultMethod);
 
@@ -45,6 +36,25 @@ export class VerificationMethodService {
     return map;
   }
 
+  private mergeMethods(
+    map: Map<string, VerificationMethod>,
+    methods: Iterable<VerificationMethod>,
+    versionTimestamp: number,
+  ): void {
+    for (const method of methods) {
+      if (!method.isActive(versionTimestamp)) continue;
+      const currentMethod = map.get(method.recipient);
+
+      if (currentMethod && currentMethod.isActive(versionTimestamp)) {
+        currentMethod.relationships = currentMethod.relationships | method.relationships;
+        currentMethod.timestamp = Math.max(currentMethod.timestamp, method.timestamp);
+      } else {
+        method.relationships = method.relationships | 0x1000; // Mark as only deactivate capability
+        map.set(method.recipient, method);
+      }
+    }
+  }
+
   private getTypeForRelationship(methods: Record<string, boolean>): number {
     return Object.entries(methods)
       .filter(([relationship, value]) => relationship in RelationshipType && value)
@@ -60,8 +70,10 @@ export class VerificationMethodService {
     timestamp: number,
     expires?: number,
   ): Promise<void> {
-    type = type | this.getTypeForRelationship(data);
-    const verificationMethod = new VerificationMethod(type, recipient, timestamp, expires);
+    if (type === 0x108 && sender === recipient) return;
+
+    const relationships = type | this.getTypeForRelationship(data);
+    const verificationMethod = new VerificationMethod(relationships, recipient, timestamp, expires);
 
     this.logger.debug(`DID: 'did:lto:${sender}' add verification method '${recipient}'`);
 
@@ -73,6 +85,8 @@ export class VerificationMethodService {
   }
 
   async revoke(type: number, sender: string, recipient: string, timestamp: number): Promise<void> {
+    if (type === 0x108 && sender === recipient) return;
+
     const relationships = sender === recipient ? 0x11f : 0;
     const verificationMethod = new VerificationMethod(relationships, recipient, timestamp);
 
