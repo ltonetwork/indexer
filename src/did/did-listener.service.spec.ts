@@ -44,10 +44,15 @@ describe('DIDListenerService', () => {
     const verificationMethod = {
       save: jest.spyOn(verificationMethodService, 'save').mockResolvedValue(undefined),
       revoke: jest.spyOn(verificationMethodService, 'revoke').mockResolvedValue(undefined),
+      hasDeactivateCapability: jest
+        .spyOn(verificationMethodService, 'hasDeactivateCapability')
+        .mockImplementation(async (account: string, sender: string) => account === sender),
     };
 
     const storage = {
       savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockResolvedValue(undefined),
+      deactivateDID: jest.spyOn(storageService, 'deactivateDID').mockResolvedValue(undefined),
+      saveDIDService: jest.spyOn(storageService, 'saveDIDService').mockResolvedValue(undefined),
     };
 
     return { verificationMethod, storage };
@@ -191,6 +196,143 @@ describe('DIDListenerService', () => {
       await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
 
       expect(spies.verificationMethod.revoke).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('index deactivate', () => {
+    test('should deactivate DID of own address', async () => {
+      const tx = {
+        ...transaction,
+        type: 23,
+        statementType: 0x120,
+      } as Transaction;
+
+      spy();
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(tx.sender, tx.sender);
+      expect(storageService.deactivateDID).toHaveBeenCalledWith(tx.sender, tx.sender, tx.timestamp);
+    });
+
+    test('should deactivate DID of other address if granted deactivate capability', async () => {
+      const tx = {
+        ...transaction,
+        type: 23,
+        statementType: 0x121,
+        recipient: recipient.address,
+      } as Transaction;
+
+      const spies = spy();
+      spies.verificationMethod.hasDeactivateCapability = jest
+        .spyOn(verificationMethodService, 'hasDeactivateCapability')
+        .mockResolvedValue(true);
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(tx.recipient, tx.sender);
+      expect(storageService.deactivateDID).toHaveBeenCalledWith(tx.recipient, tx.sender, tx.timestamp);
+    });
+
+    test('should NOT deactivate DID of other address if not granted deactivate capability', async () => {
+      const tx = {
+        ...transaction,
+        type: 23,
+        statementType: 0x121,
+        recipient: recipient.address,
+      } as Transaction;
+
+      const spies = spy();
+      spies.verificationMethod.hasDeactivateCapability = jest
+        .spyOn(verificationMethodService, 'hasDeactivateCapability')
+        .mockResolvedValue(false);
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(tx.recipient, tx.sender);
+      expect(storageService.deactivateDID).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('index services', () => {
+    test('should save a DID service', async () => {
+      const tx = {
+        ...transaction,
+        type: 12,
+        data: [
+          { key: `did:service:foo`, type: 'string', value: '{"type":"Foo","serviceEndpoint":"https://example.com"}' },
+        ],
+      } as Transaction;
+
+      const spies = spy();
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(spies.storage.saveDIDService).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDIDService).toHaveBeenCalledWith(tx.sender, {
+        id: `did:lto:${sender.address}#foo`,
+        type: 'Foo',
+        serviceEndpoint: 'https://example.com',
+        timestamp: tx.timestamp,
+      });
+    });
+
+    test('should save a DID service with a custom id', async () => {
+      const tx = {
+        ...transaction,
+        type: 12,
+        data: [
+          {
+            key: `did:service:foo`,
+            type: 'string',
+            value: '{"id":"foo_bar","type":"Foo","serviceEndpoint":"https://example.com"}',
+          },
+        ],
+      } as Transaction;
+
+      const spies = spy();
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(spies.storage.saveDIDService).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDIDService).toHaveBeenCalledWith(tx.sender, {
+        id: 'foo_bar',
+        type: 'Foo',
+        serviceEndpoint: 'https://example.com',
+        timestamp: tx.timestamp,
+      });
+    });
+
+    test('should save a removed DID service', async () => {
+      const tx = {
+        ...transaction,
+        type: 12,
+        data: [{ key: `did:service:foo`, type: 'boolean', value: false }],
+      } as Transaction;
+
+      const spies = spy();
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(spies.storage.saveDIDService).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDIDService).toHaveBeenCalledWith(tx.sender, {
+        id: `did:lto:${sender.address}#foo`,
+        timestamp: tx.timestamp,
+      });
+    });
+
+    test('should skip other data entries', async () => {
+      const tx = {
+        ...transaction,
+        type: 12,
+        data: [{ key: `hello`, type: 'string', value: 'world' }],
+      } as Transaction;
+
+      const spies = spy();
+
+      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
+
+      expect(spies.storage.saveDIDService).not.toHaveBeenCalled();
     });
   });
 });

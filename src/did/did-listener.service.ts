@@ -84,7 +84,7 @@ export class DIDListenerService implements OnModuleInit {
 
   private async indexDeactivation(tx: Transaction): Promise<void> {
     const address = tx.statementType === 0x120 ? tx.sender : tx.recipient;
-    if (address) return;
+    if (!address) return;
 
     if (!(await this.verificationMethodService.hasDeactivateCapability(address, tx.sender))) {
       this.logger.info(`DID: 'did:lto:${address}' cannot be deactivated by ${tx.sender}`);
@@ -103,6 +103,8 @@ export class DIDListenerService implements OnModuleInit {
         ...(typeof value === 'string' ? JSON.parse(value) : {}),
         timestamp: tx.timestamp,
       }));
+
+    if (services.length === 0) return;
 
     await Promise.all(
       services.map(async (service) => {

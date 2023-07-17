@@ -4,6 +4,7 @@ import AwaitLock from 'await-lock';
 
 /**
  * Stored all values in memory until flush() is called.
+ * Too many writes to the database, on disk, can cause performance issues.
  */
 export class LeveldbConnection {
   private writeLock: AwaitLock;
