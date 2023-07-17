@@ -4,9 +4,9 @@ FROM node:18 As build
 WORKDIR /usr/src
 
 # Install app dependencies
-COPY package*.json ./
+COPY package.json yarn.lock ./
 
-RUN npm i
+RUN yarn
 
 # Bundle app source
 COPY . .
@@ -17,7 +17,7 @@ RUN npm run build
 
 RUN rm -rf node_modules/
 
-RUN npm i --only=production
+RUN yarn --production
 
 FROM node:18-alpine
 # Move the build files from build folder to app folder

@@ -11,10 +11,10 @@
   "scripts": {
     "format": "prettier --write \"**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "start": "ts-node -r tsconfig-paths/register src/main.ts",
+    "start": "node --require ts-node/register src/main.ts",
     "start:dev": "nodemon",
-    "build": "rm -rf dist && tsc",
-    "postbuild": "cp -r src/data dist/config/; cp package.json dist/",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json",
+    "postbuild": "cp -r src/config dist/config/; cp package.json dist/",
     "prestart:prod": "npm run build",
     "start:prod": "node dist/main.js",
     "start:hmr": "node dist/server",
@@ -40,7 +40,7 @@
   ],
   "license": "ISC",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "@nestjs/axios": "^2.0.0",
