@@ -11,7 +11,7 @@ export interface RoleData {
 
 export interface RawRoles {
   [key: string]: {
-    description: string;
+    description?: string;
     issues?: Role[];
     authorization?: string[];
     sponsored?: boolean;

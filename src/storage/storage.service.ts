@@ -7,7 +7,7 @@ import storageServices from './index';
 import { pascalCase } from 'pascal-case';
 import { LoggerService } from '../common/logger/logger.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
-import { Role, RawRoles } from '../trust-network/interfaces/trust-network.interface';
+import { Role } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis/redis-graph.service';
 import { DIDDocumentService } from '../did/interfaces/did.interface';
 
@@ -132,7 +132,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
   }
 
-  async getRolesFor(address: string): Promise<RawRoles | Record<string | number, never>> {
+  async getRolesFor(address: string): Promise<Record<string, { sender: string; type: number }>> {
     return (await this.storage.getObject(`lto:roles:${address}`)) ?? {};
   }
 

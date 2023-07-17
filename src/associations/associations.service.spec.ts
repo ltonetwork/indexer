@@ -18,9 +18,7 @@ describe('AssociationsService', () => {
     const storage = {
       saveAssociation: jest.spyOn(storageService, 'saveAssociation').mockImplementation(async () => {}),
       removeAssociation: jest.spyOn(storageService, 'removeAssociation').mockImplementation(async () => {}),
-      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
-        return { root: { description: 'The root role' } };
-      }),
+      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockResolvedValue({}),
       getAssociations: jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
         return {
           parents: [],

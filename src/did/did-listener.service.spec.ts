@@ -211,7 +211,11 @@ describe('DIDListenerService', () => {
 
       await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
 
-      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(tx.sender, tx.sender);
+      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(
+        tx.sender,
+        tx.sender,
+        tx.timestamp,
+      );
       expect(storageService.deactivateDID).toHaveBeenCalledWith(tx.sender, tx.sender, tx.timestamp);
     });
 
@@ -230,7 +234,11 @@ describe('DIDListenerService', () => {
 
       await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
 
-      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(tx.recipient, tx.sender);
+      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(
+        tx.recipient,
+        tx.sender,
+        tx.timestamp,
+      );
       expect(storageService.deactivateDID).toHaveBeenCalledWith(tx.recipient, tx.sender, tx.timestamp);
     });
 
@@ -249,7 +257,11 @@ describe('DIDListenerService', () => {
 
       await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
 
-      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(tx.recipient, tx.sender);
+      expect(verificationMethodService.hasDeactivateCapability).toHaveBeenCalledWith(
+        tx.recipient,
+        tx.sender,
+        tx.timestamp,
+      );
       expect(storageService.deactivateDID).not.toHaveBeenCalled();
     });
   });
