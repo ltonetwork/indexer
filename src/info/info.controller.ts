@@ -5,7 +5,7 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('info')
 @ApiTags('info')
 export class InfoController {
-  constructor(private readonly infoService: InfoService) { }
+  constructor(private readonly infoService: InfoService) {}
 
   @Get()
   async info(): Promise<object> {

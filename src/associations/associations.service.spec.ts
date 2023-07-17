@@ -2,22 +2,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AssociationsService } from './associations.service';
 import { AssociationsModuleConfig } from './associations.module';
 import { LoggerService } from '../common/logger/logger.service';
-import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 describe('AssociationsService', () => {
   let module: TestingModule;
   let loggerService: LoggerService;
-  let configService: ConfigService;
   let storageService: StorageService;
   let trustService: TrustNetworkService;
   let associationsService: AssociationsService;
 
   function spy() {
     const storage = {
-      saveAssociation: jest.spyOn(storageService, 'saveAssociation').mockImplementation(async () => {}),
-      removeAssociation: jest.spyOn(storageService, 'removeAssociation').mockImplementation(async () => {}),
+      saveAssociation: jest.spyOn(storageService, 'saveAssociation').mockResolvedValue(undefined),
+      removeAssociation: jest.spyOn(storageService, 'removeAssociation').mockResolvedValue(undefined),
       getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockResolvedValue({}),
       getAssociations: jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
         return {
@@ -37,7 +35,7 @@ describe('AssociationsService', () => {
     };
 
     const logger = {
-      debug: jest.spyOn(loggerService, 'debug').mockImplementation(() => {}),
+      debug: jest.spyOn(loggerService, 'debug').mockReturnValue(undefined),
     };
 
     const config = {};
@@ -48,7 +46,6 @@ describe('AssociationsService', () => {
   beforeEach(async () => {
     module = await Test.createTestingModule(AssociationsModuleConfig).compile();
 
-    configService = module.get<ConfigService>(ConfigService);
     loggerService = module.get<LoggerService>(LoggerService);
     storageService = module.get<StorageService>(StorageService);
     trustService = module.get<TrustNetworkService>(TrustNetworkService);

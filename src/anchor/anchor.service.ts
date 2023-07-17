@@ -15,7 +15,7 @@ export class AnchorService {
     private readonly storage: StorageService,
     private readonly config: ConfigService,
     private readonly trust: TrustNetworkService,
-  ) { }
+  ) {}
 
   async index(index: IndexDocumentType, anchorIndexing: 'trust' | 'all') {
     const { transaction, blockHeight, position } = index;
@@ -49,13 +49,15 @@ export class AnchorService {
 
   private getAnchorHashes(transaction: Transaction): string[] {
     if (transaction.type === 15) {
-      return (transaction.anchors as Array<string>)
-          .map(hash => this.encoder.hexEncode(this.encoder.base58Decode(hash)));
+      return (transaction.anchors as Array<string>).map((hash) =>
+        this.encoder.hexEncode(this.encoder.base58Decode(hash)),
+      );
     }
 
     if (transaction.type === 22) {
-      return (Object.values(transaction.anchors as {[_: string]: string}))
-          .map(hash => this.encoder.hexEncode(this.encoder.base58Decode(hash)));
+      return Object.values(transaction.anchors as { [_: string]: string }).map((hash) =>
+        this.encoder.hexEncode(this.encoder.base58Decode(hash)),
+      );
     }
 
     throw new Error('Not an anchor tx');

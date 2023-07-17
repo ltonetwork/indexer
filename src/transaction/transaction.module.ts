@@ -12,16 +12,9 @@ import { StorageModule } from '../storage/storage.module';
 export const TransactionModuleConfig = {
   imports: [LoggerModule, ConfigModule, NodeModule, EmitterModule, StorageModule],
   controllers: [TransactionController],
-  providers: [
-    TransactionService,
-    TransactionListenerService,
-    ...transactionProviders,
-  ],
-  exports: [
-    TransactionService,
-    ...transactionProviders,
-  ],
+  providers: [TransactionService, TransactionListenerService, ...transactionProviders],
+  exports: [TransactionService, ...transactionProviders],
 };
 
 @Module(TransactionModuleConfig)
-export class TransactionModule { }
+export class TransactionModule {}

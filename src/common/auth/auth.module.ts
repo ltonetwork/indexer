@@ -6,16 +6,9 @@ import { BearerAuthGuard } from './auth.guard';
 
 export const AuthModuleConfig = {
   imports: [ConfigModule],
-  providers: [
-    AuthService,
-    HttpStrategy,
-    BearerAuthGuard,
-  ],
-  exports: [
-    AuthService,
-    BearerAuthGuard,
-  ],
+  providers: [AuthService, HttpStrategy, BearerAuthGuard],
+  exports: [AuthService, BearerAuthGuard],
 };
 
 @Module(AuthModuleConfig)
-export class AuthModule { }
+export class AuthModule {}

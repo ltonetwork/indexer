@@ -17,4 +17,4 @@ export const HashModuleConfig = {
 };
 
 @Module(HashModuleConfig)
-export class HashModule { }
+export class HashModule {}

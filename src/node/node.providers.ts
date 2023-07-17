@@ -1,2 +1,1 @@
-export const nodeProviders = [
-];
+export const nodeProviders = [];

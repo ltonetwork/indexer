@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "format": "prettier --write \"**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "start:dev": "nodemon",
     "build": "rm -rf dist && tsc",
@@ -21,8 +22,7 @@
     "test:watch": "jest --watchAll",
     "test:cov": "jest --detectOpenHandles --forceExit --coverage",
     "test:e2e": "jest --detectOpenHandles --forceExit --runInBand --config ./test/jest-e2e.json",
-    "test:all": "npm run test:e2e && npm run test:cov",
-    "webpack": "webpack --config webpack.config.js"
+    "test:all": "npm run test:e2e && npm run test:cov"
   },
   "authors": [
     {

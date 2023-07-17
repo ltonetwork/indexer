@@ -6,15 +6,9 @@ import { ConfigModule } from '../config/config.module';
 export const LoggerModuleConfig = {
   imports: [ConfigModule],
   controllers: [],
-  providers: [
-    ...loggerProviders,
-    LoggerService,
-  ],
-  exports: [
-    ...loggerProviders,
-    LoggerService,
-  ],
+  providers: [...loggerProviders, LoggerService],
+  exports: [...loggerProviders, LoggerService],
 };
 
 @Module(LoggerModuleConfig)
-export class LoggerModule { }
+export class LoggerModule {}

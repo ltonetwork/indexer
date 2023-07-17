@@ -8,15 +8,9 @@ import { EmitterModule } from '../../emitter/emitter.module';
 export const LevelModuleConfig = {
   imports: [LoggerModule, ConfigModule, EmitterModule],
   controllers: [],
-  providers: [
-    ...leveldbProviders,
-    LeveldbService,
-  ],
-  exports: [
-    ...leveldbProviders,
-    LeveldbService,
-  ],
+  providers: [...leveldbProviders, LeveldbService],
+  exports: [...leveldbProviders, LeveldbService],
 };
 
 @Module(LevelModuleConfig)
-export class LeveldbModule { }
+export class LeveldbModule {}

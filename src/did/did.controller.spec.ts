@@ -3,14 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { IdentityModuleConfig } from './did.module';
 import { DIDService } from './did.service';
-import { ConfigService } from '../common/config/config.service';
 import { LoggerService } from '../common/logger/logger.service';
 
 describe('DidController', () => {
   let module: TestingModule;
   let loggerService: LoggerService;
   let identityService: DIDService;
-  let configService: ConfigService;
   let app: INestApplication;
 
   function spy() {
@@ -19,7 +17,7 @@ describe('DidController', () => {
     };
 
     const logger = {
-      error: jest.spyOn(loggerService, 'error').mockImplementation(() => {}),
+      error: jest.spyOn(loggerService, 'error').mockReturnValue(undefined),
     };
 
     return { identity, logger };
@@ -30,7 +28,6 @@ describe('DidController', () => {
     app = module.createNestApplication();
     await app.init();
 
-    configService = module.get<ConfigService>(ConfigService);
     loggerService = module.get<LoggerService>(LoggerService);
     identityService = module.get<DIDService>(DIDService);
   });
@@ -43,9 +40,7 @@ describe('DidController', () => {
     test('should get a identity document for the url', async () => {
       const spies = spy();
 
-      const res = await request(app.getHttpServer())
-        .get('/identifiers/did:lto:sender')
-        .send();
+      const res = await request(app.getHttpServer()).get('/identifiers/did:lto:sender').send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
@@ -60,9 +55,7 @@ describe('DidController', () => {
 
       spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockImplementation(() => null);
 
-      const res = await request(app.getHttpServer())
-        .get('/identifiers/did:lto:sender')
-        .send();
+      const res = await request(app.getHttpServer()).get('/identifiers/did:lto:sender').send();
 
       expect(res.status).toBe(404);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
@@ -79,9 +72,7 @@ describe('DidController', () => {
         throw Error('some bad error');
       });
 
-      const res = await request(app.getHttpServer())
-        .get('/identifiers/did:lto:sender')
-        .send();
+      const res = await request(app.getHttpServer()).get('/identifiers/did:lto:sender').send();
 
       expect(res.status).toBe(500);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
@@ -102,12 +93,14 @@ describe('DidController', () => {
         .send();
 
       expect(res.status).toBe(200);
-      expect(res.header['content-type']).toBe('application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"');
+      expect(res.header['content-type']).toBe(
+        'application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"',
+      );
       expect(res.body).toEqual({
         '@context': 'https://w3id.org/did-resolution/v1',
-        'didDocument': { id: 'mock-did' },
-        'didDocumentMetadata': {},
-        'didResolutionMetadata': {},
+        didDocument: { id: 'mock-did' },
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
       });
 
       expect(spies.logger.error.mock.calls.length).toBe(0);
@@ -125,12 +118,14 @@ describe('DidController', () => {
         .send();
 
       expect(res.status).toBe(404);
-      expect(res.header['content-type']).toBe('application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"');
+      expect(res.header['content-type']).toBe(
+        'application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"',
+      );
       expect(res.body).toEqual({
         '@context': 'https://w3id.org/did-resolution/v1',
-        'didDocument': null,
-        'didDocumentMetadata': {},
-        'didResolutionMetadata': { error: 'notFound' },
+        didDocument: null,
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'notFound' },
       });
 
       expect(spies.logger.error.mock.calls.length).toBe(0);
@@ -150,12 +145,14 @@ describe('DidController', () => {
         .send();
 
       expect(res.status).toBe(500);
-      expect(res.header['content-type']).toBe('application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"');
+      expect(res.header['content-type']).toBe(
+        'application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"',
+      );
       expect(res.body).toEqual({
         '@context': 'https://w3id.org/did-resolution/v1',
-        'didDocument': null,
-        'didDocumentMetadata': {},
-        'didResolutionMetadata': { error: 'failed to get DID document', reason: `${Error('some bad error')}` },
+        didDocument: null,
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'failed to get DID document', reason: `${Error('some bad error')}` },
       });
 
       expect(spies.logger.error.mock.calls.length).toBe(1);

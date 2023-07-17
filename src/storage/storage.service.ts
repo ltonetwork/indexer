@@ -1,5 +1,5 @@
 import { ModuleRef } from '@nestjs/core';
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../common/config/config.service';
 import { StorageInterface } from './interfaces/storage.interface';
 import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
@@ -12,7 +12,7 @@ import { RedisGraphService } from './redis/redis-graph.service';
 import { DIDDocumentService } from '../did/interfaces/did.interface';
 
 @Injectable()
-export class StorageService implements OnModuleInit, OnModuleDestroy {
+export class StorageService implements OnModuleInit {
   private storage: StorageInterface;
   private graphEnabled: boolean;
 
@@ -35,8 +35,6 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     this.graphEnabled = this.config.isAssociationGraphEnabled();
   }
 
-  async onModuleDestroy() {}
-
   getAnchor(hash: string): Promise<any> {
     return this.storage.getObject(`lto:anchor:${hash.toLowerCase()}`);
   }
@@ -47,9 +45,9 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async getMappedAnchorsByKey(key: string): Promise<Array<any>> {
     const hashes = await this.storage.getSet(`lto:mapped-anchor:${key.toLowerCase()}`);
-    const keys = hashes.map(hash => `lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
+    const keys = hashes.map((hash) => `lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
 
-    return Promise.all(keys.map(k => this.storage.getObject(k)));
+    return Promise.all(keys.map((k) => this.storage.getObject(k)));
   }
 
   getMappedAnchor(key: string, hash: string): Promise<any> {
@@ -64,24 +62,26 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   getAccountCreated(address: string): Promise<number | null> {
-    return this.storage.getValue(`lto:created:${address}`)
+    return this.storage
+      .getValue(`lto:created:${address}`)
       .catch(() => null)
       .then((r) => Number(r));
   }
 
-  getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
-    return this.storage.getObject(`lto:pubkey:${address}`)
+  getPublicKey(address: string): Promise<{ publicKey?: string; keyType?: string }> {
+    return this.storage
+      .getObject(`lto:pubkey:${address}`)
       .catch(() => {
         const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
-        return publicKey ? {publicKey, keyType: 'ed25519'} : {};
+        return publicKey ? { publicKey, keyType: 'ed25519' } : {};
       })
-      .then(r => r ? r as {publicKey: string, keyType: string} : {});
+      .then((r) => (r ? (r as { publicKey: string; keyType: string }) : {}));
   }
 
   savePublicKey(address: string, publicKey: string, keyType: string, timestamp: number) {
     return Promise.all([
       this.storage.addValue(`lto:created:${address}`, String(timestamp)),
-      this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType}),
+      this.storage.addObject(`lto:pubkey:${address}`, { publicKey, keyType }),
     ]);
   }
 
@@ -250,14 +250,14 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  async getLeaseStats(from, to): Promise<{ period: string; in: number, out: number }[]> {
+  async getLeaseStats(from, to): Promise<{ period: string; in: number; out: number }[]> {
     const length = to - from + 1;
 
     const keysIn = Array.from({ length }, (v, i) => `lto:stats:lease:in:${from + i}`);
-    const valuesIn = (await this.storage.getMultipleValues(keysIn)).map(amount => Number(amount || '0'));
+    const valuesIn = (await this.storage.getMultipleValues(keysIn)).map((amount) => Number(amount || '0'));
 
     const keysOut = Array.from({ length }, (v, i) => `lto:stats:lease:out:${from + i}`);
-    const valuesOut = (await this.storage.getMultipleValues(keysOut)).map(amount => Number(amount || '0'));
+    const valuesOut = (await this.storage.getMultipleValues(keysOut)).map((amount) => Number(amount || '0'));
 
     const periods = Array.from({ length }, (v, i) => new Date((from + i) * 86400000));
 

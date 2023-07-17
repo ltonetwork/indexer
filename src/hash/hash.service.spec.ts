@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HashModuleConfig } from './hash.module';
-import { ConfigService } from '../common/config/config.service';
 import { HashService } from './hash.service';
 import { StorageService } from '../storage/storage.service';
 
@@ -9,7 +8,6 @@ describe('HashService', () => {
   let module: TestingModule;
   let hashService: HashService;
   let storageService: StorageService;
-  let configService: ConfigService;
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -19,7 +17,6 @@ describe('HashService', () => {
 
     hashService = module.get<HashService>(HashService);
     storageService = module.get<StorageService>(StorageService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(async () => {
@@ -36,12 +33,11 @@ describe('HashService', () => {
 
       const stored = {
         '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b': { id: 1 },
-        'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35': { id: 2 },
+        d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35: { id: 2 },
         '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce': { id: 3 },
       };
 
-      const getAnchor = jest.spyOn(storageService, 'getAnchor')
-          .mockImplementation(async hash => stored[hash] || {});
+      const getAnchor = jest.spyOn(storageService, 'getAnchor').mockImplementation(async (hash) => stored[hash] || {});
 
       const result = await hashService.verifyAnchors(hashes, 'base58');
 
@@ -52,7 +48,7 @@ describe('HashService', () => {
 
       expect(result.anchors).toEqual({
         '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG': 1,
-        'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg': 2,
+        FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg: 2,
         '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf': 3,
       });
       expect(result.verified).toBe(true);
@@ -67,12 +63,11 @@ describe('HashService', () => {
 
       const stored = {
         '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b': { id: 1 },
-        'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35': { },
+        d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35: {},
         '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce': { id: 3 },
       };
 
-      const getAnchor = jest.spyOn(storageService, 'getAnchor')
-          .mockImplementation(async hash => stored[hash] || {});
+      const getAnchor = jest.spyOn(storageService, 'getAnchor').mockImplementation(async (hash) => stored[hash] || {});
 
       const result = await hashService.verifyAnchors(hashes, 'base58');
 
@@ -83,7 +78,7 @@ describe('HashService', () => {
 
       expect(result.anchors).toEqual({
         '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG': 1,
-        'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg': null,
+        FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg: null,
         '6FbDRScGruVdATaNWzD51xJkTfYCVwxSZDb7gzqCLzwf': 3,
       });
       expect(result.verified).toBe(false);
@@ -126,27 +121,36 @@ describe('HashService', () => {
       '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': 1,
       '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 3,
       '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 4,
-      'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+      FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
     };
 
     const expectedMap = {
       '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
       '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
       '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
-      'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+      FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
     };
 
     beforeEach(() => {
-      getMappedAnchorsByKey = jest.spyOn(storageService, 'getMappedAnchorsByKey')
-          .mockImplementation(async hash => stored[hash] || []);
+      getMappedAnchorsByKey = jest
+        .spyOn(storageService, 'getMappedAnchorsByKey')
+        .mockImplementation(async (hash) => stored[hash] || []);
     });
 
     function assertGetMappedAnchorsByKeyCalls() {
       expect(getMappedAnchorsByKey.mock.calls.length).toBe(4);
-      expect(getMappedAnchorsByKey.mock.calls[0][0]).toBe('146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1');
-      expect(getMappedAnchorsByKey.mock.calls[1][0]).toBe('34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b');
-      expect(getMappedAnchorsByKey.mock.calls[2][0]).toBe('10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda');
-      expect(getMappedAnchorsByKey.mock.calls[3][0]).toBe('d5ce2b19fbda14a25deac948154722f33efd37b369a32be8f03ec2be8ef7d3a5');
+      expect(getMappedAnchorsByKey.mock.calls[0][0]).toBe(
+        '146da586036684deee1acba1ae0520a79e7502da8b302dc4b683bd4f88f7c8e1',
+      );
+      expect(getMappedAnchorsByKey.mock.calls[1][0]).toBe(
+        '34313fc9e1050a02c7d4931f8312cca75b9f4edef653b34794606526b9ec5a7b',
+      );
+      expect(getMappedAnchorsByKey.mock.calls[2][0]).toBe(
+        '10d331592917e8ee791c5a01f2cf4bd54de81bf648fd7fd1340aa55b73ce7bda',
+      );
+      expect(getMappedAnchorsByKey.mock.calls[3][0]).toBe(
+        'd5ce2b19fbda14a25deac948154722f33efd37b369a32be8f03ec2be8ef7d3a5',
+      );
     }
 
     test('return verified is true if all anchors match as first entry', async () => {
@@ -154,10 +158,10 @@ describe('HashService', () => {
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
       };
 
-      const {verified, anchors, map} = await hashService.verifyMappedAnchors(pairs, 'base58');
+      const { verified, anchors, map } = await hashService.verifyMappedAnchors(pairs, 'base58');
       assertGetMappedAnchorsByKeyCalls();
 
       expect(anchors).toEqual(expectedAnchors);
@@ -170,10 +174,10 @@ describe('HashService', () => {
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': '81u',
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: '81u',
       };
 
-      const {verified, anchors, map} = await hashService.verifyMappedAnchors(pairs, 'base58');
+      const { verified, anchors, map } = await hashService.verifyMappedAnchors(pairs, 'base58');
       assertGetMappedAnchorsByKeyCalls();
 
       expect(anchors).toEqual(expectedAnchors);
@@ -186,10 +190,10 @@ describe('HashService', () => {
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '3yMApqCuCjXDWPrbjfR5mjCPTHqFG8Pux1TxQrEM35jj',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': 'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn',
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
       };
 
-      const {verified, anchors, map} = await hashService.verifyMappedAnchors(pairs, 'base58');
+      const { verified, anchors, map } = await hashService.verifyMappedAnchors(pairs, 'base58');
       assertGetMappedAnchorsByKeyCalls();
 
       expect(anchors).toEqual(expectedAnchors);
@@ -202,10 +206,10 @@ describe('HashService', () => {
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': '81u',
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
       };
 
-      const {verified, anchors, map} = await hashService.verifyMappedAnchors(pairs, 'base58');
+      const { verified, anchors, map } = await hashService.verifyMappedAnchors(pairs, 'base58');
       assertGetMappedAnchorsByKeyCalls();
 
       expect(anchors).toEqual(expectedAnchors);
@@ -218,10 +222,10 @@ describe('HashService', () => {
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '8EjkXVSTxMFjCvNNsTo8RBMDEVQmk7gYkW4SCDuvdsBG',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': null,
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
       };
 
-      const {verified, anchors, map} = await hashService.verifyMappedAnchors(pairs, 'base58');
+      const { verified, anchors, map } = await hashService.verifyMappedAnchors(pairs, 'base58');
       assertGetMappedAnchorsByKeyCalls();
 
       expect(anchors).toEqual(expectedAnchors);
@@ -243,26 +247,26 @@ describe('HashService', () => {
           hash: null,
           sender: '3NBYfy8LvDgnsr9qEiWHKD6qP7RMQdb2Uf8',
         },
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': {
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: {
           hash: null,
           sender: '3NBYfy8LvDgnsr9qEiWHKD6qP7RMQdb2Uf8',
         },
       };
 
-      const {verified, anchors, map} = await hashService.verifyMappedAnchors(pairs, 'base58');
+      const { verified, anchors, map } = await hashService.verifyMappedAnchors(pairs, 'base58');
       assertGetMappedAnchorsByKeyCalls();
 
       expect(anchors).toEqual({
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': 2,
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 3,
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': null,
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
       });
       expect(map).toEqual({
         '2Nk8JfzQ47wX7XEdkemRJbNTLxC529YwJ92U9g6FyeAc': '3yMApqCuCjXDWPrbjfR5mjCPTHqFG8Pux1TxQrEM35jj',
         '4WjkssnwoTRrTo4xKX8rac1b3zwrGvpy4kgRCsHJ49yc': 'FJKTv1un7qsnyKdwKez7B67JJp3oCU5ntCVXcRsWEjtg',
         '28gJaguAnsUEUMcfzXU6tpCLjhTH2xfg2G3NEHzetmUd': null,
-        'FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz': null,
+        FPcBCxxV4teUiKecPnnzqqunAKEhwNJLckWTWAoaD5oz: null,
       });
       expect(verified).toBe(true);
     });

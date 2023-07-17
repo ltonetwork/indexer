@@ -17,4 +17,4 @@ export const ConfigModuleConfig = {
 };
 
 @Module(ConfigModuleConfig)
-export class ConfigModule { }
+export class ConfigModule {}

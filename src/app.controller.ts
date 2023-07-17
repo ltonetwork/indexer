@@ -5,7 +5,7 @@ import { ConfigService } from './common/config/config.service';
 
 @Controller()
 export class AppController {
-  constructor(private config: ConfigService) { }
+  constructor(private config: ConfigService) {}
 
   @Get()
   @ApiExcludeEndpoint()

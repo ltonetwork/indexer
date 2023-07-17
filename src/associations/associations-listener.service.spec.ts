@@ -15,11 +15,11 @@ describe('AssociationsListenerService', () => {
 
   function spy() {
     const logger = {
-      debug: jest.spyOn(loggerService, 'debug').mockImplementation(() => {}),
+      debug: jest.spyOn(loggerService, 'debug').mockReturnValue(undefined),
     };
 
     const emitter = {
-      on: jest.spyOn(emitterService, 'on').mockImplementation(() => {}),
+      on: jest.spyOn(emitterService, 'on').mockReturnValue(undefined),
     };
 
     const config = {
@@ -60,7 +60,9 @@ describe('AssociationsListenerService', () => {
 
     expect(spies.config.getAssociationIndexing.mock.calls.length).toBe(1);
     expect(spies.logger.debug.mock.calls.length).toBe(1);
-    expect(spies.logger.debug.mock.calls[0][0]).toBe(`transaction-listener: Not processing associations: config set to "none"`);
+    expect(spies.logger.debug.mock.calls[0][0]).toBe(
+      `transaction-listener: Not processing associations: config set to "none"`,
+    );
     expect(spies.emitter.on.mock.calls.length).toBe(0);
   });
 });

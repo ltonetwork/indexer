@@ -10,7 +10,7 @@ describe('TransactionService', () => {
 
   function spy() {
     const storage = {
-      indexTx: jest.spyOn(storageService, 'indexTx').mockImplementation(async () => {}),
+      indexTx: jest.spyOn(storageService, 'indexTx').mockResolvedValue(undefined),
     };
 
     return { storage };
@@ -49,21 +49,20 @@ describe('TransactionService', () => {
 
   describe('getIdentifiers()', () => {
     test('get identifiers of all transaction types', async () => {
-      expect(transactionService.getIdentifiers())
-        .toEqual([
-          'anchor',
-          'transfer',
-          'mass_transfer',
-          'burn',
-          'all_transfers',
-          'lease',
-          'association',
-          'script',
-          'sponsor',
-          'data',
-          'statement',
-          'all',
-        ]);
+      expect(transactionService.getIdentifiers()).toEqual([
+        'anchor',
+        'transfer',
+        'mass_transfer',
+        'burn',
+        'all_transfers',
+        'lease',
+        'association',
+        'script',
+        'sponsor',
+        'data',
+        'statement',
+        'all',
+      ]);
     });
   });
 
@@ -109,7 +108,7 @@ describe('TransactionService', () => {
         timestamp: 1615371048483,
       };
 
-      await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      await transactionService.index({ transaction: transaction as any, blockHeight: 1, position: 0 });
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(6);
 
@@ -143,14 +142,11 @@ describe('TransactionService', () => {
         type: 11,
         sender: 'fake_sender',
         recipient: 'fake_recipient',
-        transfers: [
-          { recipient: 'fake_transfer_1' },
-          { recipient: 'fake_transfer_2' },
-        ],
+        transfers: [{ recipient: 'fake_transfer_1' }, { recipient: 'fake_transfer_2' }],
         timestamp: 1615371049542,
       };
 
-      await transactionService.index({transaction: transaction as any, blockHeight: 1, position: 0});
+      await transactionService.index({ transaction: transaction as any, blockHeight: 1, position: 0 });
 
       expect(spies.storage.indexTx.mock.calls.length).toBe(12);
 

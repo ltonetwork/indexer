@@ -1,19 +1,14 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '../../common/config/config.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { StorageInterface } from '../interfaces/storage.interface';
 import { Redis, Cluster } from 'ioredis';
 
 @Injectable()
-export class RedisStorageService implements StorageInterface, OnModuleInit, OnModuleDestroy {
+export class RedisStorageService implements StorageInterface, OnModuleDestroy {
   private connection: Redis | Cluster;
 
-  constructor(
-    private readonly config: ConfigService,
-    private readonly redis: RedisService,
-  ) { }
-
-  async onModuleInit() { }
+  constructor(private readonly config: ConfigService, private readonly redis: RedisService) {}
 
   async onModuleDestroy() {
     await this.close();
@@ -117,7 +112,7 @@ export class RedisStorageService implements StorageInterface, OnModuleInit, OnMo
     await this.init();
 
     const start = Number(offset ?? 0);
-    const stop = limit !== undefined ? (Number(limit) - 1) + start : -1;
+    const stop = limit !== undefined ? Number(limit) - 1 + start : -1;
 
     return this.connection.zrevrange(key, start, stop);
   }

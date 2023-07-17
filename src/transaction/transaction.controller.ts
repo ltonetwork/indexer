@@ -13,7 +13,7 @@ export class TransactionController {
     private readonly logger: LoggerService,
     private readonly node: NodeService,
     private readonly tx: TransactionService,
-  ) { }
+  ) {}
 
   @Get('addresses/:address')
   @ApiOperation({ summary: 'Get transactions by address' })

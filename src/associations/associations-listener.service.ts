@@ -14,7 +14,7 @@ export class AssociationsListenerService implements OnModuleInit {
     private readonly service: AssociationsService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.associationIndexing = this.config.getAssociationIndexing();
@@ -28,9 +28,8 @@ export class AssociationsListenerService implements OnModuleInit {
   }
 
   async onIndexTransaction() {
-    this.indexEmitter.on(
-      IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.service.index(val, this.associationIndexing as 'trust' | 'all'),
+    this.indexEmitter.on(IndexEvent.IndexTransaction, (val: IndexEventsReturnType['IndexTransaction']) =>
+      this.service.index(val, this.associationIndexing as 'trust' | 'all'),
     );
   }
 }

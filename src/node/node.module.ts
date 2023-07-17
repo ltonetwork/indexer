@@ -12,17 +12,9 @@ import { NodeController } from './node.controller';
 export const NodeModuleConfig = {
   imports: [LoggerModule, ConfigModule, RequestModule, EncoderModule, StorageModule],
   controllers: [NodeController],
-  providers: [
-    ...nodeProviders,
-    NodeService,
-    NodeApiService,
-  ],
-  exports: [
-    ...nodeProviders,
-    NodeService,
-    NodeApiService,
-  ],
+  providers: [...nodeProviders, NodeService, NodeApiService],
+  exports: [...nodeProviders, NodeService, NodeApiService],
 };
 
 @Module(NodeModuleConfig)
-export class NodeModule { }
+export class NodeModule {}

@@ -7,14 +7,10 @@ import { Block } from '../transaction/interfaces/block.interface';
 
 @Injectable()
 export class IndexService {
-
   public lastBlock: Block;
   public txCache: string[] = [];
 
-  constructor(
-    private readonly logger: LoggerService,
-    private readonly event: EmitterService<IndexEventsReturnType>,
-  ) { }
+  constructor(private readonly logger: LoggerService, private readonly event: EmitterService<IndexEventsReturnType>) {}
 
   /**
    * Index a new block. Should be called before indexing individual txs.

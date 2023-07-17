@@ -23,14 +23,9 @@ export const TrustNetworkModuleConfig = {
     EmitterModule,
   ],
   controllers: [TrustNetworkController],
-  providers: [
-    TrustNetworkService,
-    TrustNetworkListenerService,
-  ],
-  exports: [
-    TrustNetworkService,
-  ],
+  providers: [TrustNetworkService, TrustNetworkListenerService],
+  exports: [TrustNetworkService],
 };
 
 @Module(TrustNetworkModuleConfig)
-export class TrustNetworkModule { }
+export class TrustNetworkModule {}

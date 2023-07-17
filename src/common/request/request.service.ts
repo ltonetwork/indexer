@@ -11,7 +11,7 @@ export class RequestService {
     private readonly http: HttpService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   async send(config: AxiosRequestConfig): Promise<AxiosResponse | Error> {
     const url = config.url;

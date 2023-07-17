@@ -1,16 +1,14 @@
 import { StorageInterface } from '../interfaces/storage.interface';
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '../../common/config/config.service';
 import { LeveldbConnection } from '../../common/leveldb/classes/leveldb.connection';
 import { LeveldbService } from '../../common/leveldb/leveldb.service';
 
 @Injectable()
-export class LeveldbStorageService implements StorageInterface, OnModuleInit, OnModuleDestroy {
+export class LeveldbStorageService implements StorageInterface, OnModuleDestroy {
   private connection: LeveldbConnection;
 
   constructor(private readonly config: ConfigService, private readonly leveldb: LeveldbService) {}
-
-  async onModuleInit() {}
 
   async onModuleDestroy() {
     await this.close();
@@ -87,7 +85,7 @@ export class LeveldbStorageService implements StorageInterface, OnModuleInit, On
 
   async getBufferSet(key: string): Promise<Buffer[]> {
     const values = await this.connection.sget(key);
-    return values.map(value => Buffer.from(value, 'base64'));
+    return values.map((value) => Buffer.from(value, 'base64'));
   }
 
   async countSortedSet(key: string): Promise<number> {

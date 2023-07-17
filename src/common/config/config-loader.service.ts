@@ -10,16 +10,14 @@ type Path = convict.Path<SchemaOf<typeof schema>>;
 type PathValue<K extends Path> = K extends null | undefined
   ? Schema
   : K extends convict.Path<Schema>
-    ? convict.PathValue<Schema, K>
-    : never;
+  ? convict.PathValue<Schema, K>
+  : never;
 
 @Injectable()
 export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private config: convict.Config<Schema>;
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
   private config_reload_interval: NodeJS.Timer;
-
-  constructor() { }
 
   async onModuleInit() {
     if (!this.config) {
@@ -42,7 +40,6 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private async load(): Promise<void> {
     const dir = path.resolve(__dirname, '../../config');
 
-    // @ts-ignore
     this.config = convict(schema);
     this.config.loadFile(`${dir}/default.config.json`);
 
@@ -56,7 +53,12 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     ];
 
     for (const file of files) {
-      if (await fs.access(file, fs.constants.F_OK).then(() => true, () => false)) {
+      if (
+        await fs.access(file, fs.constants.F_OK).then(
+          () => true,
+          () => false,
+        )
+      ) {
         this.config.loadFile(file);
       }
     }

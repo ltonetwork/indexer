@@ -16,7 +16,7 @@ export class AnchorListenerService implements OnModuleInit {
     private readonly mappedAnchorService: MappedAnchorService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.anchorIndexing = this.config.getAnchorIndexing();
@@ -30,14 +30,12 @@ export class AnchorListenerService implements OnModuleInit {
   }
 
   async onIndexTransaction() {
-    this.indexEmitter.on(
-      IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.anchorService.index(val, this.anchorIndexing as 'trust' | 'all'),
+    this.indexEmitter.on(IndexEvent.IndexTransaction, (val: IndexEventsReturnType['IndexTransaction']) =>
+      this.anchorService.index(val, this.anchorIndexing as 'trust' | 'all'),
     );
 
-    this.indexEmitter.on(
-        IndexEvent.IndexTransaction,
-        (val: IndexEventsReturnType['IndexTransaction']) => this.mappedAnchorService.index(val, this.anchorIndexing as 'trust' | 'all'),
+    this.indexEmitter.on(IndexEvent.IndexTransaction, (val: IndexEventsReturnType['IndexTransaction']) =>
+      this.mappedAnchorService.index(val, this.anchorIndexing as 'trust' | 'all'),
     );
   }
 }

@@ -5,15 +5,9 @@ import { EncoderService } from './encoder.service';
 export const EncoderModuleConfig = {
   imports: [],
   controllers: [],
-  providers: [
-    ...encoderProviders,
-    EncoderService,
-  ],
-  exports: [
-    ...encoderProviders,
-    EncoderService,
-  ],
+  providers: [...encoderProviders, EncoderService],
+  exports: [...encoderProviders, EncoderService],
 };
 
 @Module(EncoderModuleConfig)
-export class EncoderModule { }
+export class EncoderModule {}

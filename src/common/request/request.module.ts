@@ -8,15 +8,9 @@ import { ConfigModule } from '../config/config.module';
 export const RequestModuleConfig = {
   imports: [LoggerModule, ConfigModule, HttpModule],
   controllers: [],
-  providers: [
-    ...requestProviders,
-    RequestService,
-  ],
-  exports: [
-    ...requestProviders,
-    RequestService,
-  ],
+  providers: [...requestProviders, RequestService],
+  exports: [...requestProviders, RequestService],
 };
 
 @Module(RequestModuleConfig)
-export class RequestModule { }
+export class RequestModule {}

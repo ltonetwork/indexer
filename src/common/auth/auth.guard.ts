@@ -1,14 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import {ConfigService} from '../config/config.service';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class BearerAuthGuard extends AuthGuard('bearer') {
-  constructor(options, private readonly configService: ConfigService){
+  constructor(options, private readonly configService: ConfigService) {
     super(options);
   }
 
-  handleRequest(err, user, info) {
+  handleRequest(err, user) {
     if (this.configService.getAuthToken()) {
       if (err || !user) {
         throw err || new UnauthorizedException();

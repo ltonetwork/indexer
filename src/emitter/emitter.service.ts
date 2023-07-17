@@ -5,8 +5,6 @@ import { Subject } from 'rxjs';
 export class EmitterService<T> implements OnModuleDestroy {
   private subjects = new Map<string, Subject<any>>();
 
-  constructor() { }
-
   emit(event: keyof T, data: T[keyof T]) {
     const key = event as string;
 
@@ -30,7 +28,7 @@ export class EmitterService<T> implements OnModuleDestroy {
   }
 
   onModuleDestroy() {
-    for (const [key, subject] of this.subjects) {
+    for (const [, subject] of this.subjects) {
       subject.unsubscribe();
     }
 

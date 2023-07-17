@@ -7,15 +7,9 @@ import { ConfigModule } from '../config/config.module';
 export const RedisModuleConfig = {
   imports: [LoggerModule, ConfigModule],
   controllers: [],
-  providers: [
-    ...redisProviders,
-    RedisService,
-  ],
-  exports: [
-    ...redisProviders,
-    RedisService,
-  ],
+  providers: [...redisProviders, RedisService],
+  exports: [...redisProviders, RedisService],
 };
 
 @Module(RedisModuleConfig)
-export class RedisModule { }
+export class RedisModule {}

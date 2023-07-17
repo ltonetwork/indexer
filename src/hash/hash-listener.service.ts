@@ -12,7 +12,7 @@ export class HashListenerService implements OnModuleInit {
     private readonly hashService: HashService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     if (!this.config.isAnchorBatched()) {
@@ -24,9 +24,6 @@ export class HashListenerService implements OnModuleInit {
   }
 
   async onIndexBlock() {
-    this.indexEmitter.on(
-      IndexEvent.IndexBlock,
-      () => this.hashService.trigger(),
-    );
+    this.indexEmitter.on(IndexEvent.IndexBlock, () => this.hashService.trigger());
   }
 }

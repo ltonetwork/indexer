@@ -13,7 +13,9 @@ import fs from 'fs';
 
 function swagger(app: INestApplication) {
   const packageJsonFile = fs.existsSync(__dirname + '/package.json') ? './package.json' : '../package.json';
-  const { description, version } =  require(packageJsonFile);
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { description, version } = require(packageJsonFile);
 
   const config = app.get<ConfigService>(ConfigService);
 

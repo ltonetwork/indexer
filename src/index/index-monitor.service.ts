@@ -33,7 +33,7 @@ export class IndexMonitorService {
           await this.storage.clearProcessHeight();
         }
 
-        this.lastBlock = await this.storage.getProcessingHeight() || await this.initialProcessingHeight();
+        this.lastBlock = (await this.storage.getProcessingHeight()) || (await this.initialProcessingHeight());
         this.started = true;
 
         await this.process();
@@ -47,9 +47,7 @@ export class IndexMonitorService {
   }
 
   private async initialProcessingHeight() {
-    return this.config.getStartingBlock() < 0
-      ? await this.node.getLastBlockHeight()
-      : this.config.getStartingBlock();
+    return this.config.getStartingBlock() < 0 ? await this.node.getLastBlockHeight() : this.config.getStartingBlock();
   }
 
   async process() {

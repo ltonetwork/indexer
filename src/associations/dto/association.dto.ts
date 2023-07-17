@@ -1,5 +1,4 @@
 export class Association {
-
   readonly recipient: string;
 
   readonly type: number;

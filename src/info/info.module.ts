@@ -10,4 +10,4 @@ export const InfoModuleConfig = {
 };
 
 @Module(InfoModuleConfig)
-export class InfoModule { }
+export class InfoModule {}

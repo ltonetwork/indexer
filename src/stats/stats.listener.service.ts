@@ -7,13 +7,12 @@ import { LoggerService } from '../common/logger/logger.service';
 
 @Injectable()
 export class StatsListenerService implements OnModuleInit {
-
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
     private readonly statsService: StatsService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     if (!this.config.isStatsEnabled()) {
@@ -24,9 +23,8 @@ export class StatsListenerService implements OnModuleInit {
     this.onIndexTransaction();
   }
   async onIndexTransaction() {
-    this.indexEmitter.on(
-      IndexEvent.IndexBlock,
-      (val: IndexEventsReturnType['IndexBlock']) => this.statsService.index(val),
+    this.indexEmitter.on(IndexEvent.IndexBlock, (val: IndexEventsReturnType['IndexBlock']) =>
+      this.statsService.index(val),
     );
   }
 }

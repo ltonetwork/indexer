@@ -29,7 +29,9 @@ export class TrustNetworkService {
     }
 
     if (!transaction.recipient) {
-      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have a recipient address, skipped indexing`);
+      this.logger.debug(
+        `trust-network: transaction ${transaction.id} didn't have a recipient address, skipped indexing`,
+      );
       return;
     }
 
@@ -78,14 +80,14 @@ export class TrustNetworkService {
       if (configData) {
         result.roles.push(role);
 
-        configData.issues?.forEach(eachIssues => {
-          if (result.issues_roles.findIndex(each => each.role === eachIssues.role) === -1) {
+        configData.issues?.forEach((eachIssues) => {
+          if (result.issues_roles.findIndex((each) => each.role === eachIssues.role) === -1) {
             result.issues_roles.push(eachIssues);
           }
         });
 
-        configData.authorization?.forEach(eachAuthorization => {
-          if (result.issues_authorization.findIndex(each => each === eachAuthorization) === -1) {
+        configData.authorization?.forEach((eachAuthorization) => {
+          if (result.issues_authorization.findIndex((each) => each === eachAuthorization) === -1) {
             result.issues_authorization.push(eachAuthorization);
           }
         });
@@ -111,14 +113,16 @@ export class TrustNetworkService {
         return;
       }
 
-      const isGettingSponsored = await this.hasSponsoredRoles(savedRoles.map(each => each.role));
+      const isGettingSponsored = await this.hasSponsoredRoles(savedRoles.map((each) => each.role));
 
       if (isGettingSponsored) {
         if (await this.isSponsoredByNode(transaction.recipient)) {
           return;
         }
 
-        this.logger.debug(`trust-network: recipient is being given a sponsored role, sending a transaction to the node`);
+        this.logger.debug(
+          `trust-network: recipient is being given a sponsored role, sending a transaction to the node`,
+        );
         await this.node.sponsor(transaction.recipient);
       }
     } catch (error) {
@@ -130,7 +134,7 @@ export class TrustNetworkService {
     const removedRoles: Role[] = [];
     const senderRoleData = await this.getRolesFor(transaction.sender);
 
-    senderRoleData.issues_roles.forEach(async eachRole => {
+    senderRoleData.issues_roles.forEach(async (eachRole) => {
       if (eachRole.type === transaction.associationType && !removedRoles.includes(eachRole)) {
         removedRoles.push(eachRole);
         await this.storage.removeRoleAssociation(transaction.recipient, eachRole);

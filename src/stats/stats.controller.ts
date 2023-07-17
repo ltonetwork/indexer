@@ -14,10 +14,9 @@ export class StatsController {
     private readonly service: StatsService,
     private readonly supply: SupplyService,
     private readonly transactions: TransactionService,
-  ) { }
+  ) {}
 
-  private periodFromReq(req: Request)
-  {
+  private periodFromReq(req: Request) {
     const fromParam = req.params.from;
     const toParam = req.params.to;
 
@@ -36,7 +35,7 @@ export class StatsController {
       throw Error('invalid period range given');
     }
 
-    return {from, to};
+    return { from, to };
   }
 
   @Get('/operations/:from/:to')
@@ -47,12 +46,12 @@ export class StatsController {
   @ApiResponse({ status: 400, description: 'invalid period range given' })
   async getOperationStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
     try {
-      const {from, to} = this.periodFromReq(req);
+      const { from, to } = this.periodFromReq(req);
       const stats = await this.service.getOperationStats(from, to);
 
       res.status(200).json(stats);
     } catch (e) {
-      return res.status(400).send({error: e.message});
+      return res.status(400).send({ error: e.message });
     }
   }
 
@@ -75,7 +74,6 @@ export class StatsController {
     } catch (error) {
       return res.status(500).json({ error: `failed to get circulating supply: ${error}` });
     }
-
   }
 
   @Get('/supply/max')
@@ -97,19 +95,22 @@ export class StatsController {
     } catch (error) {
       return res.status(500).json({ error: `failed to get max supply: ${error}` });
     }
-
   }
 
   @Get('/transactions/:type/:from/:to')
   @ApiOperation({ summary: 'Get transaction count per day' })
-  @ApiParam({ name: 'type', description: 'Transaction type'})
+  @ApiParam({ name: 'type', description: 'Transaction type' })
   @ApiParam({ name: 'from', description: 'Date as `year-month-day` or timestamp in ms' })
   @ApiParam({ name: 'to', description: 'Date as `year-month-day` or timestamp in ms' })
   @ApiResponse({ status: 200 })
   @ApiResponse({
     status: 400,
-    description: ['invalid from date given', 'invalid to date given', 'invalid type given',
-      'invalid period range given'].join('<br>'),
+    description: [
+      'invalid from date given',
+      'invalid to date given',
+      'invalid type given',
+      'invalid period range given',
+    ].join('<br>'),
   })
   @ApiResponse({ status: 500, description: `failed to get transaction stats '[reason]'` })
   async getTransactionStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
@@ -120,7 +121,7 @@ export class StatsController {
     }
 
     try {
-      const {from, to} = this.periodFromReq(req);
+      const { from, to } = this.periodFromReq(req);
       const stats = await this.transactions.getStats(type, from, to);
 
       res.status(200).json(stats);
@@ -141,7 +142,7 @@ export class StatsController {
   @ApiResponse({ status: 500, description: `failed to get transaction stats '[reason]'` })
   async getLeaseStats(@Req() req: Request, @Res() res: Response): Promise<Response> {
     try {
-      const {from, to} = this.periodFromReq(req);
+      const { from, to } = this.periodFromReq(req);
       const stats = await this.service.getLeaseStats(from, to);
 
       res.status(200).json(stats);

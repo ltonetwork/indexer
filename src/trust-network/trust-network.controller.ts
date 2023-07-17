@@ -7,9 +7,7 @@ import { TrustNetworkService } from './trust-network.service';
 @Controller('trust')
 @ApiTags('trust-network')
 export class TrustNetworkController {
-  constructor(
-    private readonly service: TrustNetworkService,
-  ) { }
+  constructor(private readonly service: TrustNetworkService) {}
 
   @Get(':address')
   @ApiOperation({ summary: 'Retrieves the roles for an identity' })
@@ -21,7 +19,7 @@ export class TrustNetworkController {
   })
   async getRoles(@Req() req: Request, @Res() res: Response): Promise<Response> {
     let address = req.params.address;
-    
+
     if (!address) {
       return res.status(400).json({ error: 'invalid address' });
     }
@@ -30,7 +28,7 @@ export class TrustNetworkController {
 
     try {
       const roles = await this.service.getRolesFor(address);
-  
+
       return res.status(200).json(roles);
     } catch (error) {
       return res.status(400).json({ error: 'failed to resolve roles' });

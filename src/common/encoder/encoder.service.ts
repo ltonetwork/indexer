@@ -44,7 +44,6 @@ export class EncoderService {
 
     const digits = [0];
     for (let i = 0; i < buffer.length; i++) {
-
       for (let j = 0; j < digits.length; j++) {
         digits[j] <<= 8;
       }
@@ -62,16 +61,18 @@ export class EncoderService {
         digits.push(carry % 58);
         carry = (carry / 58) | 0;
       }
-
     }
 
     for (let i = 0; buffer[i] === 0 && i < buffer.length - 1; i++) {
       digits.push(0);
     }
 
-    return digits.reverse().map((digit) => {
-      return this.alphabet[digit];
-    }).join('');
+    return digits
+      .reverse()
+      .map((digit) => {
+        return this.alphabet[digit];
+      })
+      .join('');
   }
 
   decode(hash: string, encoding: string): Uint8Array {
@@ -89,7 +90,7 @@ export class EncoderService {
 
   validateHash(hash, encoding) {
     const hashBytes = this.decode(hash, encoding);
-    return (this.allowsHashLengths.indexOf(hashBytes.length) !== -1);
+    return this.allowsHashLengths.indexOf(hashBytes.length) !== -1;
   }
 
   base64Decode(hash) {
@@ -131,7 +132,6 @@ export class EncoderService {
         bytes.push(carry & 0xff);
         carry >>= 8;
       }
-
     }
 
     for (let i = 0; hash[i] === '1' && i < hash.length - 1; i++) {

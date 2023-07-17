@@ -1,2 +1,1 @@
-export const emitterProviders = [
-];
+export const emitterProviders = [];

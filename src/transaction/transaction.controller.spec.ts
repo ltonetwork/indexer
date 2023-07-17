@@ -11,13 +11,13 @@ describe('TransactionController', () => {
 
   function spy() {
     const node = {
-      getTransactionsByAddress: jest.spyOn(nodeService, 'getTransactionsByAddress')
-        .mockImplementation(async () => ['fake_transaction_1', 'fake_transaction_2']),
-      countTransactionsByAddress: jest.spyOn(nodeService, 'countTransactionsByAddress')
-        .mockImplementation(async () => 2),
-      getTransactions: jest.spyOn(nodeService, 'getTransactions')
-        // @ts-ignore
-        .mockImplementation(async () => [{ id: 'fake_transaction_1' }, { id: 'fake_transaction_2' }]),
+      getTransactionsByAddress: jest
+        .spyOn(nodeService, 'getTransactionsByAddress')
+        .mockResolvedValue(['fake_transaction_1', 'fake_transaction_2']),
+      countTransactionsByAddress: jest.spyOn(nodeService, 'countTransactionsByAddress').mockResolvedValue(2),
+      getTransactions: jest
+        .spyOn(nodeService, 'getTransactions')
+        .mockResolvedValue([{ id: 'fake_transaction_1' }, { id: 'fake_transaction_2' }] as any),
     };
 
     return { node };
@@ -40,9 +40,7 @@ describe('TransactionController', () => {
       const spies = spy();
 
       const address = '3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE';
-      const res = await request(app.getHttpServer())
-        .get(`/transactions/addresses/${address}`)
-        .send();
+      const res = await request(app.getHttpServer()).get(`/transactions/addresses/${address}`).send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');

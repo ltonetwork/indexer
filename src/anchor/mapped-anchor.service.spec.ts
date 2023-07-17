@@ -13,7 +13,7 @@ describe('MappedAnchorService', () => {
 
   function spy() {
     const storage = {
-      saveMappedAnchor: jest.spyOn(storageService, 'saveMappedAnchor').mockImplementation(async () => {}),
+      saveMappedAnchor: jest.spyOn(storageService, 'saveMappedAnchor').mockResolvedValue(undefined),
       getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
         return {};
       }),
@@ -59,10 +59,10 @@ describe('MappedAnchorService', () => {
       expect(spies.storage.getRolesFor.mock.calls.length).toBe(0);
       expect(spies.storage.saveMappedAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveMappedAnchor.mock.calls[0][0]).toBe(
-          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
       );
       expect(spies.storage.saveMappedAnchor.mock.calls[0][1]).toBe(
-          '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
+        '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
       );
       expect(spies.storage.saveMappedAnchor.mock.calls[0][2]).toMatchObject({
         hash: '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',

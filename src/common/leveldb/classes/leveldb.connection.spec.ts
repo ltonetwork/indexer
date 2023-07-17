@@ -24,9 +24,7 @@ describe('LeveldbConnection', () => {
       await levelDBConnection.flush();
 
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-          {key: 'fake_key', value: 'fake_value', type: 'put'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[{ key: 'fake_key', value: 'fake_value', type: 'put' }]]);
     });
   });
 
@@ -45,9 +43,7 @@ describe('LeveldbConnection', () => {
       expect(spies.connection.get.mock.calls[0]).toEqual(['fake_key']);
 
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-          {key: 'fake_key', value: 'fake_value', type: 'put'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[{ key: 'fake_key', value: 'fake_value', type: 'put' }]]);
     });
 
     test('should not set a value to leveldb if it already exists', async () => {
@@ -144,9 +140,7 @@ describe('LeveldbConnection', () => {
       await levelDBConnection.flush();
 
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-          {key: 'fake_key', value: null, type: 'del'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[{ key: 'fake_key', value: null, type: 'del' }]]);
     });
   });
 
@@ -164,12 +158,10 @@ describe('LeveldbConnection', () => {
 
       await levelDBConnection.flush();
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-          {key: 'fake_key', value: '43', type: 'put'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[{ key: 'fake_key', value: '43', type: 'put' }]]);
     });
 
-    test('should set a value to 1 in leveldb if it doesn\'t exist yet', async () => {
+    test("should set a value to 1 in leveldb if it doesn't exist yet", async () => {
       const spies = spy();
 
       spies.connection.get.mockImplementation(async () => {
@@ -184,9 +176,7 @@ describe('LeveldbConnection', () => {
 
       await levelDBConnection.flush();
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-        {key: 'fake_key', value: '1', type: 'put'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([[{ key: 'fake_key', value: '1', type: 'put' }]]);
     });
   });
 
@@ -201,9 +191,9 @@ describe('LeveldbConnection', () => {
 
       await levelDBConnection.flush();
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-        {key: 'fake_key!fake_value', value: 'fake_value', type: 'put'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([
+        [{ key: 'fake_key!fake_value', value: 'fake_value', type: 'put' }],
+      ]);
     });
   });
 
@@ -218,9 +208,9 @@ describe('LeveldbConnection', () => {
 
       await levelDBConnection.flush();
       expect(spies.connection.batch.mock.calls.length).toBe(1);
-      expect(spies.connection.batch.mock.calls[0]).toEqual([[
-        {key: 'fake_key!fake_value', value: null, type: 'del'},
-      ]]);
+      expect(spies.connection.batch.mock.calls[0]).toEqual([
+        [{ key: 'fake_key!fake_value', value: null, type: 'del' }],
+      ]);
     });
   });
 

@@ -45,4 +45,4 @@ export const AppModuleConfig = {
 };
 
 @Module(AppModuleConfig)
-export class AppModule { }
+export class AppModule {}

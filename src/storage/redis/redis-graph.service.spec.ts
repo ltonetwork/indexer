@@ -16,7 +16,7 @@ describe('RedisGraphService', () => {
 
   function spy() {
     const config = {
-      getRedisUrl: jest.spyOn(configService, 'getRedisUrl').mockImplementation(() => ('https://host:123')),
+      getRedisUrl: jest.spyOn(configService, 'getRedisUrl').mockImplementation(() => 'https://host:123'),
     };
 
     return { config };
@@ -56,7 +56,10 @@ describe('RedisGraphService', () => {
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(1);
-      expect(query).toHaveBeenNthCalledWith(1, `MERGE (s:sender {address:'sender'} )-[:ASSOCIATION]->(p:recipient {address:'recipient'} )`);
+      expect(query).toHaveBeenNthCalledWith(
+        1,
+        `MERGE (s:sender {address:'sender'} )-[:ASSOCIATION]->(p:recipient {address:'recipient'} )`,
+      );
     });
   });
 
@@ -68,8 +71,14 @@ describe('RedisGraphService', () => {
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
-      expect(query).toHaveBeenNthCalledWith(1, `MATCH (s:sender { address: 'address' })-[:ASSOCIATION]->(p:recipient) RETURN p.address as address`);
-      expect(query).toHaveBeenNthCalledWith(2, `MATCH (s:sender)-[:ASSOCIATION]->(p:recipient { address: 'address' }) RETURN s.address as address`);
+      expect(query).toHaveBeenNthCalledWith(
+        1,
+        `MATCH (s:sender { address: 'address' })-[:ASSOCIATION]->(p:recipient) RETURN p.address as address`,
+      );
+      expect(query).toHaveBeenNthCalledWith(
+        2,
+        `MATCH (s:sender)-[:ASSOCIATION]->(p:recipient { address: 'address' }) RETURN s.address as address`,
+      );
     });
   });
 
@@ -81,8 +90,14 @@ describe('RedisGraphService', () => {
 
       expect(graphMock).toBeCalledTimes(1);
       expect(query).toBeCalledTimes(2);
-      expect(query).toHaveBeenNthCalledWith(1, `MATCH (s:sender { address: 'sender'} )-[a:ASSOCIATION]->(p:recipient { address: 'recipient' }) DELETE a`);
-      expect(query).toHaveBeenNthCalledWith(2, `MATCH (s:sender { address: 'recipient'} )-[a:ASSOCIATION]->() DELETE a`);
+      expect(query).toHaveBeenNthCalledWith(
+        1,
+        `MATCH (s:sender { address: 'sender'} )-[a:ASSOCIATION]->(p:recipient { address: 'recipient' }) DELETE a`,
+      );
+      expect(query).toHaveBeenNthCalledWith(
+        2,
+        `MATCH (s:sender { address: 'recipient'} )-[a:ASSOCIATION]->() DELETE a`,
+      );
     });
   });
 });

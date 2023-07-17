@@ -3,6 +3,7 @@ import { RedisService } from '../../common/redis/redis.service';
 import { StorageModuleConfig } from '../storage.module';
 import { ConfigService } from '../../common/config/config.service';
 import { RedisStorageService } from './redis.storage.service';
+import { StorageTypeEnum } from '../../common/config/enums/storage.type.enum';
 
 describe('RedisStorageService', () => {
   let module: TestingModule;
@@ -27,9 +28,7 @@ describe('RedisStorageService', () => {
     };
 
     const redis = {
-      connect: jest.spyOn(redisService, 'connect')
-        // @ts-ignore
-        .mockImplementation(async () => redisConnection),
+      connect: jest.spyOn(redisService, 'connect').mockResolvedValue(redisConnection as any),
     };
 
     return { redis, redisConnection };
@@ -41,8 +40,7 @@ describe('RedisStorageService', () => {
     redisService = module.get<RedisService>(RedisService);
     configService = module.get<ConfigService>(ConfigService);
 
-    // @ts-ignore
-    jest.spyOn(configService, 'getStorageType').mockImplementation(() => 'redis');
+    jest.spyOn(configService, 'getStorageType').mockReturnValue(StorageTypeEnum.Redis);
 
     await module.init();
   });
@@ -147,18 +145,15 @@ describe('RedisStorageService', () => {
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
       expect(spies.redisConnection.hsetnx.mock.calls.length).toBe(3);
-      expect(spies.redisConnection.hsetnx.mock.calls[0][0])
-        .toBe(hash);
+      expect(spies.redisConnection.hsetnx.mock.calls[0][0]).toBe(hash);
       expect(spies.redisConnection.hsetnx.mock.calls[0][1]).toBe('id');
       expect(spies.redisConnection.hsetnx.mock.calls[0][2]).toBe(transaction.id);
 
-      expect(spies.redisConnection.hsetnx.mock.calls[1][0])
-        .toBe(hash);
+      expect(spies.redisConnection.hsetnx.mock.calls[1][0]).toBe(hash);
       expect(spies.redisConnection.hsetnx.mock.calls[1][1]).toBe('block');
       expect(spies.redisConnection.hsetnx.mock.calls[1][2]).toBe(transaction.block);
 
-      expect(spies.redisConnection.hsetnx.mock.calls[2][0])
-        .toBe(hash);
+      expect(spies.redisConnection.hsetnx.mock.calls[2][0]).toBe(hash);
       expect(spies.redisConnection.hsetnx.mock.calls[2][1]).toBe('position');
       expect(spies.redisConnection.hsetnx.mock.calls[2][2]).toBe(transaction.position);
     });

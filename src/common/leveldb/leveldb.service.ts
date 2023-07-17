@@ -4,16 +4,13 @@ import { LeveldbConnection } from './classes/leveldb.connection';
 import { LEVEL } from '../../constants';
 import level from 'level';
 import delay from 'delay';
-import {setInterval} from 'timers';
+import { setInterval } from 'timers';
 
 @Injectable()
 export class LeveldbService implements OnModuleInit, OnModuleDestroy {
   public connection: LeveldbConnection;
 
-  constructor(
-    private readonly logger: LoggerService,
-    @Inject(LEVEL) private readonly _level: typeof level,
-  ) { }
+  constructor(private readonly logger: LoggerService, @Inject(LEVEL) private readonly _level: typeof level) {}
 
   async onModuleInit() {
     setInterval(() => {

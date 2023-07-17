@@ -8,8 +8,8 @@ import AwaitLock from 'await-lock';
  */
 export class LeveldbConnection {
   private writeLock: AwaitLock;
-  private flushCache?: Map<string, string|null>;
-  private cache: Map<string, string|null>;
+  private flushCache?: Map<string, string | null>;
+  private cache: Map<string, string | null>;
 
   constructor(private connection: level.LevelDB) {
     this.writeLock = new AwaitLock();
@@ -17,7 +17,7 @@ export class LeveldbConnection {
   }
 
   private async _get(key: string): Promise<string> {
-    return this.connection.get(key).catch(error => {
+    return this.connection.get(key).catch((error) => {
       if (error.message?.toLowerCase().includes('key not found in database')) {
         return null;
       }
@@ -27,9 +27,11 @@ export class LeveldbConnection {
   }
 
   async get(key: string): Promise<string> {
-    return this.cache.has(key) ? this.cache.get(key) :
-        this.flushCache?.has(key) ? this.flushCache.get(key) :
-        this._get(key);
+    return this.cache.has(key)
+      ? this.cache.get(key)
+      : this.flushCache?.has(key)
+      ? this.flushCache.get(key)
+      : this._get(key);
   }
 
   mget(keys: string[]): Promise<string[]> {
@@ -65,7 +67,7 @@ export class LeveldbConnection {
     } else if (this.flushCache?.has(key)) {
       this.cache.set(key, this.flushCache.get(key));
     } else {
-      current = await this._get(key) || '0';
+      current = (await this._get(key)) || '0';
     }
 
     // Current value might have been set during await.
@@ -96,10 +98,10 @@ export class LeveldbConnection {
           gte: key + '!',
           lte: key + '~',
         })
-        .on('data', data => {
+        .on('data', (data) => {
           _arr.push(data.value);
         })
-        .on('error', err => reject(err))
+        .on('error', (err) => reject(err))
         .on('close', () => reject({}))
         .on('end', () => resolve(_arr));
     });
@@ -122,10 +124,10 @@ export class LeveldbConnection {
           gte: key + '!',
           lte: key + '~',
         })
-        .on('data', data => {
+        .on('data', (data) => {
           _obj[data.key.replace(/^.+!/, '')] = data.value;
         })
-        .on('error', err => reject(err))
+        .on('error', (err) => reject(err))
         .on('close', () => reject({}))
         .on('end', () => resolve(_obj));
     });
@@ -157,10 +159,10 @@ export class LeveldbConnection {
           limit: stop,
         })
         .pipe(offsetStream(start))
-        .on('data', data => {
+        .on('data', (data) => {
           _arr.push(data.value);
         })
-        .on('error', err => reject(err))
+        .on('error', (err) => reject(err))
         .on('close', () => reject({}))
         .on('end', () => resolve(_arr));
     });
@@ -183,7 +185,7 @@ export class LeveldbConnection {
     const batch = [];
 
     for (const [key, value] of this.flushCache) {
-      batch.push({key, value, type: value !== null ? 'put' : 'del'});
+      batch.push({ key, value, type: value !== null ? 'put' : 'del' });
     }
 
     try {

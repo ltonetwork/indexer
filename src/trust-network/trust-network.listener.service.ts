@@ -7,13 +7,12 @@ import { LoggerService } from '../common/logger/logger.service';
 
 @Injectable()
 export class TrustNetworkListenerService implements OnModuleInit {
-
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
     private readonly trustNetworkService: TrustNetworkService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     if (!this.config.isTrustNetworkIndexingEnabled()) {
@@ -24,9 +23,8 @@ export class TrustNetworkListenerService implements OnModuleInit {
     this.onIndexTransaction();
   }
   async onIndexTransaction() {
-    this.indexEmitter.on(
-      IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.trustNetworkService.index(val),
+    this.indexEmitter.on(IndexEvent.IndexTransaction, (val: IndexEventsReturnType['IndexTransaction']) =>
+      this.trustNetworkService.index(val),
     );
   }
 }

@@ -9,15 +9,9 @@ import { IndexModule } from '../index/index.module';
 export const HealthModuleConfig = {
   imports: [LoggerModule, ConfigModule, IndexModule],
   controllers: [HealthController],
-  providers: [
-    HealthService,
-    ...healthProviders,
-  ],
-  exports: [
-    HealthService,
-    ...healthProviders,
-  ],
+  providers: [HealthService, ...healthProviders],
+  exports: [HealthService, ...healthProviders],
 };
 
 @Module(HealthModuleConfig)
-export class HealthModule { }
+export class HealthModule {}

@@ -1,2 +1,1 @@
-export const requestProviders = [
-];
+export const requestProviders = [];

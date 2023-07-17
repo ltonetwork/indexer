@@ -28,16 +28,9 @@ export const StatsModuleConfig = {
     RequestModule,
   ],
   controllers: [StatsController],
-  providers: [
-    StatsService,
-    SupplyService,
-    StatsListenerService,
-  ],
-  exports: [
-    StatsService,
-    SupplyService,
-  ],
+  providers: [StatsService, SupplyService, StatsListenerService],
+  exports: [StatsService, SupplyService],
 };
 
 @Module(StatsModuleConfig)
-export class StatsModule { }
+export class StatsModule {}

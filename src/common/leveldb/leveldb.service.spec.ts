@@ -30,7 +30,7 @@ describe('LevelDbService', () => {
   });
 
   describe('connect()', () => {
-    test.skip('should connect to leveldb and store the connection for reuse', async () => {});
+    test.skip('should connect to leveldb and store the connection for reuse', async () => undefined);
   });
 
   describe('close()', () => {

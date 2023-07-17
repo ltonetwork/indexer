@@ -10,17 +10,9 @@ import { tokens } from './index';
 export const StorageModuleConfig = {
   imports: [LeveldbModule, RedisModule, LoggerModule, ConfigModule],
   controllers: [],
-  providers: [
-    ...tokens,
-    StorageService,
-    RedisGraphService,
-  ],
-  exports: [
-    ...tokens,
-    StorageService,
-    RedisGraphService,
-  ],
+  providers: [...tokens, StorageService, RedisGraphService],
+  exports: [...tokens, StorageService, RedisGraphService],
 };
 
 @Module(StorageModuleConfig)
-export class StorageModule { }
+export class StorageModule {}

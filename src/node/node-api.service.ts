@@ -5,10 +5,7 @@ import { RequestService } from '../common/request/request.service';
 
 @Injectable()
 export class NodeApiService {
-  constructor(
-    private readonly request: RequestService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly request: RequestService, private readonly config: ConfigService) {}
 
   async getNodeAddresses(): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
@@ -69,9 +66,7 @@ export class NodeApiService {
     return this.broadcastTransaction(signResponse.data);
   }
 
-  async getSponsorshipStatus(
-    address: string,
-  ): Promise<AxiosResponse<{ sponsor: string[] }> | Error> {
+  async getSponsorshipStatus(address: string): Promise<AxiosResponse<{ sponsor: string[] }> | Error> {
     const url = this.config.getNodeUrl();
     return this.request.get(`${url}/sponsorship/status/${address}`, {
       headers: {

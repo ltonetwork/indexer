@@ -14,7 +14,7 @@ export class MappedAnchorService {
     private readonly storage: StorageService,
     private readonly config: ConfigService,
     private readonly trust: TrustNetworkService,
-  ) { }
+  ) {}
 
   async index(index: IndexDocumentType, anchorIndexing: 'trust' | 'all') {
     const { transaction, blockHeight, position } = index;
@@ -33,7 +33,7 @@ export class MappedAnchorService {
       }
     }
 
-    for (const [key, value] of Object.entries(transaction.anchors as {[_: string]: string})) {
+    for (const [key, value] of Object.entries(transaction.anchors as { [_: string]: string })) {
       const hexKey = this.encoder.hexEncode(this.encoder.base58Decode(key));
       const hexValue = this.encoder.hexEncode(this.encoder.base58Decode(value));
 

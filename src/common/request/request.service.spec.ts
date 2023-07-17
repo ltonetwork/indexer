@@ -13,8 +13,7 @@ describe('RequestService', () => {
   function spy() {
     const response = { status: 200, data: 'foo' } as AxiosResponse;
     const http = {
-      request: jest.spyOn(httpService, 'request')
-        .mockImplementation(() => of(response)),
+      request: jest.spyOn(httpService, 'request').mockImplementation(() => of(response)),
     };
 
     return { http };

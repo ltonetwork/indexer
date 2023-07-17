@@ -94,16 +94,17 @@ export class NodeService {
       throw response;
     }
 
-    const unconfirmed = response.data.filter(transaction => {
-      return transaction.type === 12 &&
-          !!transaction.data.find(data => data.value && data.value === `base64:${hash}`);
+    const unconfirmed = response.data.filter((transaction) => {
+      return (
+        transaction.type === 12 && !!transaction.data.find((data) => data.value && data.value === `base64:${hash}`)
+      );
     });
 
     if (unconfirmed.length === 0) {
       return null;
     }
 
-    return unconfirmed.map(transaction => transaction.id)[0];
+    return unconfirmed.map((transaction) => transaction.id)[0];
   }
 
   async getLastBlockHeight(): Promise<number> {
@@ -127,9 +128,12 @@ export class NodeService {
   }
 
   // tslint:disable-next-line:max-line-length
-  async getBlocks(from: number, to: number): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees; }>> {
+  async getBlocks(
+    from: number,
+    to: number,
+  ): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees }>> {
     const ranges = this.getBlockRanges(from, to);
-    const promises = ranges.map(range => this.api.getBlocks(range.from, range.to));
+    const promises = ranges.map((range) => this.api.getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
 
     for (const response of responses) {
@@ -167,9 +171,9 @@ export class NodeService {
   }
 
   async getTransactions(id: string[]): Promise<Transaction[] | null> {
-    const promises = id.map(tx => this.getTransaction(tx));
-    const results = await Promise.all(promises.map(p => p.catch(e => e)));
-    return results.filter(result => !(result instanceof Error));
+    const promises = id.map((tx) => this.getTransaction(tx));
+    const results = await Promise.all(promises.map((p) => p.catch((e) => e)));
+    return results.filter((result) => !(result instanceof Error));
   }
 
   async createAnchorTransaction(senderAddress: string, ...hashes: string[]): Promise<string> {
@@ -178,7 +182,7 @@ export class NodeService {
       type: 15,
       sender: senderAddress,
       anchors: hashes,
-      fee: 25000000 + (hashes.length * 10000000),
+      fee: 25000000 + hashes.length * 10000000,
       timestamp: Date.now(),
     });
 
@@ -256,12 +260,7 @@ export class NodeService {
     return this.asChainPoint(hash, transactionId);
   }
 
-  async getTransactionsByAddress(
-    address: string,
-    type: string,
-    limit: number = 25,
-    offset: number = 0,
-  ): Promise<string[]> {
+  async getTransactionsByAddress(address: string, type: string, limit = 25, offset = 0): Promise<string[]> {
     return await this.storage.getTx(type, address, limit, offset);
   }
 
@@ -272,9 +271,9 @@ export class NodeService {
   asChainPoint(hash: string, transactionId: string, blockHeight?: number, position?: number) {
     const result = {
       '@context': 'https://w3id.org/chainpoint/v2',
-      'type': 'ChainpointSHA256v2',
-      'targetHash': hash,
-      'anchors': [
+      type: 'ChainpointSHA256v2',
+      targetHash: hash,
+      anchors: [
         {
           type: 'LTODataTransaction',
           sourceId: transactionId,

@@ -1,5 +1,5 @@
-import {Controller, Post, Req, Res, Get, UseGuards} from '@nestjs/common';
-import {ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
+import { Controller, Post, Req, Res, Get, UseGuards } from '@nestjs/common';
+import { ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { LoggerService } from '../common/logger/logger.service';
 import { HashDto } from './dto/hash.dto';
@@ -16,7 +16,7 @@ export class HashController {
     private readonly hash: HashService,
     private readonly node: NodeService,
     private readonly encoder: EncoderService,
-  ) { }
+  ) {}
 
   @Post()
   @UseGuards(BearerAuthGuard)
@@ -51,10 +51,8 @@ export class HashController {
     try {
       const chainpoint = await this.hash.anchor(hash, encoding);
 
-      if (!chainpoint)
-        res.status(202).end();
-      else
-        res.status(200).json({chainpoint});
+      if (!chainpoint) res.status(202).end();
+      else res.status(200).json({ chainpoint });
     } catch (e) {
       this.logger.error(`hash-controller: failed to anchor '${e}'`, { stack: e.stack });
 
@@ -146,15 +144,11 @@ export class HashController {
 
     try {
       if (Array.isArray(req.body)) {
-        return res.status(200).send(
-            await this.hash.verifyAnchors(req.body, encoding)
-        );
+        return res.status(200).send(await this.hash.verifyAnchors(req.body, encoding));
       }
 
       if (typeof req.body === 'object') {
-        return res.status(200).send(
-            await this.hash.verifyMappedAnchors(req.body, encoding)
-        );
+        return res.status(200).send(await this.hash.verifyMappedAnchors(req.body, encoding));
       }
 
       return res.status(400).send('invalid body');
@@ -163,5 +157,4 @@ export class HashController {
       return res.status(500).send(`failed to verify hash '${e}'`);
     }
   }
-
 }

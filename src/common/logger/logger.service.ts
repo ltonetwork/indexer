@@ -9,18 +9,13 @@ import { ConfigService } from '../config/config.service';
 export class LoggerService {
   private logger: winston.Logger;
 
-  constructor(
-    private readonly config: ConfigService,
-    @Inject(WINSTON) private readonly _winston: typeof winston,
-  ) { }
+  constructor(private readonly config: ConfigService, @Inject(WINSTON) private readonly _winston: typeof winston) {}
 
   private async createLogger(): Promise<winston.Logger> {
     const formats = [
       winston.format.timestamp(),
       winston.format.printf((info) => {
-        const msg = [
-          `[${moment(info.timestamp).format()}] - ${info.level}: ${info.message}`,
-        ];
+        const msg = [`[${moment(info.timestamp).format()}] - ${info.level}: ${info.message}`];
 
         for (const key in info) {
           if (['timestamp', 'message', 'level'].indexOf(key) > -1) {
@@ -39,10 +34,7 @@ export class LoggerService {
       transports: [
         new winston.transports.Console({
           level: this.config.getLoggerLevel(),
-          format: winston.format.combine(
-            ...[winston.format.colorize()],
-            ...formats,
-          ),
+          format: winston.format.combine(...[winston.format.colorize()], ...formats),
         }),
       ],
     });

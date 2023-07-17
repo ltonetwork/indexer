@@ -7,10 +7,7 @@ import { LoggerService } from '../common/logger/logger.service';
 @Controller('health')
 @ApiTags('health')
 export class HealthController {
-  constructor(
-    private readonly logger: LoggerService,
-    private readonly health: HealthService,
-  ) {}
+  constructor(private readonly logger: LoggerService, private readonly health: HealthService) {}
 
   @Get()
   @ApiOperation({ summary: 'Health check' })

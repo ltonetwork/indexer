@@ -15,7 +15,7 @@ describe('TrustNetworkController', () => {
         return {
           roles: ['authority'],
           issues_roles: [{ type: 100, role: 'university' }],
-          issues_authorization: []
+          issues_authorization: [],
         };
       }),
     };
@@ -40,20 +40,17 @@ describe('TrustNetworkController', () => {
       const spies = spy();
 
       const address = '3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE';
-      const res = await request(app.getHttpServer())
-        .get(`/trust/${address}`)
-        .send();
+      const res = await request(app.getHttpServer()).get(`/trust/${address}`).send();
 
       expect(spies.trustNetwork.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0])
-        .toBe(address);
+      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0]).toBe(address);
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({
         roles: ['authority'],
         issues_roles: [{ type: 100, role: 'university' }],
-        issues_authorization: []
+        issues_authorization: [],
       });
     });
 
@@ -63,17 +60,14 @@ describe('TrustNetworkController', () => {
       spies.trustNetwork.getRolesFor = jest.spyOn(trustNetworkService, 'getRolesFor').mockRejectedValue('some error');
 
       const address = '3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE';
-      const res = await request(app.getHttpServer())
-        .get(`/trust/${address}`)
-        .send();
+      const res = await request(app.getHttpServer()).get(`/trust/${address}`).send();
 
       expect(spies.trustNetwork.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0])
-        .toBe(address);
+      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0]).toBe(address);
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({
-        error: 'failed to resolve roles'
+        error: 'failed to resolve roles',
       });
     });
 
@@ -81,12 +75,9 @@ describe('TrustNetworkController', () => {
       const spies = spy();
 
       const address = 'did:lto:3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE';
-      const res = await request(app.getHttpServer())
-        .get(`/trust/${address}`)
-        .send();
+      const res = await request(app.getHttpServer()).get(`/trust/${address}`).send();
 
-      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0])
-        .toBe('3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE');
+      expect(spies.trustNetwork.getRolesFor.mock.calls[0][0]).toBe('3N42b1qAmNLq1aJYACf8YQD4RUYBqL1qsmE');
 
       expect(res.status).toBe(200);
     });

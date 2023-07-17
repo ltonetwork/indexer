@@ -6,13 +6,9 @@ import { LoggerService } from '../../common/logger/logger.service';
 
 @Injectable()
 export class RedisGraphService {
-
   private client: Graph;
 
-  constructor(
-    private readonly config: ConfigService,
-    private readonly logger: LoggerService,
-  ) { }
+  constructor(private readonly config: ConfigService, private readonly logger: LoggerService) {}
 
   async init(): Promise<void> {
     if (!this.client) {
@@ -28,16 +24,22 @@ export class RedisGraphService {
 
     this.logger.debug(`redis-graph: indexing association: ${sender} and ${recipient}`);
 
-    await this.client.query(`MERGE (s:sender {address:'${sender}'} )-[:ASSOCIATION]->(p:recipient {address:'${recipient}'} )`);
+    await this.client.query(
+      `MERGE (s:sender {address:'${sender}'} )-[:ASSOCIATION]->(p:recipient {address:'${recipient}'} )`,
+    );
   }
 
-  async getAssociations(address: string): Promise<{ children: string[], parents: string[] }> {
+  async getAssociations(address: string): Promise<{ children: string[]; parents: string[] }> {
     await this.init();
 
     this.logger.debug(`redis-graph: retrieving associations: ${address}`);
 
-    const childrenResult = await this.client.query(`MATCH (s:sender { address: '${address}' })-[:ASSOCIATION]->(p:recipient) RETURN p.address as address`);
-    const parentsResult = await this.client.query(`MATCH (s:sender)-[:ASSOCIATION]->(p:recipient { address: '${address}' }) RETURN s.address as address`);
+    const childrenResult = await this.client.query(
+      `MATCH (s:sender { address: '${address}' })-[:ASSOCIATION]->(p:recipient) RETURN p.address as address`,
+    );
+    const parentsResult = await this.client.query(
+      `MATCH (s:sender)-[:ASSOCIATION]->(p:recipient { address: '${address}' }) RETURN s.address as address`,
+    );
 
     const children = this.extractGraphData(childrenResult, 'address');
     const parents = this.extractGraphData(parentsResult, 'address');
@@ -53,7 +55,9 @@ export class RedisGraphService {
 
     this.logger.debug(`redis-graph: removing association: ${sender} and ${recipient}`);
 
-    await this.client.query(`MATCH (s:sender { address: '${sender}'} )-[a:ASSOCIATION]->(p:recipient { address: '${recipient}' }) DELETE a`);
+    await this.client.query(
+      `MATCH (s:sender { address: '${sender}'} )-[a:ASSOCIATION]->(p:recipient { address: '${recipient}' }) DELETE a`,
+    );
     await this.client.query(`MATCH (s:sender { address: '${recipient}'} )-[a:ASSOCIATION]->() DELETE a`);
   }
 

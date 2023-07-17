@@ -20,7 +20,7 @@ export class AssociationsService {
 
   async index(index: IndexDocumentType, associationIndexing: 'trust' | 'all'): Promise<void> {
     const { transaction } = index;
-    const { sender, recipient} = transaction;
+    const { sender, recipient } = transaction;
 
     if (this.transactionTypes.indexOf(transaction.type) === -1) {
       this.logger.debug(`association-service: Unknown transaction type`);
