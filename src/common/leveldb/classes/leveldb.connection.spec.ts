@@ -31,7 +31,7 @@ describe('LeveldbConnection', () => {
   });
 
   describe('add()', () => {
-    test('should set a value to leveldb if it doesn\'t exist', async () => {
+    test("should set a value to leveldb if it doesn't exist", async () => {
       const spies = spy();
 
       spies.connection.get.mockRejectedValue(new Error('key not found in database'));
@@ -236,7 +236,7 @@ describe('LeveldbConnection', () => {
     test.todo('should load values paginated from leveldb');
   });
 
-  describe('countTx()', () => {
+  describe('zcount()', () => {
     test.todo('should load a count from leveldb');
   });
 

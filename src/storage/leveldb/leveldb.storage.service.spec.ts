@@ -17,7 +17,7 @@ describe('LevelDbStorageService', () => {
       incr: jest.fn(),
       zaddWithScore: jest.fn(),
       paginate: jest.fn(),
-      countTx: jest.fn(),
+      zcount: jest.fn(),
       close: jest.fn(),
       incrCount: jest.fn(),
     };
@@ -160,64 +160,61 @@ describe('LevelDbStorageService', () => {
     });
   });
 
-  describe.skip('indexTx()', () => {
-    test('should index transaction type for address', async () => {
+  describe('addToSortedSet()', () => {
+    test('should add a value to a sorted set', async () => {
       const spies = spy();
 
-      const type = 'anchor';
-      const address = 'fake_address_WITH_CAPS';
-      const transaction = 'fake_transaction';
-      const timestamp = 1;
-      //await storageService.indexTx(type, address, transaction, timestamp);
+      const key = 'foo';
+      const value = 'fake_transaction';
+      const score = 1;
+      await storageService.addToSortedSet(key, value, score);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.zaddWithScore.mock.calls.length).toBe(1);
-      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
-      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(timestamp));
-      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][2]).toEqual(transaction);
+      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][0]).toBe(key);
+      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][1]).toEqual(String(score));
+      expect(spies.leveldbConnection.zaddWithScore.mock.calls[0][2]).toEqual(value);
     });
   });
 
-  describe.skip('getTx()', () => {
-    test('should get transaction type for address', async () => {
+  describe('getSortedSet()', () => {
+    test('should get items from a sorted set', async () => {
       const spies = spy();
 
       const transactions = ['fake_transaction'];
       spies.leveldbConnection.paginate.mockResolvedValue(transactions);
 
-      const type = 'anchor';
-      const address = 'fake_address';
+      const key = 'foo';
       const limit = 25;
       const offset = 0;
-      //expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
+      expect(await storageService.getSortedSet(key, limit, offset)).toEqual(transactions);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
       expect(spies.leveldbConnection.paginate.mock.calls.length).toBe(1);
-      expect(spies.leveldbConnection.paginate.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
+      expect(spies.leveldbConnection.paginate.mock.calls[0][0]).toBe(key);
       expect(spies.leveldbConnection.paginate.mock.calls[0][1]).toBe(limit);
       expect(spies.leveldbConnection.paginate.mock.calls[0][2]).toBe(offset);
     });
   });
 
-  describe.skip('countTx()', () => {
-    test('should count transaction type for address', async () => {
+  describe('countSortedSet()', () => {
+    test('should count items in a sorted set', async () => {
       const spies = spy();
 
-      spies.leveldbConnection.countTx.mockResolvedValue(3);
+      spies.leveldbConnection.zcount.mockResolvedValue(3);
 
-      const type = 'anchor';
-      const address = 'fake_address';
-      //expect(await storageService.countTx(type, address)).toEqual(3);
+      const key = 'foo';
+      expect(await storageService.countSortedSet(key)).toEqual(3);
 
       expect(spies.leveldb.connect.mock.calls.length).toBe(1);
       expect(spies.leveldb.connect.mock.calls[0][0]).toBe('lto-index');
 
-      expect(spies.leveldbConnection.countTx.mock.calls.length).toBe(1);
-      expect(spies.leveldbConnection.countTx.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
+      expect(spies.leveldbConnection.zcount.mock.calls.length).toBe(1);
+      expect(spies.leveldbConnection.zcount.mock.calls[0][0]).toBe(key);
     });
   });
 });

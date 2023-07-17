@@ -190,70 +190,64 @@ describe('RedisStorageService', () => {
     });
   });
 
-  describe.skip('indexTx()', () => {
-    test('should index transaction type for address', async () => {
+  describe('addToSortedSet()', () => {
+    test('should add a value to a sorted set', async () => {
       const spies = spy();
 
-      const type = 'anchor';
-      const address = 'fake_address_WITH_CAPS';
-      const transaction = 'fake_transaction';
-      const timestamp = 1;
-      //await storageService.indexTx(type, address, transaction, timestamp);
+      const key = 'foo';
+      const value = 'fake_transaction';
+      const score = 1;
+      await storageService.addToSortedSet(key, value, score);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
       expect(spies.redisConnection.zadd.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zadd.mock.calls[0][0])
-        .toBe(`lto:tx:${type}:${address}`);
-      expect(spies.redisConnection.zadd.mock.calls[0][1]).toEqual(String(timestamp));
-      expect(spies.redisConnection.zadd.mock.calls[0][2]).toEqual(transaction);
+      expect(spies.redisConnection.zadd.mock.calls[0][0]).toBe(key);
+      expect(spies.redisConnection.zadd.mock.calls[0][1]).toEqual(score);
+      expect(spies.redisConnection.zadd.mock.calls[0][2]).toEqual(value);
     });
   });
 
-  describe.skip('getTx()', () => {
-    test('should get transaction type for address', async () => {
+  describe('getSortedSet()', () => {
+    test('should get items from a sorted set', async () => {
       const spies = spy();
 
       const transactions = ['fake_transaction'];
       spies.redisConnection.zrevrange.mockImplementation(() => transactions);
 
-      const type = 'anchor';
-      const address = 'fake_address';
+      const key = 'foo';
       const limit = 25;
-      const offset = 0;
-      const start = Number(offset);
-      const stop = (Number(limit) - 1) + start;
+      const offset = 50;
+      const start = 50;
+      const stop = 74;
 
-      //expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
+      expect(await storageService.getSortedSet(key, limit, offset)).toEqual(transactions);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
       expect(spies.redisConnection.zrevrange.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zrevrange.mock.calls[0][0])
-        .toBe(`lto:tx:${type}:${address}`);
+      expect(spies.redisConnection.zrevrange.mock.calls[0][0]).toBe(key);
       expect(spies.redisConnection.zrevrange.mock.calls[0][1]).toBe(start);
       expect(spies.redisConnection.zrevrange.mock.calls[0][2]).toBe(stop);
     });
   });
 
-  describe.skip('countTx()', () => {
-    test('should count transaction type for address', async () => {
+  describe('countSortedSet()', () => {
+    test('should count items in a sorted set', async () => {
       const spies = spy();
 
       spies.redisConnection.zcard.mockImplementation(() => 3);
 
-      const type = 'anchor';
-      const address = 'fake_address';
-      //expect(await storageService.countTx(type, address)).toEqual(3);
+      const key = 'foo';
+      expect(await storageService.countSortedSet(key)).toEqual(3);
 
       expect(spies.redis.connect.mock.calls.length).toBe(1);
       expect(spies.redis.connect.mock.calls[0][0]).toBe('redis://localhost');
 
       expect(spies.redisConnection.zcard.mock.calls.length).toBe(1);
-      expect(spies.redisConnection.zcard.mock.calls[0][0])
-        .toBe(`lto:tx:${type}:${address}`);
+      expect(spies.redisConnection.zcard.mock.calls[0][0]).toBe(key);
     });
   });
 });
