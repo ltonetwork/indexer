@@ -47,6 +47,16 @@ export class DIDService {
       };
     }
 
+    const didResolutionMetadata: DIDResolution['didResolutionMetadata'] = {
+      contentType: 'application/did+ld+json',
+      did: {
+        didString: `did:lto:${address}`,
+        method: 'lto',
+        methodSpecificId: address,
+      },
+      networkId: networkId(address),
+    };
+
     if (created > versionTime.getTime()) {
       return {
         '@context': 'https://w3id.org/did-resolution/v1',
@@ -60,12 +70,7 @@ export class DIDService {
           deactivated: false,
           nextUpdate: isoDate(created),
         },
-        didResolutionMetadata: {
-          contentType: 'application/did+ld+json',
-          method: 'lto',
-          networkId: networkId(address),
-          address,
-        },
+        didResolutionMetadata,
       };
     }
 
@@ -84,12 +89,7 @@ export class DIDService {
           deactivated: true,
           deactivatedBy: `did:lto:${deactivated.sender}`,
         },
-        didResolutionMetadata: {
-          contentType: 'application/did+ld+json',
-          method: 'lto',
-          networkId: networkId(address),
-          address,
-        },
+        didResolutionMetadata,
       };
     }
 
@@ -107,12 +107,7 @@ export class DIDService {
         nextUpdate: nextUpdate ? isoDate(nextUpdate) : undefined,
         lastUpdate: lastUpdate ? isoDate(lastUpdate) : undefined,
       },
-      didResolutionMetadata: {
-        contentType: 'application/did+ld+json',
-        method: 'lto',
-        networkId: networkId(address),
-        address,
-      },
+      didResolutionMetadata,
     };
   }
 

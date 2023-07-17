@@ -33,9 +33,12 @@ export interface DIDResolution {
   didResolutionMetadata: {
     contentType: string;
     error?: string;
-    method?: 'lto';
+    did?: {
+      didString: string;
+      method?: 'lto';
+      methodSpecificId: string;
+    };
     networkId?: string;
-    address?: string;
   };
 }
 

@@ -489,9 +489,12 @@ describe('DIDService', () => {
 
       expect(resolution.didResolutionMetadata).toEqual({
         contentType: 'application/did+ld+json',
-        method: 'lto',
+        did: {
+          didString: `did:lto:${sender.address}`,
+          method: 'lto',
+          methodSpecificId: sender.address,
+        },
         networkId: 'T',
-        address: sender.address,
       });
     });
 
@@ -562,9 +565,12 @@ describe('DIDService', () => {
 
       expect(resolution.didResolutionMetadata).toEqual({
         contentType: 'application/did+ld+json',
-        method: 'lto',
+        did: {
+          didString: `did:lto:${sender.address}`,
+          method: 'lto',
+          methodSpecificId: sender.address,
+        },
         networkId: 'T',
-        address: sender.address,
       });
     });
 
@@ -625,9 +631,12 @@ describe('DIDService', () => {
 
       expect(resolution.didResolutionMetadata).toEqual({
         contentType: 'application/did+ld+json',
-        method: 'lto',
+        did: {
+          didString: `did:lto:${sender.address}`,
+          method: 'lto',
+          methodSpecificId: sender.address,
+        },
         networkId: 'T',
-        address: sender.address,
       });
 
       expect(spies.verificationMethod.getMethodsFor).toHaveBeenCalledWith(sender.address, versionTime);
@@ -680,9 +689,12 @@ describe('DIDService', () => {
       });
       expect(resolution.didResolutionMetadata).toEqual({
         contentType: 'application/did+ld+json',
-        method: 'lto',
+        did: {
+          didString: `did:lto:${sender.address}`,
+          method: 'lto',
+          methodSpecificId: sender.address,
+        },
         networkId: 'T',
-        address: sender.address,
       });
     });
 
@@ -708,9 +720,12 @@ describe('DIDService', () => {
       });
       expect(resolution.didResolutionMetadata).toEqual({
         contentType: 'application/did+ld+json',
-        method: 'lto',
+        did: {
+          didString: `did:lto:${sender.address}`,
+          method: 'lto',
+          methodSpecificId: sender.address,
+        },
         networkId: 'T',
-        address: sender.address,
       });
     });
 
@@ -766,9 +781,12 @@ describe('DIDService', () => {
 
       expect(resolution.didResolutionMetadata).toEqual({
         contentType: 'application/did+ld+json',
-        method: 'lto',
+        did: {
+          didString: `did:lto:${sender.address}`,
+          method: 'lto',
+          methodSpecificId: sender.address,
+        },
         networkId: 'T',
-        address: sender.address,
       });
     });
   });
