@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmitterService } from '../emitter/emitter.service';
 import { AnchorModuleConfig } from './anchor.module';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { AnchorListenerService } from './anchor-listener.service';
 import { IndexEventsReturnType } from '../index/index.events';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 
 describe('AnchorListenerService', () => {
   let module: TestingModule;

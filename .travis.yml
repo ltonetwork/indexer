@@ -10,4 +10,4 @@ branches:
   - master
 
 script:
-  npm run test:all
+  yarn test:all

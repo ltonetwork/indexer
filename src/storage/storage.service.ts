@@ -1,14 +1,15 @@
 import { ModuleRef } from '@nestjs/core';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { StorageInterface } from './interfaces/storage.interface';
-import { StorageTypeEnum } from '../config/enums/storage.type.enum';
-import storageServices from './types';
+import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
+import storageServices from './index';
 import { pascalCase } from 'pascal-case';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
-import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
-import { RedisGraphService } from './redis-graph/redis-graph.service';
+import { Role } from '../trust-network/interfaces/trust-network.interface';
+import { RedisGraphService } from './redis/redis-graph.service';
+import { DIDDocumentService } from '../did/interfaces/did.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit, OnModuleDestroy {
@@ -62,44 +63,83 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
-    return this.storage.getObject(`lto:pubkey:${address}`)
-        .catch(() => {
-          const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
-          return publicKey ? {publicKey, keyType: 'ed25519'} : {};
-        })
-        .then(r => r ? r as {publicKey: string, keyType: string} : {});
+  getAccountCreated(address: string): Promise<number | null> {
+    return this.storage.getValue(`lto:created:${address}`)
+      .catch(() => null)
+      .then((r) => Number(r));
   }
 
-  savePublicKey(address: string, publicKey: string, keyType: string) {
-    return this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType});
+  getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
+    return this.storage.getObject(`lto:pubkey:${address}`)
+      .catch(() => {
+        const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
+        return publicKey ? {publicKey, keyType: 'ed25519'} : {};
+      })
+      .then(r => r ? r as {publicKey: string, keyType: string} : {});
+  }
+
+  savePublicKey(address: string, publicKey: string, keyType: string, timestamp: number) {
+    return Promise.all([
+      this.storage.addValue(`lto:created:${address}`, String(timestamp)),
+      this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType}),
+    ]);
   }
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
-    const methods = await this.storage.getObject(`lto:verification:${address}`);
-
-    return Object.values(methods)
-      .filter(data => !data.revokedAt)
-      .map(data => new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt));
+    const set = await this.storage.getBufferSet(`lto:did-methods:${address}`);
+    return set.map((buf) => VerificationMethod.from(buf));
   }
 
   async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
-    const data = await this.storage.getObject(`lto:verification:${address}`);
-
-    const newData = verificationMethod.json();
-
-    data[newData.recipient] = newData;
-
-    return this.storage.setObject(`lto:verification:${address}`, data);
+    await this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
   }
 
-  async getRolesFor(address: string): Promise<RawRole | {}> {
-    return this.storage.getObject(`lto:roles:${address}`);
+  async getDeactivateMethods(address: string): Promise<VerificationMethod[]> {
+    const set = await this.storage.getBufferSet(`lto:did-deactivate-methods:${address}`);
+    return set.map((buf) => VerificationMethod.from(buf));
+  }
+
+  async getDeactivateMethodRevokeDelay(address: string, recipient: string): Promise<number> {
+    const delay = await this.storage.getValue(`lto:did-revoke-delay:${address}:${recipient}`);
+    return delay ? Number(delay) : 0;
+  }
+
+  async saveDeactivateMethod(address: string, verificationMethod: VerificationMethod, revokeDelay = 0): Promise<void> {
+    if (revokeDelay > 0) {
+      const key = `lto:did-revoke-delay:${address}:${verificationMethod.recipient}`;
+      await this.storage.setValue(key, String(revokeDelay));
+    } else {
+      await this.storage.delValue(`lto:did-revoke-delay:${address}:${verificationMethod.recipient}`);
+    }
+
+    await this.storage.addToSet(`lto:did-deactivate-methods:${address}`, verificationMethod.toBuffer());
+  }
+
+  async deactivateDID(address: string, sender: string, timestamp: number) {
+    await this.storage.setObject(`lto:did-deactivated:${address}`, { sender, timestamp });
+  }
+
+  async isDIDDeactivated(address: string): Promise<{ sender: string; timestamp: number } | undefined> {
+    const record = await this.storage.getObject(`lto:did-deactivated:${address}`);
+    return record as { sender: string; timestamp: number } | undefined;
+  }
+
+  async saveDIDService(address: string, service: DIDDocumentService & { timestamp: number }): Promise<void> {
+    return this.storage.addToSet(`lto:did-services:${address}`, JSON.stringify(service));
+  }
+
+  async getDIDServices(address: string): Promise<Array<DIDDocumentService & { timestamp: number }>> {
+    return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
+  }
+
+  async getRolesFor(address: string): Promise<Record<string, { sender: string; type: number }>> {
+    return (await this.storage.getObject(`lto:roles:${address}`)) ?? {};
   }
 
   async saveRoleAssociation(recipient: string, sender: string, data: Role): Promise<void> {
     const roles = await this.storage.getObject(`lto:roles:${recipient}`);
 
+    // TODO: Test this with Redis, values are stored as strings, numbers, or buffers, not as objects
     roles[data.role] = { sender, type: data.type };
 
     return this.storage.setObject(`lto:roles:${recipient}`, roles);
@@ -204,10 +244,10 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async incrLeaseStats(day: number, amountIn: number, amountOut: number): Promise<void> {
-    return Promise.all([
+    await Promise.all([
       this.storage.incrValue(`lto:stats:lease:in:${day}`, amountIn),
       this.storage.incrValue(`lto:stats:lease:out:${day}`, amountOut),
-    ]).then(() => {});
+    ]);
   }
 
   async getLeaseStats(from, to): Promise<{ period: string; in: number, out: number }[]> {
@@ -230,22 +270,22 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   private formatPeriod(date: Date): string {
     const year = String(date.getUTCFullYear());
-    const month = ('0' + (date.getUTCMonth() + 1)).substr(-2);
-    const day = ('0' + date.getUTCDate()).substr(-2);
+    const month = ('0' + (date.getUTCMonth() + 1)).slice(-2);
+    const day = ('0' + date.getUTCDate()).slice(-2);
 
     return `${year}-${month}-${day} 00:00:00`;
   }
 
   countTx(type: string, address: string): Promise<number> {
-    return this.storage.countTx(type, address);
+    return this.storage.countSortedSet(`lto:tx:${type}:${address}`);
   }
 
   indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
-    return this.storage.indexTx(type, address, transactionId, timestamp);
+    return this.storage.addToSortedSet(`lto:tx:${type}:${address}`, transactionId, timestamp);
   }
 
   getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
-    return this.storage.getTx(type, address, limit, offset);
+    return this.storage.getSortedSet(`lto:tx:${type}:${address}`, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {

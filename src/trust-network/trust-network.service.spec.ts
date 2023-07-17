@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TrustNetworkModuleConfig } from './trust-network.module';
 import { TrustNetworkService } from './trust-network.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
-import { RoleData } from './interfaces/trust-network.interface';
-import { LoggerService } from '../logger/logger.service';
+import { RawRoles, RoleData } from './interfaces/trust-network.interface';
+import { LoggerService } from '../common/logger/logger.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 describe('TrustNetworkService', () => {
@@ -21,15 +21,13 @@ describe('TrustNetworkService', () => {
 
   function spy() {
     const storage = {
-      saveRoleAssociation: jest.spyOn(storageService, 'saveRoleAssociation').mockImplementation(async () => {}),
-      removeRoleAssociation: jest.spyOn(storageService, 'removeRoleAssociation').mockImplementation(async () => {}),
-      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async (address: string) => {
-        if (address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ') return {};
-
-        return {
-          authority: { sender: 'mock-sender', type: 100 },
-        };
-      }),
+      saveRoleAssociation: jest.spyOn(storageService, 'saveRoleAssociation').mockResolvedValue(undefined),
+      removeRoleAssociation: jest.spyOn(storageService, 'removeRoleAssociation').mockResolvedValue(undefined),
+      getRolesFor: jest
+        .spyOn(storageService, 'getRolesFor')
+        .mockImplementation(async (address: string) =>
+          address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ' ? {} : { authority: { sender: 'mock-sender', type: 100 } },
+        ),
     };
 
     const node = {

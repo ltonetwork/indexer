@@ -1,16 +1,13 @@
 import { Controller, Res, Get, Param, Req } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { LoggerService } from '../logger/logger.service';
-import { DidService } from './did.service';
+import { LoggerService } from '../common/logger/logger.service';
+import { DIDService } from './did.service';
 
 @Controller('identifiers')
 @ApiTags('DID')
 export class DidController {
-  constructor(
-    private readonly logger: LoggerService,
-    private readonly service: DidService,
-  ) {}
+  constructor(private readonly logger: LoggerService, private readonly service: DIDService) {}
 
   @Get(':did')
   @ApiOperation({ summary: 'DID resolver' })
@@ -23,8 +20,8 @@ export class DidController {
         schema: {
           example: {
             '@context': 'https://www.w3.org/ns/did/v1',
-            'id': 'did:lto:3N7RAo9eXFhJEdpPgbhsAFti8s1HDxxXiCW',
-            'verificationMethod': [
+            id: 'did:lto:3N7RAo9eXFhJEdpPgbhsAFti8s1HDxxXiCW',
+            verificationMethod: [
               {
                 id: `did:lto:3N7RAo9eXFhJEdpPgbhsAFti8s1HDxxXiCW#sign`,
                 type: 'Ed25519VerificationKey2020',
@@ -40,10 +37,10 @@ export class DidController {
         schema: {
           example: {
             '@context': 'https://w3id.org/did-resolution/v1',
-            'didDocument': {
+            didDocument: {
               '@context': 'https://www.w3.org/ns/did/v1',
-              'id': 'did:lto:3N7RAo9eXFhJEdpPgbhsAFti8s1HDxxXiCW',
-              'verificationMethod': [
+              id: 'did:lto:3N7RAo9eXFhJEdpPgbhsAFti8s1HDxxXiCW',
+              verificationMethod: [
                 {
                   id: `did:lto:3N7RAo9eXFhJEdpPgbhsAFti8s1HDxxXiCW#sign`,
                   type: 'Ed25519VerificationKey2020',
@@ -71,9 +68,9 @@ export class DidController {
         schema: {
           example: {
             '@context': 'https://w3id.org/did-resolution/v1',
-            'didDocument': null,
-            'didDocumentMetadata': {},
-            'didResolutionMetadata': { error: 'notFound' },
+            didDocument: null,
+            didDocumentMetadata: {},
+            didResolutionMetadata: { error: 'notFound' },
           },
         },
       },
@@ -84,26 +81,22 @@ export class DidController {
     content: {
       'application/json': {
         schema: {
-          example: { error: 'failed to get DID document \'[reason]\'' },
+          example: { error: "failed to get DID document '[reason]'" },
         },
       },
       'application/ld+json;profile="https://w3id.org/did-resolution"': {
         schema: {
           example: {
             '@context': 'https://w3id.org/did-resolution/v1',
-            'didDocument': null,
-            'didDocumentMetadata': {},
-            'didResolutionMetadata': { error: 'failed to get DID document \'[reason]\'' },
+            didDocument: null,
+            didDocumentMetadata: {},
+            didResolutionMetadata: { error: "failed to get DID document '[reason]'" },
           },
         },
       },
     },
   })
-  async getIdentity(
-    @Param('did') did: string,
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<Response> {
+  async resolve(@Param('did') did: string, @Req() req: Request, @Res() res: Response): Promise<Response> {
     const accept = req.get('Accept') || '';
     const isDidResolution = accept.includes('application/ld+json;profile="https://w3id.org/did-resolution"');
 
@@ -115,7 +108,7 @@ export class DidController {
           ? res
               .status(404)
               .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
-              .json(this.didResolutionResponse(null, {}, { error: 'notFound' }))
+              .json(this.didResolutionBody(null, {}, { error: 'notFound' }))
           : res.status(404).json({ error: 'notFound' });
       }
 
@@ -123,21 +116,21 @@ export class DidController {
         ? res
             .status(200)
             .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
-            .json(this.didResolutionResponse(didDocument, {}, {}))
+            .json(this.didResolutionBody(didDocument, {}, {}))
         : res.status(200).json(didDocument);
     } catch (e) {
       this.logger.error(`identity-controller: failed to get DID document '${e}'`, { stack: e.stack });
 
       return isDidResolution
         ? res
-          .status(500)
-          .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
-          .json(this.didResolutionResponse(null, {}, { error: 'failed to get DID document', reason: `${e}` }))
+            .status(500)
+            .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
+            .json(this.didResolutionBody(null, {}, { error: 'failed to get DID document', reason: `${e}` }))
         : res.status(500).json({ error: `failed to get DID document '${e}'` });
     }
   }
 
-  private didResolutionResponse(
+  private didResolutionBody(
     didDocument: any,
     didDocumentMetadata: Record<string, any>,
     didResolutionMetadata: Record<string, any>,

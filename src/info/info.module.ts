@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { InfoController } from './info.controller';
 import { InfoService } from './info.service';
-import { ConfigModule } from '../config/config.module';
+import { ConfigModule } from '../common/config/config.module';
 
 export const InfoModuleConfig = {
   imports: [ConfigModule],

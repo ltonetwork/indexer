@@ -2,8 +2,8 @@ import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { EmitterService } from '../emitter/emitter.service';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AssociationsService } from './associations.service';
-import { ConfigService } from '../config/config.service';
-import { LoggerService } from '../logger/logger.service';
+import { ConfigService } from '../common/config/config.service';
+import { LoggerService } from '../common/logger/logger.service';
 
 @Injectable()
 export class AssociationsListenerService implements OnModuleInit {

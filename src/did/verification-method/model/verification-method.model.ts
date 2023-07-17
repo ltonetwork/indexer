@@ -1,71 +1,75 @@
-import { chainIdOf } from '@lto-network/lto-crypto';
-import {KeyType, MethodMap} from '../enums/verification-method.enum';
-import { DIDVerificationMethod } from '../../interfaces/identity.interface';
-
-export interface MethodObject {
-    sender: string;
-    recipient: string;
-    relationships: number;
-    createdAt: number;
-    revokedAt?: number;
-}
+import { KeyType, RelationshipType } from './verification-method.types';
+import { DIDVerificationMethod } from '../../interfaces/did.interface';
+import { base58 } from '@scure/base';
 
 export class VerificationMethod {
-    public sender: string;
-    public recipient: string;
-    public createdAt?: number;
-    public revokedAt?: number;
-    private relationships: number;
+  constructor(
+    public relationships: number,
+    public recipient: string,
+    public timestamp: number,
+    public expires?: number,
+  ) {}
 
-    constructor(relationships: number, sender: string, recipient: string, createdAt: number, revokedAt?: number) {
-        this.sender = sender;
-        this.createdAt = createdAt;
-        this.recipient = recipient;
-        this.relationships = relationships;
+  public asDidMethod(publicKey: string, keyType = KeyType.ed25519, ownAddress = false): DIDVerificationMethod {
+    const tag = keyType === KeyType.x25519 ? '#encrypt' : '#sign';
 
-        if (revokedAt) this.revokedAt = revokedAt;
-    }
+    return {
+      id: (ownAddress ? '' : `did:lto:${this.recipient}`) + tag,
+      type: keyType.toString(),
+      controller: `did:lto:${this.recipient}`,
+      publicKeyMultibase: 'z' + publicKey,
+    };
+  }
 
-    public json(): MethodObject {
-        const asJson: MethodObject = {
-            sender: this.sender,
-            createdAt: this.createdAt,
-            recipient: this.recipient,
-            relationships: this.relationships,
-        };
+  public toBuffer() {
+    const buf = Buffer.alloc(46);
+    buf.writeUInt32BE(this.relationships, 0);
+    Buffer.from(base58.decode(this.recipient)).copy(buf, 4, 0, 26);
+    buf.writeBigUInt64BE(BigInt(this.timestamp), 30);
+    buf.writeBigUInt64BE(BigInt(this.expires ?? 0), 38);
 
-        if (this.revokedAt) asJson.revokedAt = this.revokedAt;
+    return buf;
+  }
 
-        return asJson;
-    }
+  public static from(buf: Buffer): VerificationMethod {
+    const relationships = buf.readUInt32BE(0);
+    const recipient = base58.encode(buf.slice(4, 30));
+    const timestamp = Number(buf.readBigUInt64BE(30));
+    const expires = Number(buf.readBigUInt64BE(38));
 
-    public asString(): string {
-        return JSON.stringify(this.json());
-    }
+    return new VerificationMethod(relationships, recipient, timestamp, expires || undefined);
+  }
 
-    public asDidMethod(publicKey: string, keyType = KeyType.ed25519): DIDVerificationMethod {
-        return {
-            id: `did:lto:${this.recipient}#sign`,
-            type: keyType.toString(),
-            controller: `did:lto:${this.recipient}`,
-            publicKeyBase58: publicKey,
-            blockchainAccountId: `${this.recipient}@lto:${chainIdOf(this.recipient)}`,
-        };
-    }
+  private bitCompare(set: number, mask: number): boolean {
+    return (set & mask) === mask;
+  }
 
-    public isAuthentication(): boolean {
-        return (this.relationships & MethodMap.authentication) === MethodMap.authentication;
-    }
-    public isAssertionMethod(): boolean {
-        return (this.relationships & MethodMap.assertionMethod) === MethodMap.assertionMethod;
-    }
-    public isKeyAgreement(): boolean {
-        return (this.relationships & MethodMap.keyAgreement) === MethodMap.keyAgreement;
-    }
-    public isCapabilityInvocation() {
-        return (this.relationships & MethodMap.capabilityInvocation) === MethodMap.capabilityInvocation;
-    }
-    public isCapabilityDelegation() {
-        return (this.relationships & MethodMap.capabilityDelegation) === MethodMap.capabilityDelegation;
-    }
+  public isAuthentication(): boolean {
+    return this.bitCompare(this.relationships, RelationshipType.authentication);
+  }
+
+  public isAssertionMethod(): boolean {
+    return this.bitCompare(this.relationships, RelationshipType.assertionMethod);
+  }
+
+  public isKeyAgreement(): boolean {
+    return this.bitCompare(this.relationships, RelationshipType.keyAgreement);
+  }
+
+  public isCapabilityInvocation() {
+    return this.bitCompare(this.relationships, RelationshipType.capabilityInvocation);
+  }
+
+  public isCapabilityDelegation() {
+    return this.bitCompare(this.relationships, RelationshipType.capabilityDelegation);
+  }
+
+  public isOnlyDeactivateCapability() {
+    return this.relationships === 0x1108;
+  }
+
+  public isActive(timestamp: Date | number) {
+    const now = timestamp instanceof Date ? timestamp.getTime() : timestamp;
+    return this.relationships > 0 && this.timestamp <= now && (!this.expires || this.expires >= now);
+  }
 }

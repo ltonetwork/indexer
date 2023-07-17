@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { StatsService } from './stats.service';
-import { ConfigModule } from '../config/config.module';
-import { LoggerModule } from '../logger/logger.module';
-import { RedisModule } from '../redis/redis.module';
+import { ConfigModule } from '../common/config/config.module';
+import { LoggerModule } from '../common/logger/logger.module';
+import { RedisModule } from '../common/redis/redis.module';
 import { StorageModule } from '../storage/storage.module';
-import { EncoderModule } from '../encoder/encoder.module';
-import { RequestModule } from '../request/request.module';
+import { EncoderModule } from '../common/encoder/encoder.module';
+import { RequestModule } from '../common/request/request.module';
 import { TransactionModule } from '../transaction/transaction.module';
 import { StatsListenerService } from './stats.listener.service';
 import { EmitterModule } from '../emitter/emitter.module';

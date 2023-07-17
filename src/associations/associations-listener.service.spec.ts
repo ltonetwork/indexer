@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmitterService } from '../emitter/emitter.service';
 import { AssociationsModuleConfig } from './associations.module';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { AssociationsListenerService } from './associations-listener.service';
 import { IndexEventsReturnType } from '../index/index.events';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 
 describe('AssociationsListenerService', () => {
   let module: TestingModule;

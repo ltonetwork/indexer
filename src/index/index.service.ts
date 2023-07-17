@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IndexDocumentType } from './model/index.model';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from './index.events';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { Block } from '../transaction/interfaces/block.interface';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class IndexService {
     }
 
     if (this.lastBlock.height !== block.height) {
-      this.logger.debug(`index-service: emitting index event for block ${this.lastBlock.height}`);
+      // this.logger.debug(`index-service: emitting index event for block ${this.lastBlock.height}`);
       this.event.emit(IndexEvent.IndexBlock, this.lastBlock);
       this.txCache = [];
     }
@@ -50,7 +50,7 @@ export class IndexService {
 
     this.txCache.push(index.transaction.id);
 
-    this.logger.debug(`index-service: emitting index event for ${index.transaction.id}`);
+    // this.logger.debug(`index-service: emitting index event for ${index.transaction.id}`);
     this.event.emit(IndexEvent.IndexTransaction, index);
 
     return true;

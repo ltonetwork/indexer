@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HashModuleConfig } from './hash.module';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { HashService } from './hash.service';
 import { StorageService } from '../storage/storage.service';
 

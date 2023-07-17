@@ -1,11 +1,11 @@
 import {Controller, Post, Req, Res, Get, UseGuards} from '@nestjs/common';
 import {ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { HashDto } from './dto/hash.dto';
 import { NodeService } from '../node/node.service';
-import { EncoderService } from '../encoder/encoder.service';
-import { BearerAuthGuard } from '../auth/auth.guard';
+import { EncoderService } from '../common/encoder/encoder.service';
+import { BearerAuthGuard } from '../common/auth/auth.guard';
 import { HashService } from './hash.service';
 
 @Controller('hash')
