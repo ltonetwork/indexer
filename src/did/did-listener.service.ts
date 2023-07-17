@@ -86,7 +86,7 @@ export class DIDListenerService implements OnModuleInit {
     const address = tx.statementType === 0x120 ? tx.sender : tx.recipient;
     if (!address) return;
 
-    if (!(await this.verificationMethodService.hasDeactivateCapability(address, tx.sender))) {
+    if (!(await this.verificationMethodService.hasDeactivateCapability(address, tx.sender, tx.timestamp))) {
       this.logger.info(`DID: 'did:lto:${address}' cannot be deactivated by ${tx.sender}`);
       return;
     }

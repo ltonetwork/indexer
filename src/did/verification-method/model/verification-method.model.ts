@@ -68,8 +68,8 @@ export class VerificationMethod {
     return this.relationships === 0x1108;
   }
 
-  public isActive(timestamp?: Date | number) {
-    const now = timestamp instanceof Date ? timestamp.getTime() : timestamp ?? Date.now();
+  public isActive(timestamp: Date | number) {
+    const now = timestamp instanceof Date ? timestamp.getTime() : timestamp;
     return this.relationships > 0 && this.timestamp <= now && (!this.expires || this.expires >= now);
   }
 }

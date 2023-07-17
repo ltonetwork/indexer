@@ -66,7 +66,7 @@ export class VerificationMethodService {
     type: number,
     sender: string,
     recipient: string,
-    data: Record<string, boolean>,
+    data: Record<string, any>,
     timestamp: number,
     expires?: number,
   ): Promise<void> {
@@ -78,7 +78,7 @@ export class VerificationMethodService {
     this.logger.debug(`DID: 'did:lto:${sender}' add verification method '${recipient}'`);
 
     if (type === 0x108) {
-      await this.storage.saveDeactivateMethod(sender, verificationMethod);
+      await this.storage.saveDeactivateMethod(sender, verificationMethod, data.revokeDelay ?? 0);
     } else {
       await this.storage.saveVerificationMethod(sender, verificationMethod);
     }
@@ -93,19 +93,20 @@ export class VerificationMethodService {
     this.logger.debug(`DID: 'did:lto${sender}' revoke verification method '${recipient}'`);
 
     if (type === 0x108) {
+      verificationMethod.timestamp += await this.storage.getDeactivateMethodRevokeDelay(sender, recipient);
       await this.storage.saveDeactivateMethod(sender, verificationMethod);
     } else {
       await this.storage.saveVerificationMethod(sender, verificationMethod);
     }
   }
 
-  async hasDeactivateCapability(address: string, sender: string): Promise<boolean> {
+  async hasDeactivateCapability(address: string, sender: string, timestamp: number): Promise<boolean> {
     if (sender === address) return true;
 
     const methods = (await this.storage.getDeactivateMethods(address))
       .filter((method) => method.recipient === sender)
       .sort((a, b) => b.timestamp - a.timestamp);
 
-    return methods.length > 0 && methods[0].isActive();
+    return methods.length > 0 && methods[0].isActive(timestamp);
   }
 }

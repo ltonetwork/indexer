@@ -39,6 +39,7 @@ describe('VerificationMethodService', () => {
       getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods').mockResolvedValue([]),
       saveDeactivateMethod: jest.spyOn(storageService, 'saveDeactivateMethod').mockResolvedValue(undefined),
       getDeactivateMethods: jest.spyOn(storageService, 'getDeactivateMethods').mockResolvedValue([]),
+      getDeactivateMethodRevokeDelay: jest.spyOn(storageService, 'getDeactivateMethodRevokeDelay').mockResolvedValue(0),
     };
 
     return { storage };
@@ -96,6 +97,26 @@ describe('VerificationMethodService', () => {
       expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledWith(
         sender.address,
         new VerificationMethod(0x108, recipient.address, mockTimestamp),
+        0,
+      );
+    });
+
+    test('should save a deactivate method with revoke delay', async () => {
+      const spies = spy();
+
+      await verificationMethodService.save(
+        0x108,
+        sender.address,
+        recipient.address,
+        { revokeDelay: 86400000 },
+        mockTimestamp,
+      );
+
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledWith(
+        sender.address,
+        new VerificationMethod(0x108, recipient.address, mockTimestamp),
+        86400000,
       );
     });
 
@@ -141,6 +162,19 @@ describe('VerificationMethodService', () => {
       expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledWith(
         sender.address,
         new VerificationMethod(0, recipient.address, mockTimestamp),
+      );
+    });
+
+    test('should revoke a deactivate method with revoke delay', async () => {
+      const spies = spy();
+      spies.storage.getDeactivateMethodRevokeDelay.mockResolvedValue(86400000);
+
+      await verificationMethodService.revoke(0x108, sender.address, recipient.address, mockTimestamp);
+
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledTimes(1);
+      expect(spies.storage.saveDeactivateMethod).toHaveBeenCalledWith(
+        sender.address,
+        new VerificationMethod(0, recipient.address, mockTimestamp + 86400000),
       );
     });
 
@@ -313,7 +347,11 @@ describe('VerificationMethodService', () => {
     it('should return true for own address', async () => {
       spy();
 
-      const result = await verificationMethodService.hasDeactivateCapability(sender.address, sender.address);
+      const result = await verificationMethodService.hasDeactivateCapability(
+        sender.address,
+        sender.address,
+        mockTimestamp + 5000,
+      );
       expect(result).toBe(true);
     });
 
@@ -324,14 +362,22 @@ describe('VerificationMethodService', () => {
         new VerificationMethod(0x108, recipient.address, mockTimestamp),
       ]);
 
-      const result = await verificationMethodService.hasDeactivateCapability(sender.address, recipient.address);
+      const result = await verificationMethodService.hasDeactivateCapability(
+        sender.address,
+        recipient.address,
+        mockTimestamp + 5000,
+      );
       expect(result).toBe(true);
     });
 
     it("should return false if the sender isn't a deactivation method", async () => {
       spy();
 
-      const result = await verificationMethodService.hasDeactivateCapability(sender.address, recipient.address);
+      const result = await verificationMethodService.hasDeactivateCapability(
+        sender.address,
+        recipient.address,
+        mockTimestamp + 5000,
+      );
       expect(result).toBe(false);
     });
 
@@ -342,7 +388,11 @@ describe('VerificationMethodService', () => {
         new VerificationMethod(0x108, recipient.address, mockTimestamp, mockTimestamp + 1000),
       ]);
 
-      const result = await verificationMethodService.hasDeactivateCapability(sender.address, recipient.address);
+      const result = await verificationMethodService.hasDeactivateCapability(
+        sender.address,
+        recipient.address,
+        mockTimestamp + 5000,
+      );
       expect(result).toBe(false);
     });
   });

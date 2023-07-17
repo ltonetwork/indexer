@@ -91,7 +91,7 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
-    return this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
+    await this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
   }
 
   async getDeactivateMethods(address: string): Promise<VerificationMethod[]> {
@@ -99,8 +99,20 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return set.map((buf) => VerificationMethod.from(buf));
   }
 
-  async saveDeactivateMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
-    return this.storage.addToSet(`lto:did-deactivate-methods:${address}`, verificationMethod.toBuffer());
+  async getDeactivateMethodRevokeDelay(address: string, recipient: string): Promise<number> {
+    const delay = await this.storage.getValue(`lto:did-revoke-delay:${address}:${recipient}`);
+    return delay ? Number(delay) : 0;
+  }
+
+  async saveDeactivateMethod(address: string, verificationMethod: VerificationMethod, revokeDelay = 0): Promise<void> {
+    if (revokeDelay > 0) {
+      const key = `lto:did-revoke-delay:${address}:${verificationMethod.recipient}`;
+      await this.storage.setValue(key, String(revokeDelay));
+    } else {
+      await this.storage.delValue(`lto:did-revoke-delay:${address}:${verificationMethod.recipient}`);
+    }
+
+    await this.storage.addToSet(`lto:did-deactivate-methods:${address}`, verificationMethod.toBuffer());
   }
 
   async deactivateDID(address: string, sender: string, timestamp: number) {
@@ -120,8 +132,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
   }
 
-  async getRolesFor(address: string): Promise<RawRoles | {}> {
-    return this.storage.getObject(`lto:roles:${address}`);
+  async getRolesFor(address: string): Promise<RawRoles | Record<string | number, never>> {
+    return (await this.storage.getObject(`lto:roles:${address}`)) ?? {};
   }
 
   async saveRoleAssociation(recipient: string, sender: string, data: Role): Promise<void> {
