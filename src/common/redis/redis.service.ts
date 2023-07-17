@@ -24,8 +24,7 @@ export class RedisService implements OnModuleDestroy {
     this.logger.debug(`redis: attempting to connect ${key}`);
 
     try {
-      const connection = Array.isArray(config) ? new this._redis.Cluster(config) : new this._redis(config);
-      this.connections[key] = connection;
+      this.connections[key] = Array.isArray(config) ? new this._redis.Cluster(config) : new this._redis(config);
       this.logger.info(`redis: successfully connected ${key}`);
       return this.connections[key];
     } catch (e) {

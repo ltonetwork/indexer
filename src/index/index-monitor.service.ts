@@ -50,10 +50,9 @@ export class IndexMonitorService {
     return this.config.getStartingBlock() < 0 ? await this.node.getLastBlockHeight() : this.config.getStartingBlock();
   }
 
+  // noinspection InfiniteRecursionJS
   async process() {
-    if (!this.processing) {
-      await this.checkNewBlocks();
-    }
+    if (!this.processing) await this.checkNewBlocks();
 
     await delay(this.config.getMonitorInterval());
     return this.process();
