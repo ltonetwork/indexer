@@ -7,7 +7,8 @@ import { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/did
 import { KeyType } from './verification-method/model/verification-method.types';
 import { base58 } from '@scure/base';
 import * as ed2curve from 'ed2curve';
-import { networkId } from '../utils/crypto';
+import { isValidAddress, networkId } from '../utils/crypto';
+import { isoDate } from '../utils/isoDate';
 
 type DIDDocumentVerificationMethods = Pick<
   DIDDocument,
@@ -34,13 +35,33 @@ export class DIDService {
 
     const created = await this.storage.getAccountCreated(address);
 
-    if (!created || created > versionTime.getTime()) {
+    if (!created) {
       return {
-        '@context': 'https://www.w3.org/ns/did/v1',
+        '@context': 'https://w3id.org/did-resolution/v1',
         didDocument: {},
         didDocumentMetadata: {},
         didResolutionMetadata: {
-          error: 'notFound', // TODO: notFound or invalidDid
+          error: isValidAddress(address) ? 'notFound' : 'invalidDid',
+        },
+      };
+    }
+
+    if (created > versionTime.getTime()) {
+      return {
+        '@context': 'https://w3id.org/did-resolution/v1',
+        didDocument: {
+          '@context': 'https://www.w3.org/ns/did/v1',
+          id: `did:lto:${address}`,
+          verificationMethod: [],
+        },
+        didDocumentMetadata: {
+          created: isoDate(created),
+          deactivated: false,
+          nextUpdate: isoDate(created),
+        },
+        didResolutionMetadata: {
+          method: 'lto',
+          networkId: networkId(address),
         },
       };
     }
@@ -48,15 +69,15 @@ export class DIDService {
     const deactivated = await this.storage.isDIDDeactivated(address);
     if (deactivated && deactivated.timestamp <= versionTime.getTime()) {
       return {
-        '@context': 'https://www.w3.org/ns/did/v1',
+        '@context': 'https://w3id.org/did-resolution/v1',
         didDocument: {
           '@context': 'https://www.w3.org/ns/did/v1',
           id: `did:lto:${address}`,
           verificationMethod: [],
         },
         didDocumentMetadata: {
-          created: new Date(created).toISOString(),
-          updated: new Date(deactivated.timestamp).toISOString(),
+          created: isoDate(created),
+          updated: isoDate(deactivated.timestamp),
           deactivated: true,
           deactivatedBy: `did:lto:${deactivated.sender}`,
         },
@@ -67,18 +88,19 @@ export class DIDService {
       };
     }
 
-    const didDocument = await this.asDidDocument(`did:lto:${address}`, address, versionTime);
     const { updated, nextUpdate, lastUpdate } = await this.getUpdateTimestamps(address, versionTime);
 
+    const didDocument = await this.asDidDocument(`did:lto:${address}`, address, versionTime);
+
     return {
-      '@context': 'https://www.w3.org/ns/did/v1',
+      '@context': 'https://w3id.org/did-resolution/v1',
       didDocument,
       didDocumentMetadata: {
-        created: new Date(created).toISOString(),
-        updated: updated ? new Date(updated).toISOString() : undefined,
-        nextUpdate: nextUpdate ? new Date(nextUpdate).toISOString() : undefined,
-        lastUpdate: lastUpdate ? new Date(lastUpdate).toISOString() : undefined,
+        created: isoDate(created),
+        updated: updated ? isoDate(updated) : undefined,
         deactivated: false,
+        nextUpdate: nextUpdate ? isoDate(nextUpdate) : undefined,
+        lastUpdate: lastUpdate ? isoDate(lastUpdate) : undefined,
       },
       didResolutionMetadata: {
         method: 'lto',
@@ -111,6 +133,7 @@ export class DIDService {
     const timestamps = [
       ...(await this.storage.getVerificationMethods(address)).map((method) => method.timestamp),
       ...(await this.storage.getDIDServices(address)).map((service) => service.timestamp),
+      ...(await this.storage.isDIDDeactivated(address).then((d) => (d ? [d.timestamp] : []))),
     ].sort((a, b) => b - a);
 
     const updated = timestamps.find((timestamp) => timestamp <= versionTime.getTime());

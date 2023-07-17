@@ -21,3 +21,19 @@ export function buildAddress(publicKey: Uint8Array | string, networkId: string):
 
   return base58.encode(concatBytes(rawAddress, addressHash));
 }
+
+export function isValidAddress(address: string, networkId?: string | number): boolean {
+  if (!address || typeof address !== 'string') throw new Error('Missing or invalid address');
+
+  const networkByte = typeof networkId === 'string' ? networkId.charCodeAt(0) : networkId;
+  const addressBytes = base58.decode(address);
+
+  if (addressBytes[0] !== 0x1 /* address version */) return false;
+  if (networkByte !== undefined && addressBytes[1] !== networkByte) return false;
+
+  const key = addressBytes.slice(0, 22);
+  const check = addressBytes.slice(22, 26);
+  const keyHash = secureHash(key).slice(0, 4);
+
+  return keyHash.length === check.length && keyHash.every((c, i) => c === check[i]);
+}

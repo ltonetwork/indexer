@@ -19,13 +19,17 @@ export interface DIDDocument {
 
 export interface DIDResolution {
   '@context': string;
-  didDocument: DIDDocument | {};
-  didDocumentMetadata: {
-    created: string;
-    updated: boolean;
-    deactivated: boolean;
-    nextUpdate?: string;
-  } | {};
+  didDocument: DIDDocument | Record<string, never>;
+  didDocumentMetadata:
+    | {
+        created: string;
+        updated?: string;
+        deactivated: boolean;
+        deactivatedBy?: string;
+        nextUpdate?: string;
+        lastUpdate?: string;
+      }
+    | Record<string, never>;
   didResolutionMetadata: {
     error?: string;
     method?: 'lto';

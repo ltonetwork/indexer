@@ -55,10 +55,12 @@ describe('DIDService', () => {
       }),
       getAccountCreated: jest.spyOn(storageService, 'getAccountCreated').mockImplementation(async (address: string) => {
         return [sender.address, recipient.address, secondRecipient.address].includes(address)
-          ? new Date('2023-01-01').getTime()
+          ? new Date('2023-01-01T00:00:00Z').getTime()
           : null;
       }),
+      getVerificationMethods: jest.spyOn(storageService, 'getVerificationMethods').mockResolvedValue([]),
       getDIDServices: jest.spyOn(storageService, 'getDIDServices').mockResolvedValue([]),
+      isDIDDeactivated: jest.spyOn(storageService, 'isDIDDeactivated').mockResolvedValue(undefined),
     };
 
     return { verificationMethod, storage };
@@ -122,7 +124,7 @@ describe('DIDService', () => {
           const relationships = 0x0107; // authentication, assertion, key agreement
           return [
             defaultVerificationMethod,
-            new VerificationMethod(relationships, recipient.address, new Date('2023-02-01').getTime()),
+            new VerificationMethod(relationships, recipient.address, new Date('2023-02-01T00:00:00Z').getTime()),
           ];
         });
 
@@ -177,7 +179,7 @@ describe('DIDService', () => {
         .spyOn(verificationMethodService, 'getMethodsFor')
         .mockImplementation(async () => {
           const relationships = 0x0118; // capabilityInvocation, capabilityDelegation
-          return [new VerificationMethod(relationships, sender.address, new Date('2023-02-01').getTime())];
+          return [new VerificationMethod(relationships, sender.address, new Date('2023-02-01T00:00:00Z').getTime())];
         });
 
       const did = await service.resolveDocument(sender.address);
@@ -279,7 +281,7 @@ describe('DIDService', () => {
         .spyOn(verificationMethodService, 'getMethodsFor')
         .mockResolvedValue([
           defaultVerificationMethod,
-          new VerificationMethod(0x1108, recipient.address, new Date('2023-02-01').getTime()),
+          new VerificationMethod(0x1108, recipient.address, new Date('2023-02-01T00:00:00Z').getTime()),
         ]);
 
       const did = await service.resolveDocument(sender.address);
@@ -346,9 +348,9 @@ describe('DIDService', () => {
       spies = spy();
 
       spies.storage.getDIDServices = jest.spyOn(storageService, 'getDIDServices').mockResolvedValue([
-        { ...service1a, timestamp: new Date('2023-02-01').getTime() },
-        { ...service1b, timestamp: new Date('2023-03-01').getTime() },
-        { ...service2, timestamp: new Date('2023-03-01').getTime() },
+        { ...service1a, timestamp: new Date('2023-02-01T00:00:00Z').getTime() },
+        { ...service1b, timestamp: new Date('2023-03-01T00:00:00Z').getTime() },
+        { ...service2, timestamp: new Date('2023-03-01T00:00:00Z').getTime() },
       ]);
 
       spies.verificationMethod.getMethodsFor = jest
@@ -408,6 +410,301 @@ describe('DIDService', () => {
 
       expect(spies.storage.getDIDServices).toBeCalled();
       expect(spies.storage.getDIDServices.mock.calls[0][0]).toEqual(sender.address);
+    });
+  });
+
+  describe('resolve with DID resolution', () => {
+    test('should resolve an implicit DID document', async () => {
+      spy();
+
+      const resolution = await service.resolve(sender.address);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+
+      expect(resolution.didDocument).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+        ],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
+        keyAgreement: [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+        ],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
+      });
+
+      expect(resolution.didDocumentMetadata).toEqual({
+        created: '2023-01-01T00:00:00Z',
+        updated: undefined,
+        deactivated: false,
+        nextUpdate: undefined,
+        lastUpdate: undefined,
+      });
+
+      expect(resolution.didResolutionMetadata).toEqual({
+        method: 'lto',
+        networkId: 'T',
+      });
+    });
+
+    test('should resolve a DID document with an added verification method', async () => {
+      const spies = spy();
+      const addedMethod = new VerificationMethod(0x0107, recipient.address, new Date('2023-02-01T00:00:00Z').getTime());
+
+      spies.verificationMethod.getMethodsFor = jest
+        .spyOn(verificationMethodService, 'getMethodsFor')
+        .mockResolvedValue([defaultVerificationMethod, addedMethod]);
+      spies.storage.getVerificationMethods = jest
+        .spyOn(storageService, 'getVerificationMethods')
+        .mockResolvedValue([defaultVerificationMethod, addedMethod]);
+
+      const resolution = await service.resolve(sender.address);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+
+      expect(resolution.didDocument).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+          {
+            id: `did:lto:${recipient.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${recipient.address}`,
+            publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
+          },
+        ],
+        authentication: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        keyAgreement: [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+          {
+            id: `did:lto:${recipient.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${recipient.address}`,
+            publicKeyMultibase: `z${recipient.x25519PublicKey}`,
+          },
+        ],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
+      });
+
+      expect(resolution.didDocumentMetadata).toEqual({
+        created: '2023-01-01T00:00:00Z',
+        updated: '2023-02-01T00:00:00Z',
+        deactivated: false,
+        nextUpdate: undefined,
+        lastUpdate: '2023-02-01T00:00:00Z',
+      });
+
+      expect(resolution.didResolutionMetadata).toEqual({
+        method: 'lto',
+        networkId: 'T',
+      });
+    });
+
+    test('should resolve a DID document with given version time', async () => {
+      const versionTime = new Date('2023-01-15T00:00:00.000Z');
+
+      const spies = spy();
+      const addedMethod = new VerificationMethod(0x0107, recipient.address, new Date('2023-02-01T00:00:00Z').getTime());
+
+      spies.verificationMethod.getMethodsFor = jest
+        .spyOn(verificationMethodService, 'getMethodsFor')
+        .mockResolvedValue([defaultVerificationMethod]);
+      spies.storage.getVerificationMethods = jest
+        .spyOn(storageService, 'getVerificationMethods')
+        .mockResolvedValue([defaultVerificationMethod, addedMethod]);
+
+      const resolution = await service.resolve(sender.address, versionTime);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+
+      expect(resolution.didDocument).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+        ],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
+        keyAgreement: [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+        ],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
+      });
+
+      expect(resolution.didDocumentMetadata).toEqual({
+        created: '2023-01-01T00:00:00Z',
+        updated: undefined,
+        deactivated: false,
+        nextUpdate: '2023-02-01T00:00:00Z',
+        lastUpdate: '2023-02-01T00:00:00Z',
+      });
+
+      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T' });
+
+      expect(spies.verificationMethod.getMethodsFor).toHaveBeenCalledWith(sender.address, versionTime);
+    });
+
+    test('should give notFound if DID document is not found', async () => {
+      const spies = spy();
+      spies.storage.getAccountCreated = jest.spyOn(storageService, 'getAccountCreated').mockResolvedValue(undefined);
+
+      const resolution = await service.resolve(sender.address);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+      expect(resolution.didDocument).toEqual({});
+      expect(resolution.didDocumentMetadata).toEqual({});
+      expect(resolution.didResolutionMetadata).toEqual({ error: 'notFound' });
+    });
+
+    test('should give invalidDid', async () => {
+      const spies = spy();
+      spies.storage.getAccountCreated = jest.spyOn(storageService, 'getAccountCreated').mockResolvedValue(undefined);
+
+      const resolution = await service.resolve('foo');
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+      expect(resolution.didDocument).toEqual({});
+      expect(resolution.didDocumentMetadata).toEqual({});
+      expect(resolution.didResolutionMetadata).toEqual({ error: 'invalidDid' });
+    });
+
+    test('should resolve if version time is before DID creation', async () => {
+      const versionTime = new Date('2022-12-01T00:00:00.000Z');
+
+      const spies = spy();
+      spies.storage.getAccountCreated = jest
+        .spyOn(storageService, 'getAccountCreated')
+        .mockResolvedValue(new Date('2023-01-01T00:00:00.000Z').getTime());
+
+      const resolution = await service.resolve(sender.address, versionTime);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+      expect(resolution.didDocument).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        verificationMethod: [],
+      });
+      expect(resolution.didDocumentMetadata).toEqual({
+        created: '2023-01-01T00:00:00Z',
+        deactivated: false,
+        nextUpdate: '2023-01-01T00:00:00Z',
+      });
+      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T' });
+    });
+
+    test('should resolve a deactivated DID', async () => {
+      const spies = spy();
+      spies.storage.isDIDDeactivated = jest
+        .spyOn(storageService, 'isDIDDeactivated')
+        .mockResolvedValue({ sender: sender.address, timestamp: new Date('2023-02-01T00:00:00.000Z').getTime() });
+
+      const resolution = await service.resolve(sender.address);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+      expect(resolution.didDocument).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        verificationMethod: [],
+      });
+      expect(resolution.didDocumentMetadata).toEqual({
+        created: '2023-01-01T00:00:00Z',
+        updated: '2023-02-01T00:00:00Z',
+        deactivated: true,
+        deactivatedBy: `did:lto:${sender.address}`,
+      });
+      expect(resolution.didResolutionMetadata).toEqual({ method: 'lto', networkId: 'T' });
+    });
+
+    test('should resolve the DID document is version time is before deactivation', async () => {
+      const versionTime = new Date('2023-01-15T00:00:00.000Z');
+
+      const spies = spy();
+      spies.storage.isDIDDeactivated = jest
+        .spyOn(storageService, 'isDIDDeactivated')
+        .mockResolvedValue({ sender: sender.address, timestamp: new Date('2023-02-01T00:00:00.000Z').getTime() });
+
+      const resolution = await service.resolve(sender.address, versionTime);
+
+      expect(resolution['@context']).toEqual('https://w3id.org/did-resolution/v1');
+
+      expect(resolution.didDocument).toEqual({
+        '@context': 'https://www.w3.org/ns/did/v1',
+        id: `did:lto:${sender.address}`,
+        service: [],
+        verificationMethod: [
+          {
+            id: `did:lto:${sender.address}#sign`,
+            type: 'Ed25519VerificationKey2020',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.ed25519PublicKey}`,
+          },
+        ],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
+        keyAgreement: [
+          {
+            id: `did:lto:${sender.address}#encrypt`,
+            type: 'X25519KeyAgreementKey2019',
+            controller: `did:lto:${sender.address}`,
+            publicKeyMultibase: `z${sender.x25519PublicKey}`,
+          },
+        ],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
+      });
+
+      expect(resolution.didDocumentMetadata).toEqual({
+        created: '2023-01-01T00:00:00Z',
+        updated: undefined,
+        deactivated: false,
+        nextUpdate: '2023-02-01T00:00:00Z',
+        lastUpdate: '2023-02-01T00:00:00Z',
+      });
+
+      expect(resolution.didResolutionMetadata).toEqual({
+        method: 'lto',
+        networkId: 'T',
+      });
     });
   });
 });
