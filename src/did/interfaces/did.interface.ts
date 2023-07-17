@@ -6,7 +6,7 @@ export interface DIDVerificationMethod {
 }
 
 export interface DIDDocument {
-  '@context': string;
+  '@context': string | string[];
   id: string;
   verificationMethod: DIDVerificationMethod[];
   authentication?: string[];
@@ -18,7 +18,7 @@ export interface DIDDocument {
 }
 
 export interface DIDResolution {
-  '@context': string;
+  '@context': string | string[];
   didDocument: DIDDocument | Record<string, never>;
   didDocumentMetadata:
     | {
