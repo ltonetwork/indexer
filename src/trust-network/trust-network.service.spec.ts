@@ -17,7 +17,13 @@ describe('TrustNetworkService', () => {
   let storageService: StorageService;
   let trustNetworkService: TrustNetworkService;
 
-  let transaction: Transaction;
+  const transaction: Transaction = {
+    id: 'fake_transaction',
+    type: 16,
+    sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+    recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+    associationType: 101,
+  } as Transaction;
 
   function spy() {
     const storage = {
@@ -80,14 +86,6 @@ describe('TrustNetworkService', () => {
     loggerService = module.get<LoggerService>(LoggerService);
     storageService = module.get<StorageService>(StorageService);
     trustNetworkService = module.get<TrustNetworkService>(TrustNetworkService);
-
-    transaction = {
-      id: 'fake_transaction',
-      type: 16,
-      sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
-      associationType: 101,
-    } as Transaction;
 
     await module.init();
   });
