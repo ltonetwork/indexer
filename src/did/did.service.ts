@@ -84,6 +84,7 @@ export class DIDService {
         didResolutionMetadata: {
           method: 'lto',
           networkId: networkId(address),
+          address,
         },
       };
     }
@@ -173,7 +174,11 @@ export class DIDService {
         continue;
       }
 
-      const didVerificationMethod = method.asDidMethod(recipientPublicKey, KeyType[recipientKeyType]);
+      const didVerificationMethod = method.asDidMethod(
+        recipientPublicKey,
+        KeyType[recipientKeyType],
+        method.recipient === address,
+      );
 
       if (method.isOnlyDeactivateCapability()) {
         didDocument.capabilityInvocation.push(didVerificationMethod);
@@ -188,7 +193,7 @@ export class DIDService {
       if (method.isKeyAgreement()) {
         if (recipientKeyType === 'ed25519') {
           const publicKey = base58.encode(ed2curve.convertPublicKey(base58.decode(recipientPublicKey)));
-          didDocument.keyAgreement.push(method.asDidMethod(publicKey, KeyType.x25519));
+          didDocument.keyAgreement.push(method.asDidMethod(publicKey, KeyType.x25519, method.recipient === address));
         } else {
           didDocument.keyAgreement.push(didVerificationMethod.id);
         }

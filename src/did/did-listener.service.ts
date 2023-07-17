@@ -99,7 +99,7 @@ export class DIDListenerService implements OnModuleInit {
     const services: Record<string, any> = (tx.data ?? [])
       .filter(({ key }) => key.startsWith('did:service:'))
       .map(({ key, value }) => ({
-        id: `did:lto:${tx.sender}#` + key.replace(/^did:service:/, ''),
+        id: `#` + key.replace(/^did:service:/, ''),
         ...(typeof value === 'string' ? JSON.parse(value) : {}),
         timestamp: tx.timestamp,
       }));
@@ -108,7 +108,7 @@ export class DIDListenerService implements OnModuleInit {
 
     await Promise.all(
       services.map(async (service) => {
-        this.logger.debug(`DID: 'did:lto:${tx.sender}' add service '${service.id.replace(/^did:lto:\w+#/, '')}'`);
+        this.logger.debug(`DID: 'did:lto:${tx.sender}' add service '${service.id}'`);
         await this.storage.saveDIDService(tx.sender, service);
       }),
     );
