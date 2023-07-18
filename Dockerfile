@@ -11,9 +11,9 @@ RUN yarn
 # Bundle app source
 COPY . .
 
-RUN npm version $(git describe --tags) --no-git-tag-version
+RUN yarn version --new-version $(git describe --tags) --no-git-tag-version
 
-RUN npm run build
+RUN yarn build
 
 RUN rm -rf node_modules/
 
@@ -25,7 +25,7 @@ WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
 COPY --from=build /usr/src/node_modules ./node_modules/
 
-RUN npm install -g pm2
+RUN yarn global add pm2
 
 EXPOSE 80
 CMD ["pm2-runtime", "main.js"]
