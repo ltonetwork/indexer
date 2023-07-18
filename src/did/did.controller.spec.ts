@@ -13,7 +13,13 @@ describe('DidController', () => {
 
   function spy() {
     const identity = {
-      resolve: jest.spyOn(identityService, 'resolve').mockImplementation(() => ({ id: 'mock-did' } as any)),
+      resolve: jest.spyOn(identityService, 'resolve').mockResolvedValue({
+        '@context': 'https://w3id.org/did-resolution/v1',
+        didDocument: { id: 'mock-did' },
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+      } as any),
+      resolveDocument: jest.spyOn(identityService, 'resolveDocument').mockResolvedValue({ id: 'mock-did' } as any),
     };
 
     const logger = {
@@ -46,14 +52,14 @@ describe('DidController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ id: 'mock-did' });
 
-      expect(spies.logger.error.mock.calls.length).toBe(0);
-      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+      expect(spies.logger.error).not.toHaveBeenCalled();
+      expect(spies.identity.resolveDocument).toHaveBeenCalledWith('did:lto:sender', undefined);
     });
 
     test('should return not found for unknown identities', async () => {
       const spies = spy();
 
-      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockImplementation(() => null);
+      spies.identity.resolveDocument = jest.spyOn(identityService, 'resolveDocument').mockResolvedValue(null);
 
       const res = await request(app.getHttpServer()).get('/identifiers/did:lto:sender').send();
 
@@ -61,16 +67,16 @@ describe('DidController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ error: 'notFound' });
 
-      expect(spies.logger.error.mock.calls.length).toBe(0);
-      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+      expect(spies.logger.error).not.toHaveBeenCalled();
+      expect(spies.identity.resolveDocument).toHaveBeenCalledWith('did:lto:sender', undefined);
     });
 
     test('should return error if identity service fails', async () => {
       const spies = spy();
 
-      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockImplementation(() => {
-        throw Error('some bad error');
-      });
+      spies.identity.resolveDocument = jest
+        .spyOn(identityService, 'resolveDocument')
+        .mockRejectedValue(new Error('some bad error'));
 
       const res = await request(app.getHttpServer()).get('/identifiers/did:lto:sender').send();
 
@@ -78,8 +84,25 @@ describe('DidController', () => {
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
       expect(res.body).toEqual({ error: `failed to get DID document '${Error('some bad error')}'` });
 
-      expect(spies.logger.error.mock.calls.length).toBe(1);
-      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+      expect(spies.logger.error).toHaveBeenCalledTimes(1);
+      expect(spies.identity.resolveDocument).toHaveBeenCalledWith('did:lto:sender', undefined);
+    });
+
+    test('should pass the version time', async () => {
+      const spies = spy();
+
+      const versionTime = new Date('2023-01-01T00:00:00.999Z');
+
+      const res = await request(app.getHttpServer())
+        .get('/identifiers/did:lto:sender?versionTime=2023-01-01T00:00:00Z')
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toBe('application/json; charset=utf-8');
+      expect(res.body).toEqual({ id: 'mock-did' });
+
+      expect(spies.logger.error).not.toHaveBeenCalled();
+      expect(spies.identity.resolveDocument).toHaveBeenCalledWith('did:lto:sender', versionTime);
     });
   });
 
@@ -103,14 +126,19 @@ describe('DidController', () => {
         didResolutionMetadata: {},
       });
 
-      expect(spies.logger.error.mock.calls.length).toBe(0);
-      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+      expect(spies.logger.error).not.toHaveBeenCalled();
+      expect(spies.identity.resolve).toHaveBeenCalledWith('did:lto:sender', undefined);
     });
 
     test('should return not found for unknown identities', async () => {
       const spies = spy();
 
-      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockImplementation(() => null);
+      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockResolvedValue({
+        '@context': 'https://w3id.org/did-resolution/v1',
+        didDocument: {},
+        didDocumentMetadata: {},
+        didResolutionMetadata: { error: 'notFound' },
+      } as any);
 
       const res = await request(app.getHttpServer())
         .get('/identifiers/did:lto:sender')
@@ -123,21 +151,19 @@ describe('DidController', () => {
       );
       expect(res.body).toEqual({
         '@context': 'https://w3id.org/did-resolution/v1',
-        didDocument: null,
+        didDocument: {},
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'notFound' },
       });
 
-      expect(spies.logger.error.mock.calls.length).toBe(0);
-      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+      expect(spies.logger.error).not.toHaveBeenCalled();
+      expect(spies.identity.resolve).toHaveBeenCalledWith('did:lto:sender', undefined);
     });
 
     test('should return error if identity service fails', async () => {
       const spies = spy();
 
-      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockImplementation(() => {
-        throw Error('some bad error');
-      });
+      spies.identity.resolve = jest.spyOn(identityService, 'resolve').mockRejectedValue(new Error('some bad error'));
 
       const res = await request(app.getHttpServer())
         .get('/identifiers/did:lto:sender')
@@ -150,13 +176,38 @@ describe('DidController', () => {
       );
       expect(res.body).toEqual({
         '@context': 'https://w3id.org/did-resolution/v1',
-        didDocument: null,
+        didDocument: {},
         didDocumentMetadata: {},
         didResolutionMetadata: { error: 'failed to get DID document', reason: `${Error('some bad error')}` },
       });
 
-      expect(spies.logger.error.mock.calls.length).toBe(1);
-      expect(spies.identity.resolve.mock.calls.length).toBe(1);
+      expect(spies.logger.error).toHaveBeenCalledTimes(1);
+      expect(spies.identity.resolve).toHaveBeenCalledWith('did:lto:sender', undefined);
+    });
+
+    test('should pass the version time', async () => {
+      const spies = spy();
+
+      const versionTime = new Date('2023-01-01T00:00:00.999Z');
+
+      const res = await request(app.getHttpServer())
+        .get('/identifiers/did:lto:sender?versionTime=2023-01-01T00:00:00Z')
+        .set('Accept', 'application/ld+json;profile="https://w3id.org/did-resolution"')
+        .send();
+
+      expect(res.status).toBe(200);
+      expect(res.header['content-type']).toBe(
+        'application/ld+json; charset=utf-8; profile="https://w3id.org/did-resolution"',
+      );
+      expect(res.body).toEqual({
+        '@context': 'https://w3id.org/did-resolution/v1',
+        didDocument: { id: 'mock-did' },
+        didDocumentMetadata: {},
+        didResolutionMetadata: {},
+      });
+
+      expect(spies.logger.error).not.toHaveBeenCalled();
+      expect(spies.identity.resolve).toHaveBeenCalledWith('did:lto:sender', versionTime);
     });
   });
 });
