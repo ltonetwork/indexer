@@ -14,7 +14,7 @@
     "start": "node --require ts-node/register src/main.ts",
     "start:dev": "nodemon",
     "build": "rm -rf dist && tsc --project tsconfig.build.json",
-    "postbuild": "cp -r src/config dist/config/; cp package.json dist/",
+    "postbuild": "cp -r src/config/*.json dist/config/; cp package.json dist/",
     "prestart:prod": "npm run build",
     "start:prod": "node dist/main.js",
     "start:hmr": "node dist/server",
