@@ -100,46 +100,39 @@ export class DidController {
     const accept = req.get('Accept') || '';
     const isDidResolution = accept.includes('application/ld+json;profile="https://w3id.org/did-resolution"');
 
+    return isDidResolution ? this.resolveResolution(did, res) : this.resolveDocument(did, res);
+  }
+
+  private async resolveDocument(did: string, res: Response): Promise<Response> {
     try {
-      const didDocument = await this.service.resolve(did);
-
-      if (!didDocument) {
-        return isDidResolution
-          ? res
-              .status(404)
-              .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
-              .json(this.didResolutionBody(null, {}, { error: 'notFound' }))
-          : res.status(404).json({ error: 'notFound' });
-      }
-
-      return isDidResolution
-        ? res
-            .status(200)
-            .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
-            .json(this.didResolutionBody(didDocument, {}, {}))
-        : res.status(200).json(didDocument);
+      const didDocument = await this.service.resolveDocument(did);
+      return didDocument ? res.status(200).json(didDocument) : res.status(404).json({ error: 'notFound' });
     } catch (e) {
-      this.logger.error(`identity-controller: failed to get DID document '${e}'`, { stack: e.stack });
-
-      return isDidResolution
-        ? res
-            .status(500)
-            .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
-            .json(this.didResolutionBody(null, {}, { error: 'failed to get DID document', reason: `${e}` }))
-        : res.status(500).json({ error: `failed to get DID document '${e}'` });
+      this.logger.error(`did-controller: failed to get DID document '${e}'`, { stack: e.stack });
+      return res.status(500).json({ error: `failed to get DID document '${e}'` });
     }
   }
 
-  private didResolutionBody(
-    didDocument: any,
-    didDocumentMetadata: Record<string, any>,
-    didResolutionMetadata: Record<string, any>,
-  ) {
-    return {
-      '@context': 'https://w3id.org/did-resolution/v1',
-      didDocument,
-      didDocumentMetadata,
-      didResolutionMetadata,
-    };
+  private async resolveResolution(did: string, res: Response): Promise<Response> {
+    try {
+      const resolution = await this.service.resolve(did);
+
+      return res
+        .status(resolution.didResolutionMetadata.error ? 404 : 200)
+        .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
+        .json(resolution);
+    } catch (e) {
+      this.logger.error(`did-controller: failed to resolve DID '${e}'`, { stack: e.stack });
+
+      return res
+        .status(500)
+        .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
+        .json({
+          '@context': 'https://w3id.org/did-resolution/v1',
+          didDocument: {},
+          didDocumentMetadata: {},
+          didResolutionMetadata: { error: 'failed to get DID document', reason: `${e}` },
+        });
+    }
   }
 }
