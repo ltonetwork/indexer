@@ -8,7 +8,7 @@ import { KeyType } from './verification-method/model/verification-method.types';
 import { base58 } from '@scure/base';
 import * as ed2curve from 'ed2curve';
 import { isValidAddress, networkId } from '../utils/crypto';
-import { isoDate } from '../utils/isoDate';
+import { isoDate } from '../utils/date';
 
 type DIDDocumentVerificationMethods = Pick<
   DIDDocument,
@@ -220,7 +220,10 @@ export class DIDService {
 
     for (const serviceWithTimestamp of services) {
       const { timestamp, ...service } = serviceWithTimestamp;
-      if (timestamp <= versionTimestamp) map.set(service.id, service);
+      if (timestamp <= versionTimestamp) {
+        const id = service.id.replace(new RegExp(`^did:lto:${address}#`), '#');
+        map.set(id, service);
+      }
     }
 
     return Array.from(map.values()).filter((service) => !!service.type);

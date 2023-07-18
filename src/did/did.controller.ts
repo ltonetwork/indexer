@@ -1,5 +1,5 @@
-import { Controller, Res, Get, Param, Req } from '@nestjs/common';
-import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Res, Get, Param, Req, Query } from '@nestjs/common';
+import { ApiParam, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { LoggerService } from '../common/logger/logger.service';
 import { DIDService } from './did.service';
@@ -12,6 +12,11 @@ export class DidController {
   @Get(':did')
   @ApiOperation({ summary: 'DID resolver' })
   @ApiParam({ name: 'did', description: 'DID or network address' })
+  @ApiQuery({
+    name: 'versionTime',
+    description: 'Get the DID document that was valid at the specified time',
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'DID document or DID resolution',
@@ -96,16 +101,26 @@ export class DidController {
       },
     },
   })
-  async resolve(@Param('did') did: string, @Req() req: Request, @Res() res: Response): Promise<Response> {
+  async resolve(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('did') did: string,
+    @Query('versionTime') versionTime?: string,
+  ): Promise<Response> {
     const accept = req.get('Accept') || '';
     const isDidResolution = accept.includes('application/ld+json;profile="https://w3id.org/did-resolution"');
 
-    return isDidResolution ? this.resolveResolution(did, res) : this.resolveDocument(did, res);
+    const versionTimeDate = versionTime ? new Date(versionTime) : undefined;
+    if (versionTimeDate) versionTimeDate.setMilliseconds(999);
+
+    return isDidResolution
+      ? this.resolveResolution(did, versionTimeDate, res)
+      : this.resolveDocument(did, versionTimeDate, res);
   }
 
-  private async resolveDocument(did: string, res: Response): Promise<Response> {
+  private async resolveDocument(did: string, versionTime: Date | undefined, res: Response): Promise<Response> {
     try {
-      const didDocument = await this.service.resolveDocument(did);
+      const didDocument = await this.service.resolveDocument(did, versionTime);
       return didDocument ? res.status(200).json(didDocument) : res.status(404).json({ error: 'notFound' });
     } catch (e) {
       this.logger.error(`did-controller: failed to get DID document '${e}'`, { stack: e.stack });
@@ -113,9 +128,9 @@ export class DidController {
     }
   }
 
-  private async resolveResolution(did: string, res: Response): Promise<Response> {
+  private async resolveResolution(did: string, versionTime: Date | undefined, res: Response): Promise<Response> {
     try {
-      const resolution = await this.service.resolve(did);
+      const resolution = await this.service.resolve(did, versionTime);
 
       return res
         .status(resolution.didResolutionMetadata.error ? 404 : 200)
