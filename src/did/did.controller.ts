@@ -131,9 +131,10 @@ export class DidController {
   private async resolveResolution(did: string, versionTime: Date | undefined, res: Response): Promise<Response> {
     try {
       const resolution = await this.service.resolve(did, versionTime);
+      const error = resolution.didResolutionMetadata.error;
 
       return res
-        .status(resolution.didResolutionMetadata.error ? 404 : 200)
+        .status(!error ? 200 : error === 'notFound' ? 404 : 400)
         .header('Content-Type', 'application/ld+json;profile="https://w3id.org/did-resolution";charset=utf-8')
         .json(resolution);
     } catch (e) {
@@ -146,7 +147,7 @@ export class DidController {
           '@context': 'https://w3id.org/did-resolution/v1',
           didDocument: {},
           didDocumentMetadata: {},
-          didResolutionMetadata: { error: 'failed to get DID document', reason: `${e}` },
+          didResolutionMetadata: { error: 'internalError', reason: `${e}` },
         });
     }
   }

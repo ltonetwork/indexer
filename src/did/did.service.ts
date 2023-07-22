@@ -8,7 +8,7 @@ import { KeyType } from './verification-method/model/verification-method.types';
 import { base58 } from '@scure/base';
 import * as ed2curve from 'ed2curve';
 import { isValidAddress, networkId } from '../utils/crypto';
-import { isoDate } from '../utils/date';
+import { isInvalidDate, isoDate } from '../utils/date';
 
 type DIDDocumentVerificationMethods = Pick<
   DIDDocument,
@@ -35,14 +35,14 @@ export class DIDService {
 
     const created = await this.storage.getAccountCreated(address);
 
-    if (!created) {
+    if (!created || isInvalidDate(versionTime)) {
       return {
         '@context': 'https://w3id.org/did-resolution/v1',
         didDocument: {},
         didDocumentMetadata: {},
         didResolutionMetadata: {
           contentType: 'application/did+ld+json',
-          error: isValidAddress(address) ? 'notFound' : 'invalidDid',
+          error: isInvalidDate(versionTime) ? 'invalidDidUrl' : !isValidAddress(address) ? 'invalidDid' : 'notFound',
         },
       };
     }
