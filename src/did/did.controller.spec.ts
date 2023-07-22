@@ -178,7 +178,7 @@ describe('DidController', () => {
         '@context': 'https://w3id.org/did-resolution/v1',
         didDocument: {},
         didDocumentMetadata: {},
-        didResolutionMetadata: { error: 'failed to get DID document', reason: `${Error('some bad error')}` },
+        didResolutionMetadata: { error: 'internalError', reason: `${Error('some bad error')}` },
       });
 
       expect(spies.logger.error).toHaveBeenCalledTimes(1);
