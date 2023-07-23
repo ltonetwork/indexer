@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs';
 import convict from 'convict';
 import schema from '../../config/default.schema.json';
 
@@ -20,14 +20,10 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private config_reload_interval: NodeJS.Timer;
 
   async onModuleInit() {
-    if (!this.config) {
-      await this.load();
-    }
+    if (!this.config) this.load();
 
     if (!this.config_reload_interval) {
-      this.config_reload_interval = setInterval(async () => {
-        await this.load();
-      }, this.ttl);
+      this.config_reload_interval = setInterval(() => this.load(), this.ttl);
     }
   }
 
@@ -37,7 +33,7 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async load(): Promise<void> {
+  private load(): void {
     const dir = path.resolve(__dirname, '../../config');
 
     this.config = convict(schema);
@@ -53,17 +49,10 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
     ];
 
     for (const file of files) {
-      if (
-        await fs.access(file, fs.constants.F_OK).then(
-          () => true,
-          () => false,
-        )
-      ) {
-        this.config.loadFile(file);
-      }
+      if (fs.existsSync(file)) this.config.loadFile(file);
     }
 
-    await this.validate();
+    this.validate();
   }
 
   set(key: Path, value: any): void {
