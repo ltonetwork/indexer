@@ -10,6 +10,7 @@ import { VerificationMethod } from '../did/verification-method/verification-meth
 import { Role } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis/redis-graph.service';
 import { DIDDocumentService } from '../did/interfaces/did.interface';
+import { CredentialStatus } from '../credential-status/credential-status.model';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -130,6 +131,15 @@ export class StorageService implements OnModuleInit {
 
   async getDIDServices(address: string): Promise<Array<DIDDocumentService & { timestamp: number }>> {
     return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
+  }
+
+  async saveCredentialStatus(address: string, status: CredentialStatus): Promise<void> {
+    return this.storage.addToSet(`lto:credential-status:${address}`, status.toBuffer());
+  }
+
+  async getCredentialStatus(address: string): Promise<CredentialStatus[]> {
+    const set = await this.storage.getBufferSet(`lto:credential-status:${address}`);
+    return set.map((buf) => CredentialStatus.from(buf));
   }
 
   async getRolesFor(address: string): Promise<Record<string, { sender: string; type: number }>> {

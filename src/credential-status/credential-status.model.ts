@@ -1,6 +1,6 @@
 import { base58 } from '@scure/base';
 
-export class StatusStatementModel {
+export class CredentialStatus {
   constructor(public readonly type: number, public readonly sender: string, public readonly timestamp: number) {}
 
   public toBuffer() {
@@ -12,11 +12,11 @@ export class StatusStatementModel {
     return buf;
   }
 
-  public static from(buf: Buffer): StatusStatementModel {
+  public static from(buf: Buffer): CredentialStatus {
     const type = buf.readUInt32BE(0);
     const sender = base58.encode(buf.slice(4, 30));
     const timestamp = Number(buf.readBigUInt64BE(30));
 
-    return new StatusStatementModel(type, sender, timestamp);
+    return new CredentialStatus(type, sender, timestamp);
   }
 }

@@ -8,12 +8,13 @@ import { LoggerModule } from '../common/logger/logger.module';
 import { ConfigModule } from '../common/config/config.module';
 import { EmitterModule } from '../emitter/emitter.module';
 import { StorageModule } from '../storage/storage.module';
+import { TrustNetworkModule } from '../trust-network/trust-network.module';
 
-export const IdentityModuleConfig = {
-  imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule],
+export const CredentialStatusModuleConfig = {
+  imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule, TrustNetworkModule],
   controllers: [CredentialStatusController],
   providers: [CredentialStatusService, CredentialStatusListenerService],
 };
 
-@Module(IdentityModuleConfig)
+@Module(CredentialStatusModuleConfig)
 export class CredentialStatusModule {}

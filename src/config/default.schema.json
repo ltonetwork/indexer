@@ -58,9 +58,15 @@
   "credential_status": {
     "indexing": {
       "doc": "Indexing of credential status",
-      "default": false,
-      "format": "Boolean",
+      "enum": ["none", "all", "trust"],
+      "default": "none",
       "env": "CREDENTIAL_STATUS_INDEXING"
+    },
+    "disputes": {
+      "doc": "Indexing of credential disputes and acknowledgements",
+      "enum": ["none", "all", "trust"],
+      "default": "none",
+      "env": "CREDENTIAL_DISPUTES_INDEXING"
     }
   },
   "transaction": {
