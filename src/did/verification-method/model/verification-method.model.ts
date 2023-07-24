@@ -10,11 +10,11 @@ export class VerificationMethod {
     public expires?: number,
   ) {}
 
-  public asDidMethod(publicKey: string, keyType = KeyType.ed25519, ownAddress = false): DIDVerificationMethod {
+  public asDidMethod(publicKey: string, keyType = KeyType.ed25519): DIDVerificationMethod {
     const tag = keyType === KeyType.x25519 ? '#encrypt' : '#sign';
 
     return {
-      id: (ownAddress ? '' : `did:lto:${this.recipient}`) + tag,
+      id: `did:lto:${this.recipient}${tag}`,
       type: keyType.toString(),
       controller: `did:lto:${this.recipient}`,
       publicKeyMultibase: 'z' + publicKey,

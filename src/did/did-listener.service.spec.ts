@@ -282,7 +282,7 @@ describe('DIDListenerService', () => {
 
       expect(spies.storage.saveDIDService).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveDIDService).toHaveBeenCalledWith(tx.sender, {
-        id: `#foo`,
+        id: `did:lto:${sender.address}#foo`,
         type: 'Foo',
         serviceEndpoint: 'https://example.com',
         timestamp: tx.timestamp,
@@ -328,7 +328,7 @@ describe('DIDListenerService', () => {
 
       expect(spies.storage.saveDIDService).toHaveBeenCalledTimes(1);
       expect(spies.storage.saveDIDService).toHaveBeenCalledWith(tx.sender, {
-        id: `#foo`,
+        id: `did:lto:${sender.address}#foo`,
         timestamp: tx.timestamp,
       });
     });

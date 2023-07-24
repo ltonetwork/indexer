@@ -95,24 +95,24 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`],
-        assertionMethod: [`#sign`],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
           },
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
 
       expect(spies.storage.getPublicKey.mock.calls.length).toBe(1);
@@ -147,7 +147,7 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
@@ -159,11 +159,11 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`, `did:lto:${recipient.address}#sign`],
-        assertionMethod: [`#sign`, `did:lto:${recipient.address}#sign`],
+        authentication: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
@@ -175,8 +175,8 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.x25519PublicKey}`,
           },
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
     });
 
@@ -205,7 +205,7 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
@@ -214,8 +214,8 @@ describe('DIDService', () => {
         assertionMethod: [],
         authentication: [],
         keyAgreement: [],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
     });
 
@@ -250,7 +250,7 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
@@ -268,11 +268,11 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${secondRecipient.secp256k1PublicKey}`,
           },
         ],
-        authentication: [`#sign`, `did:lto:${recipient.address}#sign`],
-        assertionMethod: [`#sign`, `did:lto:${recipient.address}#sign`],
+        authentication: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
@@ -285,8 +285,8 @@ describe('DIDService', () => {
           },
           `did:lto:${secondRecipient.address}#sign`,
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`, `did:lto:${secondRecipient.address}#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`, `did:lto:${secondRecipient.address}#sign`],
       });
     });
 
@@ -315,24 +315,24 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`],
-        assertionMethod: [`#sign`],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
           },
         ],
         capabilityInvocation: [
-          `#sign`,
+          `did:lto:${sender.address}#sign`,
           {
             id: `did:lto:${recipient.address}#sign`,
             type: 'Ed25519VerificationKey2020',
@@ -340,7 +340,7 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
           },
         ],
-        capabilityDelegation: [`#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
     });
   });
@@ -349,12 +349,12 @@ describe('DIDService', () => {
     let spies: ReturnType<typeof spy>;
 
     const service1a = {
-      id: `#lto-relay`,
+      id: `did:lto:${sender.address}#lto-relay`,
       type: 'LTORelay',
       serviceEndpoint: 'ampq://relay.lto.network',
     };
     const service1b = {
-      id: `#lto-relay`,
+      id: `did:lto:${sender.address}#lto-relay`,
       type: 'LTORelay',
       serviceEndpoint: 'ampq://relay.example.com',
     };
@@ -393,7 +393,7 @@ describe('DIDService', () => {
         service: [service1b, service2],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
@@ -423,7 +423,7 @@ describe('DIDService', () => {
         service: [service1a],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
@@ -459,24 +459,24 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`],
-        assertionMethod: [`#sign`],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
           },
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
 
       expect(resolution.didDocumentMetadata).toEqual({
@@ -523,7 +523,7 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
@@ -535,11 +535,11 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`, `did:lto:${recipient.address}#sign`],
-        assertionMethod: [`#sign`, `did:lto:${recipient.address}#sign`],
+        authentication: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`, `did:lto:${recipient.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
@@ -551,8 +551,8 @@ describe('DIDService', () => {
             publicKeyMultibase: `z${recipient.x25519PublicKey}`,
           },
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
 
       expect(resolution.didDocumentMetadata).toEqual({
@@ -601,24 +601,24 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`],
-        assertionMethod: [`#sign`],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
           },
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
 
       expect(resolution.didDocumentMetadata).toEqual({
@@ -751,24 +751,24 @@ describe('DIDService', () => {
         service: [],
         verificationMethod: [
           {
-            id: `#sign`,
+            id: `did:lto:${sender.address}#sign`,
             type: 'Ed25519VerificationKey2020',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.ed25519PublicKey}`,
           },
         ],
-        authentication: [`#sign`],
-        assertionMethod: [`#sign`],
+        authentication: [`did:lto:${sender.address}#sign`],
+        assertionMethod: [`did:lto:${sender.address}#sign`],
         keyAgreement: [
           {
-            id: `#encrypt`,
+            id: `did:lto:${sender.address}#encrypt`,
             type: 'X25519KeyAgreementKey2019',
             controller: `did:lto:${sender.address}`,
             publicKeyMultibase: `z${sender.x25519PublicKey}`,
           },
         ],
-        capabilityInvocation: [`#sign`],
-        capabilityDelegation: [`#sign`],
+        capabilityInvocation: [`did:lto:${sender.address}#sign`],
+        capabilityDelegation: [`did:lto:${sender.address}#sign`],
       });
 
       expect(resolution.didDocumentMetadata).toEqual({

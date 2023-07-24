@@ -179,11 +179,7 @@ export class DIDService {
         continue;
       }
 
-      const didVerificationMethod = method.asDidMethod(
-        recipientPublicKey,
-        KeyType[recipientKeyType],
-        method.recipient === address,
-      );
+      const didVerificationMethod = method.asDidMethod(recipientPublicKey, KeyType[recipientKeyType]);
 
       if (method.isOnlyDeactivateCapability()) {
         didDocument.capabilityInvocation.push(didVerificationMethod);
@@ -198,7 +194,7 @@ export class DIDService {
       if (method.isKeyAgreement()) {
         if (recipientKeyType === 'ed25519') {
           const publicKey = base58.encode(ed2curve.convertPublicKey(base58.decode(recipientPublicKey)));
-          didDocument.keyAgreement.push(method.asDidMethod(publicKey, KeyType.x25519, method.recipient === address));
+          didDocument.keyAgreement.push(method.asDidMethod(publicKey, KeyType.x25519));
         } else {
           didDocument.keyAgreement.push(didVerificationMethod.id);
         }

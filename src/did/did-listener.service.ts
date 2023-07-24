@@ -99,7 +99,7 @@ export class DIDListenerService implements OnModuleInit {
     const services: Record<string, any> = (tx.data ?? [])
       .filter(({ key }) => key.startsWith('did:service:'))
       .map(({ key, value }) => ({
-        id: `#` + key.replace(/^did:service:/, ''),
+        id: `did:lto:${tx.sender}#` + key.replace(/^did:service:/, ''),
         ...(typeof value === 'string' ? JSON.parse(value) : {}),
         timestamp: tx.timestamp,
       }));
