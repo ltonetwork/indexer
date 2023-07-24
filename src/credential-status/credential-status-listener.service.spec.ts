@@ -3,7 +3,6 @@ import { CredentialStatusModuleConfig } from './credential-status.module';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { CredentialStatusListenerService } from './credential-status-listener.service';
-import { CredentialStatus } from './credential-status.model';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 describe('CredentialStatusListenerService', () => {
@@ -25,6 +24,7 @@ describe('CredentialStatusListenerService', () => {
     senderKeyType: 'ed25519',
     subject: 'test_subject',
     timestamp: 1591290690000,
+    data: [{ key: 'reason', type: 'string', value: 'some reason' }],
   } as Transaction;
 
   function spy() {
@@ -63,17 +63,31 @@ describe('CredentialStatusListenerService', () => {
 
       expect(storage.saveCredentialStatus).toHaveBeenCalled();
       expect(storage.saveCredentialStatus.mock.calls[0][0]).toBe(transaction.subject);
-      expect(storage.saveCredentialStatus.mock.calls[0][1]).toEqual(
-        new CredentialStatus(type, sender.address, transaction.timestamp),
-      );
+      expect(storage.saveCredentialStatus.mock.calls[0][1]).toEqual({
+        type,
+        sender: sender.address,
+        timestamp: transaction.timestamp,
+        reason: 'some reason',
+      });
     });
 
-    it.each([0x10, 0x14])('should not index statement with type %d if not in trust network', async () => {
+    it('should not index statement with type 16 if not in trust network', async () => {
       const { storage, trust } = spy();
 
       (listener as any).statusIndexing = 'trust';
 
       await listener.index({ transaction: { ...transaction, statementType: 0x10 }, blockHeight: 0, position: 1 });
+
+      expect(trust.hasRole).toHaveBeenCalledWith(sender.address);
+      expect(storage.saveCredentialStatus).not.toHaveBeenCalled();
+    });
+
+    it('should not index statement with type 20 if not in trust network', async () => {
+      const { storage, trust } = spy();
+
+      (listener as any).disputesIndexing = 'trust';
+
+      await listener.index({ transaction: { ...transaction, statementType: 0x14 }, blockHeight: 0, position: 1 });
 
       expect(trust.hasRole).toHaveBeenCalledWith(sender.address);
       expect(storage.saveCredentialStatus).not.toHaveBeenCalled();

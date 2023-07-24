@@ -7,7 +7,6 @@ import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
-import { CredentialStatus } from './credential-status.model';
 
 @Injectable()
 export class CredentialStatusListenerService implements OnModuleInit {
@@ -47,30 +46,26 @@ export class CredentialStatusListenerService implements OnModuleInit {
   }
 
   async index(index: IndexDocumentType): Promise<void> {
-    const { transaction } = index;
-    if (transaction.type !== 23) return;
+    const { transaction: tx } = index;
 
-    const { statementType, subject, sender, timestamp } = transaction;
-
-    if (statementType >= 0x10 && statementType <= 0x13) {
-      await this.indexStatus(statementType, subject, sender, timestamp);
-    } else if (statementType === 0x14 || statementType === 0x15) {
-      await this.indexDispute(statementType, subject, sender, timestamp);
+    if (
+      tx.type !== 23 ||
+      !(tx.statementType >= 0x10 && tx.statementType <= 0x15) ||
+      !tx.subject ||
+      !(await this.shouldIndex(tx.sender, tx.statementType < 0x14 ? this.statusIndexing : this.disputesIndexing))
+    ) {
+      return;
     }
-  }
 
-  async indexStatus(type: number, subject: string, sender: string, timestamp: number): Promise<void> {
-    if (!subject || !(await this.shouldIndex(sender, this.statusIndexing))) return;
+    this.logger.debug(`credential-status-listener: Saving credential status ${tx.type} for ${tx.subject}`);
 
-    this.logger.debug(`credential-status-listener: Saving credential status ${type} for ${subject}`);
-    await this.storage.saveCredentialStatus(subject, new CredentialStatus(type, sender, timestamp));
-  }
+    const data: Record<string, any> = Object.fromEntries((tx.data || []).map((entry) => [entry.key, entry.value]));
 
-  // Index dispute or acknowledgement
-  async indexDispute(type: number, subject: string, sender: string, timestamp: number): Promise<void> {
-    if (!subject || !(await this.shouldIndex(sender, this.disputesIndexing))) return;
-
-    this.logger.debug(`credential-status-listener: Saving credential dispute ${type} for ${subject}`);
-    await this.storage.saveCredentialStatus(subject, new CredentialStatus(type, sender, timestamp));
+    await this.storage.saveCredentialStatus(tx.subject, {
+      ...data,
+      type: tx.statementType,
+      sender: tx.sender,
+      timestamp: tx.timestamp,
+    });
   }
 }
