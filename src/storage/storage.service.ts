@@ -138,7 +138,8 @@ export class StorageService implements OnModuleInit {
   }
 
   async getCredentialStatus(address: string): Promise<CredentialStatusStatementStored[]> {
-    return (await this.storage.getSet(`lto:credential-status:${address}`)).map((s) => JSON.parse(s));
+    const set = await this.storage.getSet(`lto:credential-status:${address}`);
+    return (set || []).map((s) => JSON.parse(s));
   }
 
   async getRolesFor(address: string): Promise<Record<string, { sender: string; type: number }>> {

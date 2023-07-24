@@ -57,7 +57,7 @@ export class CredentialStatusListenerService implements OnModuleInit {
       return;
     }
 
-    this.logger.debug(`credential-status-listener: Saving credential status ${tx.type} for ${tx.subject}`);
+    this.logger.debug(`credential-status-listener: Saving credential status ${tx.statementType} for ${tx.subject}`);
 
     const data: Record<string, any> = Object.fromEntries((tx.data || []).map((entry) => [entry.key, entry.value]));
 

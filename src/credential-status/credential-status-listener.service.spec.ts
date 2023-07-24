@@ -55,7 +55,7 @@ describe('CredentialStatusListenerService', () => {
     await module.close();
   });
 
-  describe('index status', () => {
+  describe('index', () => {
     it.each([0x10, 0x11, 0x12, 0x13, 0x14, 0x15])('should index statement with type %d', async (type) => {
       const { storage } = spy();
 
