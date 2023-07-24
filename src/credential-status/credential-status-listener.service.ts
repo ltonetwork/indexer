@@ -6,6 +6,7 @@ import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class CredentialStatusListenerService implements OnModuleInit {
@@ -29,5 +30,13 @@ export class CredentialStatusListenerService implements OnModuleInit {
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
+
+    if (transaction.type === 23 && transaction.statementType >= 0x10 && transaction.statementType <= 0x15) {
+      await this.indexStatement(transaction);
+    }
+  }
+
+  async indexStatement(tx: Transaction): Promise<void> {
+    // todo
   }
 }

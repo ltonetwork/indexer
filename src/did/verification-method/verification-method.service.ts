@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../../common/logger/logger.service';
 import { StorageService } from '../../storage/storage.service';
-import { VerificationMethod } from './model/verification-method.model';
-import { RelationshipType } from './model/verification-method.types';
+import { VerificationMethod } from './verification-method.model';
+import { RelationshipType } from './verification-method.types';
 
 @Injectable()
 export class VerificationMethodService {

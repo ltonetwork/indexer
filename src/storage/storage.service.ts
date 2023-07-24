@@ -6,7 +6,7 @@ import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
 import storageServices from './index';
 import { pascalCase } from 'pascal-case';
 import { LoggerService } from '../common/logger/logger.service';
-import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
+import { VerificationMethod } from '../did/verification-method/verification-method.model';
 import { Role } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis/redis-graph.service';
 import { DIDDocumentService } from '../did/interfaces/did.interface';
