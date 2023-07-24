@@ -8,7 +8,7 @@ Index and query data from the LTO Network public chain.
 
 ## Application
 
-It can be launched via `yarn start`. It will run the index service, that will accept and process requests either through UI or using API calls. The server listens to port `300` by default. You can change the port number through the `PORT` env variable.
+It can be launched via `yarn start`. It will run the index service, that will accept and process requests either through UI or using API calls. The server listens to port `3000` by default. You can change the port number through the `PORT` env variable.
 
 Explore all API endpoints using the Swagger interface.
 
