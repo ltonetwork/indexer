@@ -55,6 +55,14 @@
       "env": "DID_INDEXING"
     }
   },
+  "credential_status": {
+    "indexing": {
+      "doc": "Indexing of credential status",
+      "default": false,
+      "format": "Boolean",
+      "env": "CREDENTIAL_STATUS_INDEXING"
+    }
+  },
   "transaction": {
     "indexing": {
       "doc": "Indexing of transactions",

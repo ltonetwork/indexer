@@ -22,7 +22,7 @@ export class DIDListenerService implements OnModuleInit {
 
   async onModuleInit() {
     if (!this.config.isDIDIndexingEnabled()) {
-      this.logger.debug(`transaction-listener: Not processing identities`);
+      this.logger.debug(`did-listener: Not processing DIDs`);
       return;
     }
 

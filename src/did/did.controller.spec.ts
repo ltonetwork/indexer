@@ -5,7 +5,7 @@ import { IdentityModuleConfig } from './did.module';
 import { DIDService } from './did.service';
 import { LoggerService } from '../common/logger/logger.service';
 
-describe('DidController', () => {
+describe('DIDController', () => {
   let module: TestingModule;
   let loggerService: LoggerService;
   let identityService: DIDService;

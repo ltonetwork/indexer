@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { DidController } from './did.controller';
+import { DIDController } from './did.controller';
 import { DIDService } from './did.service';
 import { DIDListenerService } from './did-listener.service';
 
@@ -15,7 +15,7 @@ import { IdentitiesController } from './identities.controller';
 
 export const IdentityModuleConfig = {
   imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule],
-  controllers: [DidController, IdentitiesController],
+  controllers: [DIDController, IdentitiesController],
   providers: [DIDService, DIDListenerService, VerificationMethodService],
 };
 

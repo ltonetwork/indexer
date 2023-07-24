@@ -76,6 +76,10 @@ export class ConfigService {
     return !!this.config.get('did.indexing') || !!this.config.get('identity.indexing');
   }
 
+  isCredentialStatusIndexingEnabled(): boolean {
+    return !!this.config.get('credential_status.indexing');
+  }
+
   isTransactionIndexingEnabled(): boolean {
     return !!this.config.get('transaction.indexing');
   }

@@ -6,7 +6,7 @@ import { DIDService } from './did.service';
 
 @Controller('identifiers')
 @ApiTags('DID')
-export class DidController {
+export class DIDController {
   constructor(private readonly logger: LoggerService, private readonly service: DIDService) {}
 
   @Get(':did')
@@ -61,6 +61,27 @@ export class DidController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description: 'Invalid DID or parameters',
+    content: {
+      'application/json': {
+        schema: {
+          example: { error: 'notFound' },
+        },
+      },
+      'application/ld+json;profile="https://w3id.org/did-resolution"': {
+        schema: {
+          example: {
+            '@context': 'https://w3id.org/did-resolution/v1',
+            didDocument: {},
+            didDocumentMetadata: {},
+            didResolutionMetadata: { error: 'invalidDid' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
     status: 404,
     description: 'DID not found',
     content: {
@@ -73,7 +94,7 @@ export class DidController {
         schema: {
           example: {
             '@context': 'https://w3id.org/did-resolution/v1',
-            didDocument: null,
+            didDocument: {},
             didDocumentMetadata: {},
             didResolutionMetadata: { error: 'notFound' },
           },
@@ -93,9 +114,9 @@ export class DidController {
         schema: {
           example: {
             '@context': 'https://w3id.org/did-resolution/v1',
-            didDocument: null,
+            didDocument: {},
             didDocumentMetadata: {},
-            didResolutionMetadata: { error: "failed to get DID document '[reason]'" },
+            didResolutionMetadata: { error: 'internalError', reason: '[reason]' },
           },
         },
       },
