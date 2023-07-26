@@ -76,6 +76,10 @@ export class ConfigService {
     return !!this.config.get('did.indexing') || !!this.config.get('identity.indexing');
   }
 
+  getDIDDefaultResponse(): 'document' | 'resolution' {
+    return this.config.get('did.default_response') as 'document' | 'resolution';
+  }
+
   getCredentialStatusIndexing(): 'none' | 'trust' | 'all' {
     return this.config.get('credential_status.indexing') as 'none' | 'trust' | 'all';
   }
