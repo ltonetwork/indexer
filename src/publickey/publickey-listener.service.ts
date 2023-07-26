@@ -19,7 +19,7 @@ export class PublickeyListenerService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    if (!this.config.isDIDIndexingEnabled() && !this.config.isCredentialStatusIndexingEnabled()) {
+    if (!this.config.isDIDIndexingEnabled() && this.config.getCredentialDisputesIndexing() !== 'none') {
       this.logger.debug(`publickey-listener: Not processing public keys`);
       return;
     }
