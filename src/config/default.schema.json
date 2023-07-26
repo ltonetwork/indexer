@@ -53,6 +53,12 @@
       "default": false,
       "format": "Boolean",
       "env": "DID_INDEXING"
+    },
+    "default_response": {
+      "doc": "Type of response if no Accept header is given. `resolution` is non-standard, but required for compatibility with the universal resolver.",
+      "enum": ["document", "resolution"],
+      "default": "document",
+      "env": "DID_DEFAULT_RESPONSE"
     }
   },
   "credential_status": {
