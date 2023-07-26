@@ -17,7 +17,8 @@ export const DIDModuleConfig = {
   imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule],
   controllers: [DIDController, IdentitiesController],
   providers: [DIDService, DIDListenerService, VerificationMethodService],
+  exports: [DIDService],
 };
 
 @Module(DIDModuleConfig)
-export class DidModule {}
+export class DIDModule {}

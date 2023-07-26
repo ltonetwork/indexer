@@ -9,9 +9,10 @@ import { ConfigModule } from '../common/config/config.module';
 import { EmitterModule } from '../emitter/emitter.module';
 import { StorageModule } from '../storage/storage.module';
 import { TrustNetworkModule } from '../trust-network/trust-network.module';
+import { DIDModule } from '../did/did.module';
 
 export const CredentialStatusModuleConfig = {
-  imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule, TrustNetworkModule],
+  imports: [LoggerModule, ConfigModule, StorageModule, EmitterModule, TrustNetworkModule, DIDModule],
   controllers: [CredentialStatusController],
   providers: [CredentialStatusService, CredentialStatusListenerService],
 };

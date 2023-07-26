@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../common/logger/logger.service';
 import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { CredentialStatusStatement } from './interfaces/credential-status.interface';
+import { CredentialStatus, CredentialStatusStatement } from './interfaces/credential-status.interface';
 import { KeyType } from '../did/verification-method/verification-method.types';
 import { isoDate } from '../utils/date';
+import { DIDService } from '../did/did.service';
 
 @Injectable()
 export class CredentialStatusService {
@@ -17,7 +18,12 @@ export class CredentialStatusService {
     [0x15, 'acknowledge'],
   ]);
 
-  constructor(readonly logger: LoggerService, readonly config: ConfigService, readonly storage: StorageService) {}
+  constructor(
+    readonly logger: LoggerService,
+    readonly config: ConfigService,
+    readonly storage: StorageService,
+    readonly didService: DIDService,
+  ) {}
 
   private async getSenders(
     statements: { sender: string }[],
@@ -39,7 +45,22 @@ export class CredentialStatusService {
     return new Map(await Promise.all(promises));
   }
 
-  async getStatus(id: string): Promise<any> {
+  private async filterByIssuer(
+    statements: CredentialStatusStatement[],
+    issuerDID: string,
+  ): Promise<CredentialStatusStatement[]> {
+    const promises = statements.map(async (statement) => {
+      if (statement.type === 'dispute' || statement.type === 'acknowledge') return statement;
+
+      // TODO: This can be optimized. We don't need the whole DID document and it may not have changed.
+      const issuer = await this.didService.resolveDocument(issuerDID, new Date(statement.timestamp));
+      return issuer.assertionMethod.includes(statement.signer.id) ? statement : null;
+    });
+
+    return (await Promise.all(promises)).filter((s) => s);
+  }
+
+  async getStatus(id: string, issuer?: string): Promise<CredentialStatus> {
     const storedStatements = (await this.storage.getCredentialStatus(id)).sort((a, b) => a.timestamp - b.timestamp);
     const senders = await this.getSenders(storedStatements);
 
@@ -53,6 +74,30 @@ export class CredentialStatusService {
       };
     });
 
-    return { id, statements };
+    if (!issuer || statements.length === 0) {
+      return { id, statements };
+    }
+
+    const filteredStatements = await this.filterByIssuer(statements, issuer);
+
+    const issued = filteredStatements.find((s) => s.type === 'issue');
+    const revoked = filteredStatements.find((s) => s.type === 'revoke');
+
+    let suspended: CredentialStatusStatement | undefined;
+    if (!revoked) {
+      for (const statement of filteredStatements) {
+        if (statement.type === 'revoke') break;
+        if (!suspended && statement.type === 'suspend') suspended = statement;
+        if (statement.type === 'reinstate') suspended = undefined;
+      }
+    }
+
+    return {
+      id,
+      statements: filteredStatements,
+      issued: issued?.timestamp,
+      suspended: suspended?.timestamp,
+      revoked: revoked?.timestamp,
+    };
   }
 }

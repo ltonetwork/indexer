@@ -7,7 +7,7 @@ export interface CredentialStatusStatementStored {
 
 export interface CredentialStatusStatement {
   type: string;
-  timestamp: number;
+  timestamp: string;
   signer: {
     id: string;
     type: string;
@@ -19,4 +19,7 @@ export interface CredentialStatusStatement {
 export interface CredentialStatus {
   id: string;
   statements: CredentialStatusStatement[];
+  issued?: string;
+  suspended?: string;
+  revoked?: string;
 }

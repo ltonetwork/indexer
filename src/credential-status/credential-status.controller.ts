@@ -1,5 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiParam, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { LoggerService } from '../common/logger/logger.service';
 import { CredentialStatusService } from './credential-status.service';
 import { CredentialStatus } from './interfaces/credential-status.interface';
@@ -12,6 +12,7 @@ export class CredentialStatusController {
   @Get(':id')
   @ApiOperation({ summary: 'Credential status for LtoStatusRegistry2023' })
   @ApiParam({ name: 'id', description: 'Credential status id' })
+  @ApiQuery({ name: 'issuer', description: 'Credential issuer DID', required: false })
   @ApiResponse({
     status: 200,
     content: {
@@ -64,7 +65,7 @@ export class CredentialStatusController {
       },
     },
   })
-  async get(@Param('id') id: string): Promise<CredentialStatus> {
-    return await this.service.getStatus(id);
+  async get(@Param('id') id: string, @Query('issuer') issuer): Promise<CredentialStatus> {
+    return await this.service.getStatus(id, issuer);
   }
 }
