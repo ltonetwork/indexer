@@ -6,10 +6,11 @@ import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
 import storageServices from './index';
 import { pascalCase } from 'pascal-case';
 import { LoggerService } from '../common/logger/logger.service';
-import { VerificationMethod } from '../did/verification-method/model/verification-method.model';
+import { VerificationMethod } from '../did/verification-method/verification-method.model';
 import { Role } from '../trust-network/interfaces/trust-network.interface';
 import { RedisGraphService } from './redis/redis-graph.service';
 import { DIDDocumentService } from '../did/interfaces/did.interface';
+import { CredentialStatusStatementStored } from '../credential-status/interfaces/credential-status.interface';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -130,6 +131,15 @@ export class StorageService implements OnModuleInit {
 
   async getDIDServices(address: string): Promise<Array<DIDDocumentService & { timestamp: number }>> {
     return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
+  }
+
+  async saveCredentialStatus(address: string, data: CredentialStatusStatementStored): Promise<void> {
+    return this.storage.addToSet(`lto:credential-status:${address}`, JSON.stringify(data));
+  }
+
+  async getCredentialStatus(address: string): Promise<CredentialStatusStatementStored[]> {
+    const set = await this.storage.getSet(`lto:credential-status:${address}`);
+    return (set || []).map((s) => JSON.parse(s));
   }
 
   async getRolesFor(address: string): Promise<Record<string, { sender: string; type: number }>> {

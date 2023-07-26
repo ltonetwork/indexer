@@ -8,7 +8,6 @@ import { IndexDocumentType } from '../index/model/index.model';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { StorageService } from '../storage/storage.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
-import { buildAddress, networkId } from '../utils/crypto';
 
 @Injectable()
 export class DIDListenerService implements OnModuleInit {
@@ -22,7 +21,7 @@ export class DIDListenerService implements OnModuleInit {
 
   async onModuleInit() {
     if (!this.config.isDIDIndexingEnabled()) {
-      this.logger.debug(`transaction-listener: Not processing identities`);
+      this.logger.debug(`did-listener: Not processing DIDs`);
       return;
     }
 
@@ -33,14 +32,9 @@ export class DIDListenerService implements OnModuleInit {
 
   async index(index: IndexDocumentType): Promise<void> {
     const { transaction } = index;
-    const { sender, senderPublicKey, senderKeyType, associationType, statementType, timestamp } = transaction;
+    const { associationType, statementType } = transaction;
 
-    this.logger.debug(`DID: saving ${senderKeyType} public key ${senderPublicKey} for address ${sender}`);
-    await this.storage.savePublicKey(sender, senderPublicKey, senderKeyType, timestamp);
-
-    if (transaction.type === 20) {
-      await this.indexRegister(transaction);
-    } else if (transaction.type === 16 && associationType >= 0x100 && associationType <= 0x120) {
+    if (transaction.type === 16 && associationType >= 0x100 && associationType <= 0x120) {
       await this.indexIssue(transaction);
     } else if (transaction.type === 17 && associationType >= 0x100 && associationType <= 0x120) {
       await this.indexRevoke(transaction);
@@ -49,16 +43,6 @@ export class DIDListenerService implements OnModuleInit {
     } else if (transaction.type === 12) {
       await this.indexServices(transaction);
     }
-  }
-
-  private async indexRegister(tx: Transaction): Promise<void> {
-    await Promise.all(
-      tx.accounts.map((account) => {
-        const address = buildAddress(account.publicKey, networkId(tx.sender));
-        this.logger.debug(`DID: register ${account.keyType} public key ${account.publicKey} for address ${address}`);
-        return this.storage.savePublicKey(address, account.publicKey, account.keyType, tx.timestamp);
-      }),
-    );
   }
 
   private async indexIssue(tx: Transaction): Promise<void> {

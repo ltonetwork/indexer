@@ -76,6 +76,14 @@ export class ConfigService {
     return !!this.config.get('did.indexing') || !!this.config.get('identity.indexing');
   }
 
+  getCredentialStatusIndexing(): 'none' | 'trust' | 'all' {
+    return this.config.get('credential_status.indexing') as 'none' | 'trust' | 'all';
+  }
+
+  getCredentialDisputesIndexing(): 'none' | 'trust' | 'all' {
+    return this.config.get('credential_status.disputes') as 'none' | 'trust' | 'all';
+  }
+
   isTransactionIndexingEnabled(): boolean {
     return !!this.config.get('transaction.indexing');
   }

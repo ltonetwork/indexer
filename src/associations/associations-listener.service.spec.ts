@@ -23,7 +23,7 @@ describe('AssociationsListenerService', () => {
     };
 
     const config = {
-      getAssociationIndexing: jest.spyOn(configService, 'getAssociationIndexing').mockImplementation(() => 'all'),
+      getAssociationIndexing: jest.spyOn(configService, 'getAssociationIndexing').mockReturnValue('all'),
     };
 
     return { logger, emitter, config };

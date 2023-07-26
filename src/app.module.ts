@@ -18,6 +18,7 @@ import { EmitterModule } from './emitter/emitter.module';
 import { AssociationsModule } from './associations/associations.module';
 import { TrustNetworkModule } from './trust-network/trust-network.module';
 import { StatsModule } from './stats/stats.module';
+import { CredentialStatusModule } from './credential-status/credential-status.module';
 
 export const AppModuleConfig = {
   imports: [
@@ -29,6 +30,7 @@ export const AppModuleConfig = {
     AnchorModule,
     HashModule,
     DidModule,
+    CredentialStatusModule,
     NodeModule,
     RedisModule,
     TransactionModule,

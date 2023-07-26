@@ -25,13 +25,7 @@ describe('AssociationsService', () => {
     };
 
     const trust = {
-      getRolesFor: jest.spyOn(trustService, 'getRolesFor').mockImplementation(async () => {
-        return {
-          roles: ['root'],
-          issues_roles: [],
-          issues_authorization: [],
-        };
-      }),
+      hasRole: jest.spyOn(trustService, 'hasRole').mockResolvedValue(true),
     };
 
     const logger = {
@@ -69,7 +63,7 @@ describe('AssociationsService', () => {
 
       await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'all');
 
-      expect(spies.trust.getRolesFor.mock.calls.length).toBe(0);
+      expect(spies.trust.hasRole.mock.calls.length).toBe(0);
 
       expect(spies.logger.debug.mock.calls.length).toBe(1);
       expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
@@ -128,8 +122,8 @@ describe('AssociationsService', () => {
 
       await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'trust');
 
-      expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      expect(spies.trust.hasRole.mock.calls.length).toBe(1);
+      expect(spies.trust.hasRole.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
 
       expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
 
@@ -139,13 +133,7 @@ describe('AssociationsService', () => {
     test('should not index config "trust" if sender is not trusted', async () => {
       const spies = spy();
 
-      spies.trust.getRolesFor.mockImplementation(async () => {
-        return {
-          roles: [],
-          issues_roles: [],
-          issues_authorization: [],
-        };
-      });
+      spies.trust.hasRole.mockResolvedValue(false);
 
       const transaction = {
         id: 'fake_transaction',
@@ -155,8 +143,8 @@ describe('AssociationsService', () => {
 
       await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'trust');
 
-      expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      expect(spies.trust.hasRole.mock.calls.length).toBe(1);
+      expect(spies.trust.hasRole.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
     });

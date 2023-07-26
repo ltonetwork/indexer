@@ -1,10 +1,10 @@
 // noinspection DuplicatedCode
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { IdentityModuleConfig } from '../did.module';
+import { DIDModuleConfig } from '../did.module';
 import { VerificationMethodService } from './verification-method.service';
 import { StorageService } from '../../storage/storage.service';
-import { VerificationMethod } from './model/verification-method.model';
+import { VerificationMethod } from './verification-method.model';
 
 describe('VerificationMethodService', () => {
   let module: TestingModule;
@@ -46,7 +46,7 @@ describe('VerificationMethodService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(IdentityModuleConfig).compile();
+    module = await Test.createTestingModule(DIDModuleConfig).compile();
     await module.init();
 
     verificationMethodService = module.get<VerificationMethodService>(VerificationMethodService);

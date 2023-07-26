@@ -27,13 +27,8 @@ export class AssociationsService {
       return;
     }
 
-    if (associationIndexing === 'trust') {
-      const senderRoles = await this.trust.getRolesFor(sender);
-      const isSenderTrustNetwork = Object.keys(senderRoles.roles).length > 0;
-
-      if (!isSenderTrustNetwork) {
-        return;
-      }
+    if (associationIndexing === 'trust' && !(await this.trust.hasRole(sender))) {
+      return;
     }
 
     if (transaction.type === 16) {

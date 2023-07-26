@@ -34,10 +34,9 @@ export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   }
 
   private load(): void {
-    const dir = path.resolve(__dirname, '../../config');
-
     this.config = convict(schema);
 
+    const dir = path.resolve(__dirname, '../../config');
     const env = this.config.get('env');
 
     const files = [

@@ -22,7 +22,7 @@ export interface Transaction {
   }>;
   readonly associationType?: number;
   readonly statementType?: number;
-  readonly hash?: string;
+  readonly subject?: string;
   readonly accounts?: Array<{
     keyType: string;
     publicKey: string;

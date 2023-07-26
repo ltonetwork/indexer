@@ -51,6 +51,11 @@ export class TrustNetworkService {
     }
   }
 
+  async hasRole(address: string): Promise<boolean> {
+    const senderRoles = await this.storage.getRolesFor(address);
+    return Object.keys(senderRoles).length > 0;
+  }
+
   async getRolesFor(address: string): Promise<RoleData> {
     const result: RoleData = {
       roles: [],

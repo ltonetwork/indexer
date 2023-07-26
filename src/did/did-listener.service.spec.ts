@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IdentityModuleConfig } from './did.module';
+import { DIDModuleConfig } from './did.module';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../transaction/interfaces/transaction.interface';
@@ -25,12 +25,6 @@ describe('DIDListenerService', () => {
     x25519PublicKey: '37CFMfB3MU1tzJKNVadeZiGytUH6HFLDNNeJETzY7N8o',
   };
 
-  const secondRecipient = {
-    chainId: 'T',
-    address: '3MsE8Jfjkh2zaZ1LCGqaDzB5nAYw5FXhfCx',
-    secp256k1PublicKey: 'DeAxCdh1pYXpU7h41ieyqTDrTyQmhJWZarqxTtkmJv99',
-  };
-
   const transaction = {
     id: 'fake_transaction',
     type: 1,
@@ -50,7 +44,6 @@ describe('DIDListenerService', () => {
     };
 
     const storage = {
-      savePublicKey: jest.spyOn(storageService, 'savePublicKey').mockResolvedValue(undefined),
       deactivateDID: jest.spyOn(storageService, 'deactivateDID').mockResolvedValue(undefined),
       saveDIDService: jest.spyOn(storageService, 'saveDIDService').mockResolvedValue(undefined),
     };
@@ -59,7 +52,7 @@ describe('DIDListenerService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule(IdentityModuleConfig).compile();
+    module = await Test.createTestingModule(DIDModuleConfig).compile();
 
     storageService = module.get<StorageService>(StorageService);
     listener = module.get<DIDListenerService>(DIDListenerService);
@@ -70,59 +63,6 @@ describe('DIDListenerService', () => {
 
   afterEach(async () => {
     await module.close();
-  });
-
-  describe('index public key', () => {
-    test('should save public key of transaction sender', async () => {
-      const spies = spy();
-
-      await listener.index({ transaction, blockHeight: 1, position: 0 });
-
-      expect(spies.storage.savePublicKey).toHaveBeenCalledTimes(1);
-      expect(spies.storage.savePublicKey).toHaveBeenCalledWith(
-        sender.address,
-        sender.ed25519PublicKey,
-        'ed25519',
-        transaction.timestamp,
-      );
-    });
-  });
-
-  describe('index register tx', () => {
-    test('should save public key of transaction sender', async () => {
-      const tx = {
-        ...transaction,
-        type: 20,
-        accounts: [
-          { keyType: 'ed25519', publicKey: recipient.ed25519PublicKey },
-          { keyType: 'secp256k1', publicKey: secondRecipient.secp256k1PublicKey },
-        ],
-      } as Transaction;
-
-      const spies = spy();
-
-      await listener.index({ transaction: tx, blockHeight: 1, position: 0 });
-
-      expect(spies.storage.savePublicKey).toHaveBeenCalledTimes(3);
-      expect(spies.storage.savePublicKey).toHaveBeenCalledWith(
-        sender.address,
-        sender.ed25519PublicKey,
-        'ed25519',
-        transaction.timestamp,
-      );
-      expect(spies.storage.savePublicKey).toHaveBeenCalledWith(
-        recipient.address,
-        recipient.ed25519PublicKey,
-        'ed25519',
-        transaction.timestamp,
-      );
-      expect(spies.storage.savePublicKey).toHaveBeenCalledWith(
-        secondRecipient.address,
-        secondRecipient.secp256k1PublicKey,
-        'secp256k1',
-        transaction.timestamp,
-      );
-    });
   });
 
   describe('index issue', () => {
