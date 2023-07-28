@@ -18,6 +18,7 @@ export interface CredentialStatusStatement {
 
 export interface CredentialStatus {
   id: string;
+  issuer?: string;
   statements: CredentialStatusStatement[];
   issued?: string;
   suspended?: string;
