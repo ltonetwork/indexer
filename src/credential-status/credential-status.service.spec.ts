@@ -149,6 +149,7 @@ describe('CredentialStatusService', () => {
 
       const expected = {
         id: 'foo',
+        issuer: `did:lto:${sender.address}`,
         statements: expectedStatements,
         issued: '2023-01-01T12:00:00Z',
         revoked: '2023-06-02T12:00:00Z',
@@ -178,6 +179,7 @@ describe('CredentialStatusService', () => {
 
       const expected = {
         id: 'foo',
+        issuer: `did:lto:${sender.address}`,
         statements: expectedStatements.slice(0, -1),
         issued: '2023-01-01T12:00:00Z',
         suspended: '2023-06-01T12:03:00Z',

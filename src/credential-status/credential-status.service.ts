@@ -94,6 +94,7 @@ export class CredentialStatusService {
 
     return {
       id,
+      issuer,
       statements: filteredStatements,
       issued: issued?.timestamp,
       suspended: suspended?.timestamp,
