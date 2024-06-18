@@ -15,14 +15,14 @@
     "start:dev": "nodemon",
     "build": "rm -rf dist && tsc --project tsconfig.build.json",
     "postbuild": "cp -r src/config/*.json dist/config/; cp package.json dist/",
-    "prestart:prod": "npm run build",
+    "prestart:prod": "yarn run build",
     "start:prod": "node dist/main.js",
     "start:hmr": "node dist/server",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:cov": "jest --detectOpenHandles --forceExit --coverage",
     "test:e2e": "jest --detectOpenHandles --forceExit --runInBand --config ./test/jest-e2e.json",
-    "test:all": "npm run test:e2e && npm run test:cov"
+    "test:all": "yarn run test:e2e && yarn run test:cov"
   },
   "authors": [
     {

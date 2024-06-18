@@ -3,11 +3,16 @@ import { ApiParam, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/
 import { Request, Response } from 'express';
 import { LoggerService } from '../common/logger/logger.service';
 import { DIDService } from './did.service';
+import { ConfigService } from '../common/config/config.service';
 
 @Controller('identifiers')
 @ApiTags('DID')
 export class DIDController {
-  constructor(private readonly logger: LoggerService, private readonly service: DIDService) {}
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly config: ConfigService,
+    private readonly service: DIDService,
+  ) {}
 
   @Get(':did')
   @ApiOperation({ summary: 'DID resolver' })
@@ -128,15 +133,20 @@ export class DIDController {
     @Param('did') did: string,
     @Query('versionTime') versionTime?: string,
   ): Promise<Response> {
-    const accept = req.get('Accept') || '';
-    const isDidResolution = accept.includes('application/ld+json;profile="https://w3id.org/did-resolution"');
-
     const versionTimeDate = versionTime ? new Date(versionTime) : undefined;
     if (versionTimeDate) versionTimeDate.setMilliseconds(999);
 
-    return isDidResolution
+    return this.isDidResolution(req)
       ? this.resolveResolution(did, versionTimeDate, res)
       : this.resolveDocument(did, versionTimeDate, res);
+  }
+
+  private isDidResolution(req: Request): boolean {
+    const accept = req.get('Accept') || '';
+
+    return this.config.getDIDDefaultResponse() === 'resolution'
+      ? !(accept.includes('application/did+ld+json') || accept.includes('application/json'))
+      : accept.includes('application/ld+json;profile="https://w3id.org/did-resolution"');
   }
 
   private async resolveDocument(did: string, versionTime: Date | undefined, res: Response): Promise<Response> {

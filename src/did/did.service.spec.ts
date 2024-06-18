@@ -89,7 +89,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -141,7 +141,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -199,7 +199,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -244,7 +244,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -309,7 +309,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -387,7 +387,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [service1b, service2],
@@ -417,7 +417,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [service1a],
@@ -453,7 +453,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -517,7 +517,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -595,7 +595,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],
@@ -745,7 +745,7 @@ describe('DIDService', () => {
         '@context': [
           'https://www.w3.org/ns/did/v1',
           'https://w3id.org/security/suites/ed25519-2020/v1',
-          'https://w3id.org/security/suites/secp256k1-2019/v1 ',
+          'https://w3id.org/security/suites/secp256k1-2019/v1',
         ],
         id: `did:lto:${sender.address}`,
         service: [],

@@ -5,7 +5,7 @@ import { LoggerModule } from './common/logger/logger.module';
 import { InfoModule } from './info/info.module';
 import { AnchorModule } from './anchor/anchor.module';
 import { HashModule } from './hash/hash.module';
-import { DidModule } from './did/did.module';
+import { DIDModule } from './did/did.module';
 import { NodeModule } from './node/node.module';
 import { RedisModule } from './common/redis/redis.module';
 import { RequestModule } from './common/request/request.module';
@@ -29,7 +29,7 @@ export const AppModuleConfig = {
     HealthModule,
     AnchorModule,
     HashModule,
-    DidModule,
+    DIDModule,
     CredentialStatusModule,
     NodeModule,
     RedisModule,

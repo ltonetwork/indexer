@@ -9,5 +9,8 @@ branches:
   only:
   - master
 
+install:
+  yarn
+
 script:
   yarn test:all
