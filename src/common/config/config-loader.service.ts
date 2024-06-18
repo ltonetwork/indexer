@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import convict from 'convict';
 import schema from '../../config/default.schema.json';
+import { setInterval } from 'timers';
 
 type SchemaOf<T extends convict.Schema<any>> = T extends convict.Schema<infer R> ? R : any;
 type Schema = SchemaOf<typeof schema>;
@@ -17,7 +18,7 @@ type PathValue<K extends Path> = K extends null | undefined
 export class ConfigLoaderService implements OnModuleInit, OnModuleDestroy {
   private config: convict.Config<Schema>;
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
-  private config_reload_interval: NodeJS.Timer;
+  private config_reload_interval: ReturnType<typeof setInterval>;
 
   async onModuleInit() {
     if (!this.config) this.load();
