@@ -5,7 +5,7 @@ import { LoggerService } from '../common/logger/logger.service';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { IndexDocumentType } from '../index/model/index.model';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 import { StorageService } from '../storage/storage.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 

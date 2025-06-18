@@ -14,7 +14,7 @@ export class StatsListenerService implements OnModuleInit {
     private readonly logger: LoggerService,
   ) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     if (!this.config.isStatsEnabled()) {
       this.logger.debug(`stats-listener: Not processing stats`);
       return;
@@ -22,7 +22,8 @@ export class StatsListenerService implements OnModuleInit {
 
     this.onIndexBlock();
   }
-  async onIndexTransaction() {
+
+  onIndexBlock() {
     this.indexEmitter.on(IndexEvent.IndexBlock, (val: IndexEventsReturnType['IndexBlock']) =>
       this.statsService.index(val),
     );

@@ -5,7 +5,7 @@ import { Transaction } from '../interfaces/transaction.interface';
 import { StatsService } from './stats.service';
 import { SupplyService } from './supply/supply.service';
 import { StorageService } from '../storage/storage.service';
-import { Block } from '../transaction/interfaces/block.interface';
+import { Block } from '../interfaces/block.interface';
 import { NodeService } from '../node/node.service';
 
 describe('StatsService', () => {
@@ -56,7 +56,7 @@ describe('StatsService', () => {
       transactions: true,
       supply: true,
       lease: true,
-      generators: true,
+      //generators: true,
     });
 
     block = {
@@ -110,7 +110,7 @@ describe('StatsService', () => {
     test('should skip "operations" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure({operations: false});
+      statsService.configure({ operations: false });
 
       await statsService.index(block);
 
@@ -123,7 +123,7 @@ describe('StatsService', () => {
     test('should skip "transactions" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure({transactions: false});
+      statsService.configure({ transactions: false });
 
       await statsService.index(block);
 
@@ -136,7 +136,7 @@ describe('StatsService', () => {
     test('should skip "supply" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure({supply: false});
+      statsService.configure({ supply: false });
 
       await statsService.index(block);
 
@@ -149,7 +149,7 @@ describe('StatsService', () => {
     test('should skip "lease" stats if config is set', async () => {
       const spies = spy();
 
-      statsService.configure({lease: false});
+      statsService.configure({ lease: false });
 
       await statsService.index(block);
 

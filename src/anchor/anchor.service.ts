@@ -3,7 +3,7 @@ import { LoggerService } from '../common/logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 import { ConfigService } from '../common/config/config.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 

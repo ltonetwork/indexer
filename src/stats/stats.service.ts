@@ -28,12 +28,12 @@ export class StatsService {
     private readonly supplyService: SupplyService,
     private readonly node: NodeService,
   ) {
-    this.configure(
-      this.config.isStatsEnabled('operations'),
-      this.config.isStatsEnabled('transactions'),
-      this.config.isStatsEnabled('supply'),
-      this.config.isStatsEnabled('lease'),
-    );
+    this.configure({
+      operations: this.config.isStatsEnabled('operations'),
+      transactions: this.config.isStatsEnabled('transactions'),
+      supply: this.config.isStatsEnabled('supply'),
+      lease: this.config.isStatsEnabled('lease'),
+    });
   }
 
   configure(options: ConfigurationOptions) {

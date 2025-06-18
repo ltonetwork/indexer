@@ -3,13 +3,13 @@ import { IndexDocumentType } from './model/index.model';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from './index.events';
 import { LoggerService } from '../common/logger/logger.service';
-import { Block } from '../transaction/interfaces/block.interface';
+import { Block } from '../interfaces/block.interface';
 
 @Injectable()
 export class IndexService {
   public lastBlock: Block;
   public txCache: string[] = [];
-  public isInSync: boolean = false;
+  public isInSync = false;
 
   constructor(private readonly logger: LoggerService, private readonly event: EmitterService<IndexEventsReturnType>) {}
 

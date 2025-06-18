@@ -5,7 +5,7 @@ import { StorageService } from '../storage/storage.service';
 import { Role, RoleData } from './interfaces/trust-network.interface';
 import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import { Transaction } from '../interfaces/transaction.interface';
 
 @Injectable()
 export class TrustNetworkService {

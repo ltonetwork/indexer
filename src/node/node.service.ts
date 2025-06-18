@@ -133,7 +133,7 @@ export class NodeService {
   async getBlocks(
     from: number,
     to: number,
-  ): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees }>> {
+  ): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees; generatorReward }>> {
     const ranges = this.getBlockRanges(from, to);
     const promises = ranges.map((range) => this.api.getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
