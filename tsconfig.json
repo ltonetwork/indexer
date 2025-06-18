@@ -16,5 +16,6 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "lib": ["ES2019"],
+    "isolatedModules": true,
   }
 }

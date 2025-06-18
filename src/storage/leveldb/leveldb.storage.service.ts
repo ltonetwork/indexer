@@ -1,4 +1,4 @@
-import { StorageInterface } from '../interfaces/storage.interface';
+import type { StorageInterface } from '../interfaces/storage.interface';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '../../common/config/config.service';
 import { LeveldbConnection } from '../../common/leveldb/classes/leveldb.connection';
@@ -72,11 +72,11 @@ export class LeveldbStorageService implements StorageInterface, OnModuleDestroy 
   }
 
   async addToSet(key: string, value: string | Buffer): Promise<void> {
-    await this.connection.sadd(key, value instanceof Buffer ? value.toString('base64') : value);
+    await this.connection.sadd(key, value instanceof Buffer ? value.toString('base64') : (value as string));
   }
 
   async delFromSet(key: string, value: string | Buffer): Promise<void> {
-    await this.connection.srem(key, value instanceof Buffer ? value.toString('base64') : value);
+    await this.connection.srem(key, value instanceof Buffer ? value.toString('base64') : (value as string));
   }
 
   async getSet(key: string): Promise<string[]> {

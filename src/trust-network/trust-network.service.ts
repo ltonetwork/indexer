@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../common/logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
-import { Role, RoleData } from './interfaces/trust-network.interface';
+import type { Role, RoleData } from './interfaces/trust-network.interface';
 import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
-import { Transaction } from '../interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 
 @Injectable()
 export class TrustNetworkService {

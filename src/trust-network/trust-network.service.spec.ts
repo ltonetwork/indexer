@@ -4,9 +4,9 @@ import { TrustNetworkService } from './trust-network.service';
 import { StorageService } from '../storage/storage.service';
 import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
-import { RoleData } from './interfaces/trust-network.interface';
+import type { RoleData } from './interfaces/trust-network.interface';
 import { LoggerService } from '../common/logger/logger.service';
-import { Transaction } from '../interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 
 describe('TrustNetworkService', () => {
   let module: TestingModule;
@@ -27,32 +27,20 @@ describe('TrustNetworkService', () => {
 
   function spy() {
     const storage = {
-      saveRoleAssociation: jest
-        .spyOn(storageService, 'saveRoleAssociation')
-        .mockResolvedValue(undefined),
-      removeRoleAssociation: jest
-        .spyOn(storageService, 'removeRoleAssociation')
-        .mockResolvedValue(undefined),
+      saveRoleAssociation: jest.spyOn(storageService, 'saveRoleAssociation').mockResolvedValue(undefined),
+      removeRoleAssociation: jest.spyOn(storageService, 'removeRoleAssociation').mockResolvedValue(undefined),
       getRolesFor: jest
         .spyOn(storageService, 'getRolesFor')
         .mockImplementation(async (address: string) =>
-          address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ'
-            ? {}
-            : { authority: { sender: 'mock-sender', type: 100 } },
+          address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ' ? {} : { authority: { sender: 'mock-sender', type: 100 } },
         ),
     };
 
     const node = {
       sponsor: jest.spyOn(nodeService, 'sponsor').mockResolvedValue(undefined),
-      cancelSponsor: jest
-        .spyOn(nodeService, 'cancelSponsor')
-        .mockResolvedValue(undefined),
-      getNodeWallet: jest
-        .spyOn(nodeService, 'getNodeWallet')
-        .mockImplementation(async () => 'node-address'),
-      getSponsorsOf: jest
-        .spyOn(nodeService, 'getSponsorsOf')
-        .mockImplementation(async () => []),
+      cancelSponsor: jest.spyOn(nodeService, 'cancelSponsor').mockResolvedValue(undefined),
+      getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet').mockImplementation(async () => 'node-address'),
+      getSponsorsOf: jest.spyOn(nodeService, 'getSponsorsOf').mockImplementation(async () => []),
     };
 
     const config = {
@@ -131,10 +119,7 @@ describe('TrustNetworkService', () => {
         expect(spies.node.sponsor).toHaveBeenCalledTimes(0);
 
         expect(spies.logger.debug).toHaveBeenCalledTimes(1);
-        expect(spies.logger.debug).toHaveBeenNthCalledWith(
-          1,
-          'trust-network: saving role association',
-        );
+        expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: saving role association');
       });
 
       test('should save multiple role associations of same type when configured', async () => {
@@ -144,16 +129,14 @@ describe('TrustNetworkService', () => {
           { type: 101, role: 'sub_authority' },
         ];
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: expectedRoles,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: expectedRoles,
+            },
+          };
+        });
 
         await trustNetworkService.index({
           transaction,
@@ -179,20 +162,18 @@ describe('TrustNetworkService', () => {
       test('should send a sponsor transaction to the node if the recipient will be given a sponsored role', async () => {
         const spies = spy();
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: [{ type: 101, role: 'university' }],
-              },
-              university: {
-                description: 'University',
-                sponsored: true,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: [{ type: 101, role: 'university' }],
+            },
+            university: {
+              description: 'University',
+              sponsored: true,
+            },
+          };
+        });
 
         await trustNetworkService.index({
           transaction,
@@ -201,16 +182,10 @@ describe('TrustNetworkService', () => {
         });
 
         expect(spies.node.sponsor).toHaveBeenCalledTimes(1);
-        expect(spies.node.sponsor).toHaveBeenNthCalledWith(
-          1,
-          transaction.recipient,
-        );
+        expect(spies.node.sponsor).toHaveBeenNthCalledWith(1, transaction.recipient);
 
         expect(spies.logger.debug).toHaveBeenCalledTimes(2);
-        expect(spies.logger.debug).toHaveBeenNthCalledWith(
-          1,
-          'trust-network: saving role association',
-        );
+        expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: saving role association');
         expect(spies.logger.debug).toHaveBeenNthCalledWith(
           2,
           'trust-network: recipient is being given a sponsored role, sending a transaction to the node',
@@ -224,20 +199,18 @@ describe('TrustNetworkService', () => {
           .spyOn(nodeService, 'getSponsorsOf')
           .mockImplementation(async () => ['node-address']);
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: [{ type: 101, role: 'university' }],
-              },
-              university: {
-                description: 'University',
-                sponsored: true,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: [{ type: 101, role: 'university' }],
+            },
+            university: {
+              description: 'University',
+              sponsored: true,
+            },
+          };
+        });
 
         await trustNetworkService.index({
           transaction,
@@ -255,20 +228,18 @@ describe('TrustNetworkService', () => {
           .spyOn(nodeService, 'getSponsorsOf')
           .mockImplementation(async () => ['some-other-address']);
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: [{ type: 101, role: 'university' }],
-              },
-              university: {
-                description: 'University',
-                sponsored: true,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: [{ type: 101, role: 'university' }],
+            },
+            university: {
+              description: 'University',
+              sponsored: true,
+            },
+          };
+        });
 
         await trustNetworkService.index({
           transaction,
@@ -282,24 +253,20 @@ describe('TrustNetworkService', () => {
       test('should log error if something fails', async () => {
         const spies = spy();
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: [{ type: 101, role: 'university' }],
-              },
-              university: {
-                description: 'University',
-                sponsored: true,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: [{ type: 101, role: 'university' }],
+            },
+            university: {
+              description: 'University',
+              sponsored: true,
+            },
+          };
+        });
 
-        spies.node.sponsor = jest
-          .spyOn(nodeService, 'sponsor')
-          .mockRejectedValue(new Error('Something wrong'));
+        spies.node.sponsor = jest.spyOn(nodeService, 'sponsor').mockRejectedValue(new Error('Something wrong'));
 
         await trustNetworkService.index({
           transaction,
@@ -331,23 +298,13 @@ describe('TrustNetworkService', () => {
 
         expect(spies.storage.saveRoleAssociation).toHaveBeenCalledTimes(0);
         expect(spies.storage.removeRoleAssociation).toHaveBeenCalledTimes(1);
-        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(
-          1,
-          transaction.recipient,
-          expectedRole,
-        );
+        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(1, transaction.recipient, expectedRole);
 
         expect(spies.node.cancelSponsor).toHaveBeenCalledTimes(1);
-        expect(spies.node.cancelSponsor).toHaveBeenNthCalledWith(
-          1,
-          transaction.recipient,
-        );
+        expect(spies.node.cancelSponsor).toHaveBeenNthCalledWith(1, transaction.recipient);
 
         expect(spies.logger.debug).toHaveBeenCalledTimes(2);
-        expect(spies.logger.debug).toHaveBeenNthCalledWith(
-          1,
-          'trust-network: removing role association',
-        );
+        expect(spies.logger.debug).toHaveBeenNthCalledWith(1, 'trust-network: removing role association');
         expect(spies.logger.debug).toHaveBeenNthCalledWith(
           2,
           'trust-network: recipient has no more sponsored roles, sending a transaction to the node',
@@ -361,16 +318,14 @@ describe('TrustNetworkService', () => {
           { type: 101, role: 'sub_authority' },
         ];
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: expectedRoles,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: expectedRoles,
+            },
+          };
+        });
 
         await trustNetworkService.index({
           transaction: revokeTx,
@@ -379,35 +334,25 @@ describe('TrustNetworkService', () => {
         });
 
         expect(spies.storage.removeRoleAssociation).toHaveBeenCalledTimes(2);
-        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(
-          1,
-          transaction.recipient,
-          expectedRoles[0],
-        );
-        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(
-          2,
-          transaction.recipient,
-          expectedRoles[1],
-        );
+        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(1, transaction.recipient, expectedRoles[0]);
+        expect(spies.storage.removeRoleAssociation).toHaveBeenNthCalledWith(2, transaction.recipient, expectedRoles[1]);
       });
 
       test('should not send a remove sponsor transaction to the node if there are still sponsored roles left', async () => {
         const spies = spy();
 
-        spies.config.getRoles = jest
-          .spyOn(configService, 'getRoles')
-          .mockImplementation(() => {
-            return {
-              authority: {
-                description: 'The authority',
-                issues: [{ type: 101, role: 'university' }],
-              },
-              university: {
-                description: 'University',
-                sponsored: true,
-              },
-            };
-          });
+        spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
+          return {
+            authority: {
+              description: 'The authority',
+              issues: [{ type: 101, role: 'university' }],
+            },
+            university: {
+              description: 'University',
+              sponsored: true,
+            },
+          };
+        });
 
         spies.storage.getRolesFor = jest
           .spyOn(storageService, 'getRolesFor')
@@ -470,18 +415,13 @@ describe('TrustNetworkService', () => {
           { type: 100, role: 'university' },
           { type: 101, role: 'sub_authority' },
         ],
-        issues_authorization: [
-          'https://www.w3.org/2018/credentials/examples/v1',
-        ],
+        issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1'],
       };
 
       expect(spies.config.getRoles).toHaveBeenCalledTimes(1);
 
       expect(spies.storage.getRolesFor).toHaveBeenCalledTimes(1);
-      expect(spies.storage.getRolesFor).toHaveBeenNthCalledWith(
-        1,
-        'mock-recipient',
-      );
+      expect(spies.storage.getRolesFor).toHaveBeenNthCalledWith(1, 'mock-recipient');
 
       expect(result).toStrictEqual(expected);
     });
@@ -489,11 +429,9 @@ describe('TrustNetworkService', () => {
     test('should return root roles if address is in node wallet', async () => {
       const spies = spy();
 
-      spies.storage.getRolesFor = jest
-        .spyOn(storageService, 'getRolesFor')
-        .mockImplementation(async () => {
-          return { authority: { sender: 'mock-sender', type: 100 } };
-        });
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+        return { authority: { sender: 'mock-sender', type: 100 } };
+      });
 
       const result = await trustNetworkService.getRolesFor('node-address');
       const expected: RoleData = {
@@ -503,9 +441,7 @@ describe('TrustNetworkService', () => {
           { type: 100, role: 'university' },
           { type: 101, role: 'sub_authority' },
         ],
-        issues_authorization: [
-          'https://www.w3.org/2018/credentials/examples/v1',
-        ],
+        issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1'],
       };
 
       expect(spies.storage.getRolesFor).toHaveBeenCalledTimes(1);
@@ -516,14 +452,12 @@ describe('TrustNetworkService', () => {
     test('should not return the same role twice', async () => {
       const spies = spy();
 
-      spies.storage.getRolesFor = jest
-        .spyOn(storageService, 'getRolesFor')
-        .mockImplementation(async () => {
-          return {
-            authority: { sender: 'mock-sender', type: 100 },
-            sub_authority: { sender: 'mock-sender', type: 101 },
-          };
-        });
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+        return {
+          authority: { sender: 'mock-sender', type: 100 },
+          sub_authority: { sender: 'mock-sender', type: 101 },
+        };
+      });
 
       const result = await trustNetworkService.getRolesFor('mock-recipient');
       const expected: RoleData = {
@@ -532,9 +466,7 @@ describe('TrustNetworkService', () => {
           { type: 100, role: 'university' },
           { type: 101, role: 'sub_authority' },
         ],
-        issues_authorization: [
-          'https://www.w3.org/2018/credentials/examples/v1',
-        ],
+        issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1'],
       };
 
       expect(result).toStrictEqual(expected);
@@ -543,14 +475,12 @@ describe('TrustNetworkService', () => {
     test('should not return the same authorization twice', async () => {
       const spies = spy();
 
-      spies.storage.getRolesFor = jest
-        .spyOn(storageService, 'getRolesFor')
-        .mockImplementation(async () => {
-          return {
-            authority: { sender: 'mock-sender', type: 100 },
-            university: { sender: 'mock-sender', type: 100 },
-          };
-        });
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+        return {
+          authority: { sender: 'mock-sender', type: 100 },
+          university: { sender: 'mock-sender', type: 100 },
+        };
+      });
 
       const result = await trustNetworkService.getRolesFor('mock-recipient');
       const expected: RoleData = {
@@ -559,9 +489,7 @@ describe('TrustNetworkService', () => {
           { type: 100, role: 'university' },
           { type: 101, role: 'sub_authority' },
         ],
-        issues_authorization: [
-          'https://www.w3.org/2018/credentials/examples/v1',
-        ],
+        issues_authorization: ['https://www.w3.org/2018/credentials/examples/v1'],
       };
 
       expect(result).toStrictEqual(expected);
@@ -570,11 +498,9 @@ describe('TrustNetworkService', () => {
     test('should not error if address has no roles', async () => {
       const spies = spy();
 
-      spies.storage.getRolesFor = jest
-        .spyOn(storageService, 'getRolesFor')
-        .mockImplementation(async () => {
-          return {};
-        });
+      spies.storage.getRolesFor = jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
+        return {};
+      });
 
       const result = await trustNetworkService.getRolesFor('mock-recipient');
 

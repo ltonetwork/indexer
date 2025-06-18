@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CredentialStatusModuleConfig } from './credential-status.module';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 import { CredentialStatusListenerService } from './credential-status-listener.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 

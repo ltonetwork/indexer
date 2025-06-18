@@ -3,7 +3,7 @@ import { IndexDocumentType } from './model/index.model';
 import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from './index.events';
 import { LoggerService } from '../common/logger/logger.service';
-import { Block } from '../interfaces/block.interface';
+import type { Block } from '../interfaces/block.interface';
 
 @Injectable()
 export class IndexService {

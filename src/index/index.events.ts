@@ -1,5 +1,5 @@
+import type { Block } from '../interfaces/block.interface';
 import { IndexDocumentType } from './model/index.model';
-import { Block } from '../interfaces/block.interface';
 
 export interface IndexEventsReturnType {
   IndexTransaction: IndexDocumentType;

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PublickeyModuleConfig } from './publickey.module';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 import { PublickeyListenerService } from './publickey-listener.service';
 
 describe('PublicKeyListenerService', () => {

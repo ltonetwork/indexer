@@ -1,14 +1,12 @@
 import { Controller, Get, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GeneratorService } from './generator.service';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 @Controller('generators')
 @ApiTags('generator')
 export class GeneratorController {
-  constructor(
-    private readonly service: GeneratorService,
-  ) {}
+  constructor(private readonly service: GeneratorService) {}
 
   @Get('/')
   @ApiOperation({ summary: 'Get the current generator statistics' })

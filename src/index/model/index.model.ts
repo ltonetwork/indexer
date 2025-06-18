@@ -1,4 +1,4 @@
-import { Transaction } from '../../interfaces/transaction.interface';
+import type { Transaction } from '../../interfaces/transaction.interface';
 
 export class IndexDocumentType {
   transaction: Transaction;

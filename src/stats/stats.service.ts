@@ -4,7 +4,7 @@ import { SupplyService } from './supply/supply.service';
 import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { TransactionService } from '../transaction/transaction.service';
-import { Block } from '../interfaces/block.interface';
+import type { Block } from '../interfaces/block.interface';
 import { NodeService } from '../node/node.service';
 
 interface ConfigurationOptions {

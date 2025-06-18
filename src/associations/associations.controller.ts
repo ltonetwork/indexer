@@ -1,6 +1,6 @@
 import { Controller, Get, Req, Res } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { AssociationsService } from './associations.service';
 
 @Controller('associations')

@@ -1,6 +1,6 @@
 import { Controller, Post, Req, Res, Get, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { LoggerService } from '../common/logger/logger.service';
 import { HashDto } from './dto/hash.dto';
 import { NodeService } from '../node/node.service';

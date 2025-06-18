@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../common/logger/logger.service';
 import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
-import { CredentialStatus, CredentialStatusStatement } from './interfaces/credential-status.interface';
+import type { CredentialStatus, CredentialStatusStatement } from './interfaces/credential-status.interface';
 import { KeyType } from '../did/verification-method/verification-method.types';
 import { isoDate } from '../utils/date';
 import { DIDService } from '../did/did.service';

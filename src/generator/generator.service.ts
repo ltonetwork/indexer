@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NodeService } from '../node/node.service';
 import { ConfigService } from '../common/config/config.service';
-import { Block, BlockHeader } from '../interfaces/block.interface';
+import type { Block, BlockHeader } from '../interfaces/block.interface';
 import AwaitLock from 'await-lock';
 
 export interface GeneratorStats {

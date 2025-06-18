@@ -1,5 +1,5 @@
 import { KeyType, RelationshipType } from './verification-method.types';
-import { DIDVerificationMethod } from '../interfaces/did.interface';
+import type { DIDVerificationMethod } from '../interfaces/did.interface';
 import { base58 } from '@scure/base';
 
 export class VerificationMethod {

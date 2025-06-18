@@ -1,12 +1,12 @@
+import type { Block } from '../interfaces/block.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
+import type { BalanceDetails } from '../interfaces/balance-details.interface';
 import { Injectable } from '@nestjs/common';
 import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../common/logger/logger.service';
 import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
-import { Block } from '../interfaces/block.interface';
-import { BalanceDetails } from '../interfaces/balance-details.interface';
 
 export interface Feature {
   id: number;

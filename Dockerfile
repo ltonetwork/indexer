@@ -1,4 +1,4 @@
-FROM node:18 As build
+FROM node:20 AS build
 
 # Create app directory
 WORKDIR /usr/src
@@ -19,7 +19,7 @@ RUN rm -rf node_modules/
 
 RUN yarn --production
 
-FROM node:18-alpine
+FROM node:20-alpine
 # Move the build files from build folder to app folder
 WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
