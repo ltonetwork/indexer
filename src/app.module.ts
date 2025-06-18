@@ -19,6 +19,7 @@ import { AssociationsModule } from './associations/associations.module';
 import { TrustNetworkModule } from './trust-network/trust-network.module';
 import { StatsModule } from './stats/stats.module';
 import { CredentialStatusModule } from './credential-status/credential-status.module';
+import { GeneratorModule } from './generator/generator.module';
 
 export const AppModuleConfig = {
   imports: [
