@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "^2.0.0",
-    "@nestjs/common": "^9.4.0",
+    "@nestjs/common": "^10.4.16",
     "@nestjs/core": "^9.4.0",
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.4.0",
