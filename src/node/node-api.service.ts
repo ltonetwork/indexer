@@ -86,6 +86,15 @@ export class NodeApiService {
     });
   }
 
+  async getData(address: string): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return this.request.get(`${url}/addresses/data/${address}`, {
+      headers: {
+        'X-Api-Key': this.config.getNodeApiKey(),
+      },
+    });
+  }
+
   async getNodeStatus(): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
 

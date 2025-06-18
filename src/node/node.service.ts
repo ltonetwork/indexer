@@ -5,8 +5,8 @@ import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
 import { Transaction } from '../interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
-import {Block} from '../interfaces/block.interface';
-import {BalanceDetails} from '../interfaces/balance-details.interface';
+import { Block } from '../interfaces/block.interface';
+import { BalanceDetails } from '../interfaces/balance-details.interface';
 
 export interface Feature {
   id: number;
@@ -186,6 +186,28 @@ export class NodeService {
     const promises = id.map((tx) => this.getTransaction(tx));
     const results = await Promise.all(promises.map((p) => p.catch((e) => e)));
     return results.filter((result) => !(result instanceof Error));
+  }
+
+  async getData(address: string): Promise<Record<string, any>> {
+    const response = await this.api.getData(address);
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    const result: Record<string, any> = {};
+
+    for (const item of response.data) {
+      if (item.key.includes(':')) {
+        const [namespace, key] = item.key.split(':');
+        result[namespace] ??= {};
+        result[namespace][key] = item.value;
+      } else {
+        result[item.key] = item.value;
+      }
+    }
+
+    return result;
   }
 
   async createAnchorTransaction(senderAddress: string, ...hashes: string[]): Promise<string> {

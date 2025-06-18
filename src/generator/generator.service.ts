@@ -10,11 +10,12 @@ export interface GeneratorStats {
   reward: number;
   balance: number;
   share: number;
+  info: Record<string, any>;
 }
 
 @Injectable()
 export class GeneratorService {
-  private readonly delta;
+  private readonly delta: number;
   private generators: { [_: string]: GeneratorStats } = {};
   private previousGenerator: string;
   private writeLock: AwaitLock = new AwaitLock();
@@ -45,15 +46,17 @@ export class GeneratorService {
     try {
       if (block.height - this.delta > 0) {
         const oldBlock = await this.node.getBlock(block.height - this.delta);
-        await this.removeMined(oldBlock);
+        this.removeMined(oldBlock);
       }
 
-      await this.addMined(block);
+      this.addMined(block);
 
       const modified = this.modifiedBalances(block, this.previousGenerator);
       await this.updateBalances(modified.filter((address) => !!this.generators[address]));
 
       this.updateShare();
+
+      this.generators[block.generator].info = await this.node.getData(block.generator);
 
       this.previousGenerator = block.generator;
     } finally {
@@ -72,10 +75,20 @@ export class GeneratorService {
           reward: 0,
           balance: 0,
           share: 0,
+          info: {},
         };
       }
 
       this.addMined(block);
+    }
+
+    const generatorInfo = await Promise.all(
+      Object.keys(this.generators).map((address) =>
+        this.node.getData(address).then((info): [string, Record<string, any>] => [address, info]),
+      ),
+    );
+    for (const [address, info] of generatorInfo) {
+      this.generators[address].info = info;
     }
 
     this.previousGenerator = blocks[blocks.length - 1].generator;
