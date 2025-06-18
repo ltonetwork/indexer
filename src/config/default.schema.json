@@ -97,6 +97,19 @@
       "env": "ANCHOR_BATCH"
     }
   },
+  "generator": {
+    "indexing": {
+      "doc": "Indexing of generating nodes",
+      "default": false,
+      "format": "Boolean",
+      "env": "GENERATOR_INDEXING"
+    },
+    "delta": {
+      "doc": "Number of blocks to index generators",
+      "default": 10000,
+      "env": "GENERATOR_DELTA"
+    }
+  },
   "stats": {
     "operations": {
       "doc": "Statistics for operations in the blockchain",

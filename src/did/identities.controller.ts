@@ -1,6 +1,6 @@
 import { Controller, Res, Get, Param } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 @ApiExcludeController()
 @Controller('identities')

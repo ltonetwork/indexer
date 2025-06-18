@@ -1,6 +1,6 @@
 import { Controller, Res, Get, Param, Req, Query } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { LoggerService } from '../common/logger/logger.service';
 import { DIDService } from './did.service';
 import { ConfigService } from '../common/config/config.service';

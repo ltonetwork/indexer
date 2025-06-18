@@ -3,7 +3,7 @@ import { LoggerService } from '../common/logger/logger.service';
 import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { VerificationMethodService } from './verification-method/verification-method.service';
-import { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/did.interface';
+import type { DIDDocument, DIDResolution, DIDDocumentService } from './interfaces/did.interface';
 import { KeyType } from './verification-method/verification-method.types';
 import { base58 } from '@scure/base';
 import * as ed2curve from 'ed2curve';

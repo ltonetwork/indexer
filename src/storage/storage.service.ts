@@ -1,7 +1,7 @@
 import { ModuleRef } from '@nestjs/core';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../common/config/config.service';
-import { StorageInterface } from './interfaces/storage.interface';
+import type { StorageInterface } from './interfaces/storage.interface';
 import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
 import storageServices from './index';
 import { pascalCase } from 'pascal-case';

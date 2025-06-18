@@ -1,5 +1,5 @@
 import { Get, Controller, Res } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { ConfigService } from './common/config/config.service';
 

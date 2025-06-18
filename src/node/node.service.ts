@@ -1,9 +1,11 @@
+import type { Block } from '../interfaces/block.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
+import type { BalanceDetails } from '../interfaces/balance-details.interface';
 import { Injectable } from '@nestjs/common';
 import { NodeApiService } from './node-api.service';
 import { LoggerService } from '../common/logger/logger.service';
 import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { AxiosResponse } from 'axios';
 
 export interface Feature {
@@ -117,7 +119,7 @@ export class NodeService {
     return response.data.height;
   }
 
-  async getBlock(id: string | number): Promise<{ height; transactions; timestamp }> {
+  async getBlock(id: string | number): Promise<Block> {
     const response = await this.api.getBlock(id);
 
     if (response instanceof Error) {
@@ -131,7 +133,7 @@ export class NodeService {
   async getBlocks(
     from: number,
     to: number,
-  ): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees }>> {
+  ): Promise<Array<{ height; timestamp; generator; transactions; transactionCount; burnedFees; generatorReward }>> {
     const ranges = this.getBlockRanges(from, to);
     const promises = ranges.map((range) => this.api.getBlocks(range.from, range.to));
     const responses = await Promise.all(promises);
@@ -145,6 +147,16 @@ export class NodeService {
     const data = responses.map((response: AxiosResponse) => response.data);
 
     return [].concat(...data).sort((a, b) => a.height - b.height);
+  }
+
+  async getBalanceDetails(address: string): Promise<BalanceDetails> {
+    const response = await this.api.getBalanceDetails(address);
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    return response.data;
   }
 
   getBlockRanges(from: number, to: number): Array<{ from; to }> {
@@ -174,6 +186,28 @@ export class NodeService {
     const promises = id.map((tx) => this.getTransaction(tx));
     const results = await Promise.all(promises.map((p) => p.catch((e) => e)));
     return results.filter((result) => !(result instanceof Error));
+  }
+
+  async getData(address: string): Promise<Record<string, any>> {
+    const response = await this.api.getData(address);
+
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    const result: Record<string, any> = {};
+
+    for (const item of response.data) {
+      if (item.key.includes(':')) {
+        const [namespace, key] = item.key.split(':');
+        result[namespace] ??= {};
+        result[namespace][key] = item.value;
+      } else {
+        result[item.key] = item.value;
+      }
+    }
+
+    return result;
   }
 
   async createAnchorTransaction(senderAddress: string, ...hashes: string[]): Promise<string> {

@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { LoggerService } from '../common/logger/logger.service';
 import { CredentialStatusService } from './credential-status.service';
-import { CredentialStatus } from './interfaces/credential-status.interface';
+import type { CredentialStatus } from './interfaces/credential-status.interface';
 
 @Controller('credential-status')
 @ApiTags('verifiable credentials')

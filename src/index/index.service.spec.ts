@@ -46,6 +46,7 @@ describe('IndexService', () => {
         generator: '2s',
         transactionCount: 0,
         transactions: [],
+        generatorReward: 0,
       };
     });
 

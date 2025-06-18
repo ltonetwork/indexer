@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '../../common/config/config.service';
 import { RedisService } from '../../common/redis/redis.service';
-import { StorageInterface } from '../interfaces/storage.interface';
+import type { StorageInterface } from '../interfaces/storage.interface';
 import { Redis, Cluster } from 'ioredis';
 
 @Injectable()

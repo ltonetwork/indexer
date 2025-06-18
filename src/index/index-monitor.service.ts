@@ -1,3 +1,5 @@
+import type { Block } from '../interfaces/block.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../common/logger/logger.service';
 import { ConfigService } from '../common/config/config.service';
@@ -5,8 +7,6 @@ import { EncoderService } from '../common/encoder/encoder.service';
 import { NodeService } from '../node/node.service';
 import { StorageService } from '../storage/storage.service';
 import delay from 'delay';
-import { Block } from '../transaction/interfaces/block.interface';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
 import { IndexService } from './index.service';
 
 @Injectable()
@@ -131,6 +131,10 @@ export class IndexMonitorService {
 
       for (const block of blocks) {
         await this.processBlock(block);
+      }
+
+      if (range.from === range.to) {
+        await this.indexer.inSync(range.to);
       }
 
       this.lastBlock = range.to;

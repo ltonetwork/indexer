@@ -6,7 +6,7 @@ import { EmitterService } from '../emitter/emitter.service';
 import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 import { buildAddress, networkId } from '../utils/crypto';
 
 @Injectable()

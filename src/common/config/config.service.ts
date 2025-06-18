@@ -123,4 +123,12 @@ export class ConfigService {
   isAnchorBatched(): boolean {
     return !!this.config.get('anchor.batch');
   }
+
+  isGeneratorIndexingEnabled(): boolean {
+    return !!this.config.get('generator.indexing');
+  }
+
+  getGeneratorIndexingDelta(): number {
+    return this.config.get('generator.delta');
+  }
 }

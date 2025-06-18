@@ -4,9 +4,9 @@ import { TrustNetworkService } from './trust-network.service';
 import { StorageService } from '../storage/storage.service';
 import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
-import { RoleData } from './interfaces/trust-network.interface';
+import type { RoleData } from './interfaces/trust-network.interface';
 import { LoggerService } from '../common/logger/logger.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 
 describe('TrustNetworkService', () => {
   let module: TestingModule;

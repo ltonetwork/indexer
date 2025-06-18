@@ -33,6 +33,17 @@ export class NodeApiService {
     return this.request.get(`${url}/blocks/seq/${from}/${to}`);
   }
 
+  async getBlockHeaders(from: number, to: number): Promise<AxiosResponse | Error> {
+    // note: max range of 100 is supported
+    const url = this.config.getNodeUrl();
+    return this.request.get(`${url}/blocks/headers/seq/${from}/${to}`);
+  }
+
+  async getBalanceDetails(address: string): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return this.request.get(`${url}/addresses/balance/details/${address}`);
+  }
+
   async getTransaction(id: string): Promise<AxiosResponse | Error> {
     const url = this.config.getNodeUrl();
     return this.request.get(`${url}/transactions/info/${id}`);
@@ -69,6 +80,15 @@ export class NodeApiService {
   async getSponsorshipStatus(address: string): Promise<AxiosResponse<{ sponsor: string[] }> | Error> {
     const url = this.config.getNodeUrl();
     return this.request.get(`${url}/sponsorship/status/${address}`, {
+      headers: {
+        'X-Api-Key': this.config.getNodeApiKey(),
+      },
+    });
+  }
+
+  async getData(address: string): Promise<AxiosResponse | Error> {
+    const url = this.config.getNodeUrl();
+    return this.request.get(`${url}/addresses/data/${address}`, {
       headers: {
         'X-Api-Key': this.config.getNodeApiKey(),
       },

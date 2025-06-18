@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DIDModuleConfig } from './did.module';
 import { VerificationMethodService } from './verification-method/verification-method.service';
 import { StorageService } from '../storage/storage.service';
-import { Transaction } from '../transaction/interfaces/transaction.interface';
+import type { Transaction } from '../interfaces/transaction.interface';
 import { DIDListenerService } from './did-listener.service';
 
 describe('DIDListenerService', () => {
