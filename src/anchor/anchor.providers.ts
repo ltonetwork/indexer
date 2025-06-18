@@ -1,2 +1,1 @@
-export const anchorProviders = [
-];
+export const anchorProviders = [];

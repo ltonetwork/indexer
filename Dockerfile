@@ -1,40 +1,31 @@
-FROM node:16 As build
+FROM node:18 As build
 
 # Create app directory
 WORKDIR /usr/src
 
 # Install app dependencies
-COPY package*.json ./
+COPY package.json yarn.lock ./
 
-RUN npm i
+RUN yarn
 
 # Bundle app source
 COPY . .
 
-RUN echo $(git describe --tags) > ./version.txt
+RUN yarn version --new-version $(git describe --tags) --no-git-tag-version
 
-RUN npm run build
+RUN yarn build
 
 RUN rm -rf node_modules/
 
-RUN npm i --only=production
+RUN yarn --production
 
-WORKDIR /usr/src/frontend/
-
-RUN npm i
-
-RUN npm run build
-
-FROM node:dubnium-alpine
+FROM node:18-alpine
 # Move the build files from build folder to app folder
 WORKDIR /usr/app
 COPY --from=build /usr/src/dist ./
-COPY --from=build /usr/src/version.txt ./
 COPY --from=build /usr/src/node_modules ./node_modules/
 
-ADD package.json ./
-
-RUN npm install -g pm2
+RUN yarn global add pm2
 
 EXPOSE 80
 CMD ["pm2-runtime", "main.js"]

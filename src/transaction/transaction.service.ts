@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import TransactionTypes from './const/types.const';
 import { IndexDocumentType } from '../index/model/index.model';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { StorageService } from '../storage/storage.service';
 
 @Injectable()
@@ -9,23 +9,23 @@ export class TransactionService {
   constructor(private readonly logger: LoggerService, private readonly storage: StorageService) {}
 
   getAllTypes(): Array<{ id: string; types?: number[] }> {
-    return Object.keys(TransactionTypes).map(k => TransactionTypes[k]);
+    return Object.keys(TransactionTypes).map((k) => TransactionTypes[k]);
   }
 
   getIdentifiers(): string[] {
     const types = this.getAllTypes();
-    return types.map(tx => tx.id);
+    return types.map((tx) => tx.id);
   }
 
   getIdentifierByType(type: number): string | null {
     const types = this.getAllTypes();
-    const match = types.find(tx => tx.types?.includes(type));
+    const match = types.find((tx) => tx.types?.includes(type));
     return match ? match.id : null;
   }
 
   getIdentifiersByType(type: number): string[] {
     const types = this.getAllTypes();
-    return types.filter(tx => tx.types?.includes(type)).map(match => match.id);
+    return types.filter((tx) => tx.types?.includes(type)).map((match) => match.id);
   }
 
   hasIdentifier(identifier): boolean {
@@ -38,7 +38,7 @@ export class TransactionService {
   }
 
   async index(index: IndexDocumentType) {
-    const { transaction, blockHeight } = index;
+    const { transaction } = index;
     const identifiers = [...this.getIdentifiersByType(transaction.type), 'all'];
     const promises = [] as Promise<any>[];
 

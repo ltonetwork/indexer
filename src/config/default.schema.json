@@ -1,0 +1,210 @@
+{
+  "env": {
+    "doc": "The application environment",
+    "format": ["production", "development", "test", "lto"],
+    "default": "development",
+    "env": "NODE_ENV"
+  },
+  "port": {
+    "doc": "The port the application runs on",
+    "default": 80,
+    "env": "PORT"
+  },
+  "api_prefix": {
+    "doc": "The prefix for the API",
+    "default": "",
+    "env": "API_PREFIX"
+  },
+  "trust_network": {
+    "doc": "Configuration for roles of trust network",
+    "format": "Object",
+    "env": "TRUST_NETWORK",
+    "default": {
+      "root": {
+        "description": "The root role"
+      }
+    }
+  },
+  "association": {
+    "indexing": {
+      "doc": "Indexing of association transactions",
+      "default": "none",
+      "format": ["none", "trust", "all"],
+      "env": "ASSOCIATION_INDEXING"
+    },
+    "use_graph": {
+      "doc": "Whether to use Redis Graph to store associations",
+      "default": false,
+      "format": "Boolean",
+      "env": "ASSOCIATION_USE_GRAPH"
+    }
+  },
+  "identity": {
+    "indexing": {
+      "doc": "Deprecated; use DID_INDEXING instead",
+      "default": false,
+      "format": "Boolean",
+      "env": "IDENTITY_INDEXING"
+    }
+  },
+  "did": {
+    "indexing": {
+      "doc": "Indexing of DID documents",
+      "default": false,
+      "format": "Boolean",
+      "env": "DID_INDEXING"
+    },
+    "default_response": {
+      "doc": "Type of response if no Accept header is given. `resolution` is non-standard, but required for compatibility with the universal resolver.",
+      "enum": ["document", "resolution"],
+      "default": "document",
+      "env": "DID_DEFAULT_RESPONSE"
+    }
+  },
+  "credential_status": {
+    "indexing": {
+      "doc": "Indexing of credential status",
+      "enum": ["none", "all", "trust"],
+      "default": "none",
+      "env": "CREDENTIAL_STATUS_INDEXING"
+    },
+    "disputes": {
+      "doc": "Indexing of credential disputes and acknowledgements",
+      "enum": ["none", "all", "trust"],
+      "default": "none",
+      "env": "CREDENTIAL_DISPUTES_INDEXING"
+    }
+  },
+  "transaction": {
+    "indexing": {
+      "doc": "Indexing of transactions",
+      "default": false,
+      "format": "Boolean",
+      "env": "TRANSACTION_INDEXING"
+    }
+  },
+  "anchor": {
+    "indexing": {
+      "doc": "Indexing of anchor transactions",
+      "default": "none",
+      "format": ["none", "trust", "all"],
+      "env": "ANCHOR_INDEXING"
+    },
+    "batch": {
+      "doc": "Batch hashes for anchor transaction",
+      "default": false,
+      "format": "Boolean",
+      "env": "ANCHOR_BATCH"
+    }
+  },
+  "generator": {
+    "indexing": {
+      "doc": "Indexing of generating nodes",
+      "default": false,
+      "format": "Boolean",
+      "env": "GENERATOR_INDEXING"
+    },
+    "delta": {
+      "doc": "Number of blocks to index generators",
+      "default": 10000,
+      "env": "GENERATOR_DELTA"
+    }
+  },
+  "stats": {
+    "operations": {
+      "doc": "Statistics for operations in the blockchain",
+      "default": false,
+      "format": "Boolean",
+      "env": "STATS_INDEXING"
+    },
+    "transactions": {
+      "doc": "Statistics for transactions in the blockchain",
+      "default": false,
+      "format": "Boolean",
+      "env": "STATS_INDEXING"
+    },
+    "supply": {
+      "doc": "Statistics for token supply",
+      "default": false,
+      "format": "Boolean",
+      "env": "STATS_INDEXING"
+    },
+    "lease": {
+      "doc": "Statistics for leased amount",
+      "default": false,
+      "format": "Boolean",
+      "env": "STATS_INDEXING"
+    }
+  },
+  "redis": {
+    "url": {
+      "doc": "Redis database connection string",
+      "default": "redis://localhost",
+      "env": "REDIS_URL"
+    },
+    "cluster": {
+      "doc": "Redis cluster connection string",
+      "default": "",
+      "env": "REDIS_CLUSTER"
+    }
+  },
+  "leveldb": {
+    "name": {
+      "doc": "LevelDB database name",
+      "default": "lto-index",
+      "env": "LEVELDB_NAME"
+    }
+  },
+  "node": {
+    "url": {
+      "doc": "Node URL",
+      "default": "http://localhost:6869",
+      "env": "NODE_URL"
+    },
+    "api_key": {
+      "doc": "Node API key",
+      "default": "",
+      "env": "NODE_API_KEY"
+    }
+  },
+  "starting_block": {
+    "doc": "Block number to start processing from",
+    "default": 1,
+    "env": "STARTING_BLOCK"
+  },
+  "restart_sync": {
+    "doc": "Whether or not to restart processing from starting block",
+    "default": false,
+    "env": "RESTART_SYNC"
+  },
+  "auth": {
+    "token": {
+      "doc": "Authentication token",
+      "default": "",
+      "env": "AUTH_TOKEN"
+    }
+  },
+  "monitor": {
+    "interval": {
+      "doc": "Monitor interval",
+      "default": 5000,
+      "env": "MONITOR_INTERVAL"
+    }
+  },
+  "log": {
+    "level": {
+      "doc": "Log level for the application",
+      "default": "info",
+      "format": ["off", "error", "warn", "info", "debug"],
+      "env": "LOG_LEVEL"
+    }
+  },
+  "storage": {
+    "type": {
+      "doc": "Storage type",
+      "default": "leveldb",
+      "format": ["leveldb", "redis"],
+      "env": "STORAGE_TYPE"
+    }
+  }
+}

@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AxiosResponse } from 'axios';
-import { NodeService, ActivationStatus } from '../../node/node.service';
-import { RequestService } from '../../request/request.service';
+import { RequestService } from '../../common/request/request.service';
 import { StorageService } from '../../storage/storage.service';
 import { StatsModuleConfig } from '../stats.module';
 import { SupplyService } from './supply.service';
 
 describe('SupplyService', () => {
   let module: TestingModule;
-  let nodeService: NodeService;
   let supplyService: SupplyService;
   let storageService: StorageService;
   let requestService: RequestService;
@@ -17,7 +15,6 @@ describe('SupplyService', () => {
     module = await Test.createTestingModule(StatsModuleConfig).compile();
     await module.init();
 
-    nodeService = module.get<NodeService>(NodeService);
     supplyService = module.get<SupplyService>(SupplyService);
     storageService = module.get<StorageService>(StorageService);
     requestService = module.get<RequestService>(RequestService);
@@ -33,7 +30,7 @@ describe('SupplyService', () => {
   describe('transaction fee burn', () => {
     describe('incrTxFeeBurned()', () => {
       test('should increase the tx fee burned index', async () => {
-        const incrTxFeeBurned = jest.spyOn(storageService, 'incrTxFeeBurned').mockImplementation(async () => {});
+        const incrTxFeeBurned = jest.spyOn(storageService, 'incrTxFeeBurned').mockResolvedValue(undefined);
 
         await supplyService.incrTxFeeBurned(5);
 
@@ -88,7 +85,7 @@ describe('SupplyService', () => {
     test('should reject if bridge stats request fails', async () => {
       httpGet = jest.spyOn(requestService, 'get').mockRejectedValue('some error');
 
-      await supplyService.getCirculatingSupply().catch(error => {
+      await supplyService.getCirculatingSupply().catch((error) => {
         expect(error).toBe('some error');
       });
     });
@@ -104,9 +101,9 @@ describe('SupplyService', () => {
             volume: {
               lto: { supply: 500000000 },
               lto20: { supply: 100000000 },
-              binance: { supply: 100000000 }
-            }
-          }
+              binance: { supply: 100000000 },
+            },
+          },
         } as AxiosResponse;
       });
     });
@@ -123,7 +120,7 @@ describe('SupplyService', () => {
     test('should reject if bridge stats request fails', async () => {
       httpGet = jest.spyOn(requestService, 'get').mockRejectedValue('some error');
 
-      await supplyService.getMaxSupply().catch(error => {
+      await supplyService.getMaxSupply().catch((error) => {
         expect(error).toBe('some error');
       });
     });

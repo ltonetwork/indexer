@@ -1,2 +1,1 @@
-export const transactionProviders = [
-];
+export const transactionProviders = [];

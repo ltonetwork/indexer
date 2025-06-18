@@ -24,7 +24,9 @@ describe('TrustNetworkController', () => {
 
     const supply = {
       getMaxSupply: jest.spyOn(supplyService, 'getMaxSupply').mockImplementation(async () => '87654321.87654321'),
-      getCirculatingSupply: jest.spyOn(supplyService, 'getCirculatingSupply').mockImplementation(async () => '12345678.12345678'),
+      getCirculatingSupply: jest
+        .spyOn(supplyService, 'getCirculatingSupply')
+        .mockImplementation(async () => '12345678.12345678'),
     };
 
     const transactions = {
@@ -56,9 +58,7 @@ describe('TrustNetworkController', () => {
     test('should return the operation stats from storage', async () => {
       const spies = spy();
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/operations/2021-03-01/2021-03-03')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/operations/2021-03-01/2021-03-03').send();
 
       expect(spies.operations.getOperationStats.mock.calls.length).toBe(1);
       expect(spies.operations.getOperationStats.mock.calls[0][0]).toBe(18687);
@@ -76,16 +76,16 @@ describe('TrustNetworkController', () => {
     test('should return error if service fails', async () => {
       const spies = spy();
 
-      spies.operations.getOperationStats = jest.spyOn(statsService, 'getOperationStats').mockRejectedValue('some error');
+      spies.operations.getOperationStats = jest
+        .spyOn(statsService, 'getOperationStats')
+        .mockRejectedValue('some error');
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/operations/2021-03-01/2021-02-01')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/operations/2021-03-01/2021-02-01').send();
 
       expect(spies.operations.getOperationStats.mock.calls.length).toBe(0);
 
       expect(res.status).toBe(400);
-      expect(res.body).toEqual({error: 'invalid period range given'});
+      expect(res.body).toEqual({ error: 'invalid period range given' });
     });
   });
 
@@ -93,9 +93,7 @@ describe('TrustNetworkController', () => {
     test('should return the result', async () => {
       const spies = spy();
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/supply/circulating/')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/supply/circulating/').send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
@@ -105,11 +103,9 @@ describe('TrustNetworkController', () => {
     });
 
     test('should return the raw result if parameter is given', async () => {
-      const spies = spy();
+      spy();
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/supply/circulating?output=raw')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/supply/circulating?output=raw').send();
 
       expect(res.header['content-type']).toBe('text/plain; charset=utf-8');
       expect(res.text).toBe('12345678.12345678');
@@ -120,9 +116,7 @@ describe('TrustNetworkController', () => {
 
       spies.supply.getCirculatingSupply.mockRejectedValue('some error');
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/supply/circulating/')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/supply/circulating/').send();
 
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ error: 'failed to get circulating supply: some error' });
@@ -133,9 +127,7 @@ describe('TrustNetworkController', () => {
     test('should return the result', async () => {
       const spies = spy();
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/supply/max/')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/supply/max/').send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
@@ -145,11 +137,9 @@ describe('TrustNetworkController', () => {
     });
 
     test('should return the raw result if parameter is given', async () => {
-      const spies = spy();
+      spy();
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/supply/max?output=raw')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/supply/max?output=raw').send();
 
       expect(res.header['content-type']).toBe('text/plain; charset=utf-8');
       expect(res.text).toBe('87654321.87654321');
@@ -160,9 +150,7 @@ describe('TrustNetworkController', () => {
 
       spies.supply.getMaxSupply.mockRejectedValue('some error');
 
-      const res = await request(app.getHttpServer())
-        .get('/stats/supply/max/')
-        .send();
+      const res = await request(app.getHttpServer()).get('/stats/supply/max/').send();
 
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ error: 'failed to get max supply: some error' });
@@ -173,9 +161,7 @@ describe('TrustNetworkController', () => {
     test('should get stats using timestamps', async () => {
       const spies = spy();
 
-      const res = await request(app.getHttpServer())
-        .get(`/stats/transactions/all/1614597904336/1614793341900`)
-        .send();
+      const res = await request(app.getHttpServer()).get(`/stats/transactions/all/1614597904336/1614793341900`).send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');
@@ -194,9 +180,7 @@ describe('TrustNetworkController', () => {
     test('should get stats using date strings', async () => {
       const spies = spy();
 
-      const res = await request(app.getHttpServer())
-        .get(`/stats/transactions/all/2021-03-01/2021-03-03`)
-        .send();
+      const res = await request(app.getHttpServer()).get(`/stats/transactions/all/2021-03-01/2021-03-03`).send();
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toBe('application/json; charset=utf-8');

@@ -8,7 +8,6 @@ lib-cov
 *.swp
 
 pids
-logs
 results
 tmp
 .node-xml*
@@ -22,6 +21,7 @@ public/css/main.css
 # Dependency directory
 node_modules
 bower_components
+.yarn
 
 # Editors
 .idea
@@ -49,3 +49,6 @@ logs
 # Docker compose
 volumes
 lto-index
+
+# Local configuration
+/src/config/local

@@ -13,7 +13,7 @@ describe('AnchorService', () => {
 
   function spy() {
     const storage = {
-      saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(async () => {}),
+      saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockResolvedValue(undefined),
     };
 
     const trust = {
@@ -76,7 +76,7 @@ describe('AnchorService', () => {
 
       expect(spies.storage.saveAnchor.mock.calls.length).toBe(1);
       expect(spies.storage.saveAnchor.mock.calls[0][0]).toBe(
-          '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
+        '2c67899b31a40620b0760035720a9cabd7f414c6da3db561461b1e48fe26cb08',
       );
       expect(spies.storage.saveAnchor.mock.calls[0][1]).toMatchObject({
         id: 'fake_transaction',

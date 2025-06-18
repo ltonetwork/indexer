@@ -13,18 +13,20 @@ export interface Transaction {
   readonly data?: Array<{
     key: string;
     type: string;
-    value: string;
+    value: string | number | boolean;
   }>;
-  readonly anchors?: string[]|{[_: string]: string};
+  readonly anchors?: string[] | { [_: string]: string };
   readonly transfers: Array<{
     recipient: string;
     amount: number;
   }>;
   readonly associationType?: number;
-  readonly hash?: string;
+  readonly statementType?: number;
+  readonly subject?: string;
   readonly accounts?: Array<{
     keyType: string;
     publicKey: string;
   }>;
   readonly leaseId?: string;
+  readonly expires?: number;
 }

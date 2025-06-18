@@ -53,7 +53,7 @@ describe('IndexService', () => {
       const spies = spy();
 
       const transaction = { id: 'fake_transaction', type: 1, sender: 'fake_sender' };
-      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0});
+      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0 });
 
       expect(spies.emitter.emit.mock.calls.length).toBe(1);
       expect(spies.emitter.emit.mock.calls[0][0]).toBe('IndexTransaction');
@@ -62,8 +62,8 @@ describe('IndexService', () => {
     test('should index the anchor transaction', async () => {
       const spies = spy();
 
-      const transaction = {id: 'fake_transaction', type: 15, sender: 'fake_sender'};
-      await indexService.indexTx({transaction: transaction as any, blockHeight: 1, position: 0});
+      const transaction = { id: 'fake_transaction', type: 15, sender: 'fake_sender' };
+      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0 });
 
       expect(spies.emitter.emit.mock.calls.length).toBe(1);
     });
@@ -73,8 +73,8 @@ describe('IndexService', () => {
 
       indexService.txCache.push('fake_transaction');
 
-      const transaction = {id: 'fake_transaction', type: 15, sender: 'fake_sender'};
-      await indexService.indexTx({transaction: transaction as any, blockHeight: 1, position: 0});
+      const transaction = { id: 'fake_transaction', type: 15, sender: 'fake_sender' };
+      await indexService.indexTx({ transaction: transaction as any, blockHeight: 1, position: 0 });
 
       expect(spies.emitter.emit.mock.calls.length).toBe(0);
     });

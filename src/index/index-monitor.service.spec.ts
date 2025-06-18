@@ -20,41 +20,32 @@ describe('IndexMonitorService', () => {
       processTransaction: jest.spyOn(monitorService, 'processTransaction'),
     };
     const node = {
-      getLastBlockHeight: jest
-        .spyOn(nodeService, 'getLastBlockHeight')
-        .mockImplementation(async () => 100),
-      getBlock: jest
-        .spyOn(nodeService, 'getBlock')
-        .mockImplementation(async () => ({
-          height: 100,
-          transactions: [],
-          timestamp: 123,
-        })),
-      getBlocks: jest
-        .spyOn(nodeService, 'getBlocks')
-        .mockImplementation(async () => [{
+      getLastBlockHeight: jest.spyOn(nodeService, 'getLastBlockHeight').mockImplementation(async () => 100),
+      getBlock: jest.spyOn(nodeService, 'getBlock').mockImplementation(async () => ({
+        height: 100,
+        transactions: [],
+        timestamp: 123,
+      })),
+      getBlocks: jest.spyOn(nodeService, 'getBlocks').mockImplementation(async () => [
+        {
           height: 100,
           transactions: [],
           transactionCount: 0,
           timestamp: 123,
           generator: '2g',
+          generatorReward: 0,
           burnedFees: 0,
-        }]),
+        },
+      ]),
       getNodeStatus: jest.spyOn(nodeService, 'getNodeStatus'),
     };
     const storage = {
-      getProcessingHeight: jest
-        .spyOn(storageService, 'getProcessingHeight')
-        .mockImplementation(async () => 99),
-      saveProcessingHeight: jest
-        .spyOn(storageService, 'saveProcessingHeight')
-        .mockImplementation(),
+      getProcessingHeight: jest.spyOn(storageService, 'getProcessingHeight').mockImplementation(async () => 99),
+      saveProcessingHeight: jest.spyOn(storageService, 'saveProcessingHeight').mockImplementation(),
       saveAnchor: jest.spyOn(storageService, 'saveAnchor').mockImplementation(),
     };
     const indexer = {
-      index: jest
-        .spyOn(indexerService, 'indexTx')
-        .mockImplementation(async () => true),
+      index: jest.spyOn(indexerService, 'indexTx').mockImplementation(async () => true),
     };
 
     return { monitor, node, storage, indexer };
@@ -113,9 +104,7 @@ describe('IndexMonitorService', () => {
       };
 
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(status),
-      );
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       const response = await monitorService.syncStatus();
 
@@ -136,9 +125,7 @@ describe('IndexMonitorService', () => {
       };
 
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(status as any),
-      );
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status as any));
 
       const response = await monitorService.syncStatus();
 
@@ -161,9 +148,7 @@ describe('IndexMonitorService', () => {
       };
 
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(status),
-      );
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       const response = await monitorService.syncStatus();
 
@@ -187,9 +172,7 @@ describe('IndexMonitorService', () => {
       };
 
       const spies = spy();
-      spies.node.getNodeStatus.mockImplementation(() =>
-        Promise.resolve(status),
-      );
+      spies.node.getNodeStatus.mockImplementation(() => Promise.resolve(status));
 
       const response = await monitorService.syncStatus();
 
@@ -220,6 +203,7 @@ describe('IndexMonitorService', () => {
         transactionCount: 0,
         timestamp: 123,
         generator: '2g',
+        generatorReward: 0,
         burnedFees: 0,
       });
 
@@ -245,12 +229,8 @@ describe('IndexMonitorService', () => {
       await monitorService.processBlock(block as any);
 
       expect(spies.monitor.processTransaction.mock.calls.length).toBe(2);
-      expect(spies.monitor.processTransaction.mock.calls[0][0]).toEqual(
-        block.transactions[0],
-      );
-      expect(spies.monitor.processTransaction.mock.calls[1][0]).toEqual(
-        block.transactions[1],
-      );
+      expect(spies.monitor.processTransaction.mock.calls[0][0]).toEqual(block.transactions[0]);
+      expect(spies.monitor.processTransaction.mock.calls[1][0]).toEqual(block.transactions[1]);
     });
   });
 

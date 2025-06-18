@@ -1,2 +1,1 @@
-export const healthProviders = [
-];
+export const healthProviders = [];

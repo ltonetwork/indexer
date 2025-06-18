@@ -1,5 +1,5 @@
 export interface Role {
-  type: Number;
+  type: number;
   role: string;
 }
 
@@ -9,11 +9,11 @@ export interface RoleData {
   issues_authorization: string[];
 }
 
-export interface RawRole {
+export interface RawRoles {
   [key: string]: {
-    description: string;
+    description?: string;
     issues?: Role[];
     authorization?: string[];
     sponsored?: boolean;
-  }
+  };
 }

@@ -4,6 +4,6 @@ export class HashDto {
   @ApiProperty()
   readonly hash: string;
 
-  @ApiProperty({default: 'hex', required: false})
+  @ApiProperty({ default: 'hex', required: false })
   readonly encoding: string;
 }

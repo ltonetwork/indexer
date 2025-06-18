@@ -4,12 +4,10 @@ import { NodeService } from './node.service';
 import { NodeApiService } from './node-api.service';
 import { StorageService } from '../storage/storage.service';
 import { AxiosResponse } from 'axios';
-import { ConfigService } from '../config/config.service';
 
 describe('NodeService', () => {
   let module: TestingModule;
   let nodeService: NodeService;
-  let configService: ConfigService;
   let nodeApiService: NodeApiService;
   let storageService: StorageService;
 
@@ -67,8 +65,7 @@ describe('NodeService', () => {
       }),
     };
 
-    const config = {
-    };
+    const config = {};
 
     return { api, node, storage, config };
   }
@@ -78,7 +75,6 @@ describe('NodeService', () => {
     await module.init();
 
     nodeService = module.get<NodeService>(NodeService);
-    configService = module.get<ConfigService>(ConfigService);
     nodeApiService = module.get<NodeApiService>(NodeApiService);
     storageService = module.get<StorageService>(StorageService);
   });

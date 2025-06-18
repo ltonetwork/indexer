@@ -2,18 +2,17 @@ import { IndexEvent, IndexEventsReturnType } from '../index/index.events';
 import { EmitterService } from '../emitter/emitter.service';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { ConfigService } from '../config/config.service';
-import { LoggerService } from '../logger/logger.service';
+import { ConfigService } from '../common/config/config.service';
+import { LoggerService } from '../common/logger/logger.service';
 
 @Injectable()
 export class TransactionListenerService implements OnModuleInit {
-
   constructor(
     private readonly indexEmitter: EmitterService<IndexEventsReturnType>,
     private readonly service: TransactionService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     if (!this.config.isTransactionIndexingEnabled()) {
@@ -25,9 +24,8 @@ export class TransactionListenerService implements OnModuleInit {
   }
 
   async onIndexTransaction() {
-    this.indexEmitter.on(
-      IndexEvent.IndexTransaction,
-      (val: IndexEventsReturnType['IndexTransaction']) => this.service.index(val),
+    this.indexEmitter.on(IndexEvent.IndexTransaction, (val: IndexEventsReturnType['IndexTransaction']) =>
+      this.service.index(val),
     );
   }
 }

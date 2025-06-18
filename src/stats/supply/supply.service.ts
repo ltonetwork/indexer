@@ -1,8 +1,8 @@
 import moment from 'moment';
 import { Injectable } from '@nestjs/common';
 import { StorageService } from '../../storage/storage.service';
-import { ActivationStatus, NodeService } from '../../node/node.service';
-import { RequestService } from '../../request/request.service';
+import { NodeService } from '../../node/node.service';
+import { RequestService } from '../../common/request/request.service';
 import LockedSupplyData from './locked-supply.data.json';
 
 export interface BridgeStats {
@@ -16,7 +16,7 @@ export interface BridgeStats {
       burned: number;
       remaining: number;
       burn_fee: number;
-    },
+    };
     lto20: {
       address: string;
       total: number;
@@ -25,26 +25,26 @@ export interface BridgeStats {
       initial: number;
       burned: number;
       burn_fee: number;
-    },
+    };
     binance: {
       address: string;
       total: number;
       bridge: number;
       supply: number;
       burn_fee: number;
-    },
+    };
   };
 }
 
 @Injectable()
 export class SupplyService {
-  private bridgeUrl: string = 'https://bridge.lto.network'
+  private bridgeUrl = 'https://bridge.lto.network';
 
   constructor(
     private readonly node: NodeService,
     private readonly storage: StorageService,
     private readonly request: RequestService,
-  ) { }
+  ) {}
 
   async getCirculatingSupply(): Promise<string> {
     const txFeeBurn = await this.getTxFeeBurned();
@@ -65,21 +65,16 @@ export class SupplyService {
       return Promise.reject(bridgeStats);
     }
 
-    const maxSupply = bridgeStats.data.volume.lto.supply
-                      + bridgeStats.data.volume.lto20.supply
-                      + bridgeStats.data.volume.binance.supply;
+    const maxSupply =
+      bridgeStats.data.volume.lto.supply +
+      bridgeStats.data.volume.lto20.supply +
+      bridgeStats.data.volume.binance.supply;
 
     return this.fixedDecimals(maxSupply);
   }
 
   private calculateCirculatingSupply(stats: BridgeStats, locked: number, burnFee: number): number {
-    return (
-      stats.volume.lto.supply
-      + stats.volume.lto20.supply
-      + stats.volume.binance.supply
-      - burnFee
-      - locked
-    );
+    return stats.volume.lto.supply + stats.volume.lto20.supply + stats.volume.binance.supply - burnFee - locked;
   }
 
   private fixedDecimals(input: number): string {

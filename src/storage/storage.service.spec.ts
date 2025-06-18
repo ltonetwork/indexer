@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedisService } from '../redis/redis.service';
+import { RedisService } from '../common/redis/redis.service';
 import { StorageModuleConfig } from './storage.module';
 import { StorageService } from './storage.service';
-import { ConfigService } from '../config/config.service';
-import { RedisStorageService } from './types/redis.storage.service';
-import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
-import { StorageTypeEnum } from '../config/enums/storage.type.enum';
-import { RedisGraphService } from './redis-graph/redis-graph.service';
+import { ConfigService } from '../common/config/config.service';
+import { RedisStorageService } from './redis/redis.storage.service';
+import { VerificationMethod } from '../did/verification-method/verification-method.model';
+import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
+import { RedisGraphService } from './redis/redis-graph.service';
 
 describe('StorageService', () => {
   let module: TestingModule;
@@ -19,14 +19,10 @@ describe('StorageService', () => {
   function spy() {
     const redisConnection = {
       quit: jest.fn(),
-      smembers: jest.fn(),
     };
 
     const redis = {
-      connect: jest
-        .spyOn(redisService, 'connect')
-        // @ts-ignore
-        .mockImplementation(async () => redisConnection),
+      connect: jest.spyOn(redisService, 'connect').mockImplementation(async () => redisConnection as any),
     };
 
     return { redis, redisConnection };
@@ -128,21 +124,28 @@ describe('StorageService', () => {
 
     describe('saveMappedAnchor()', () => {
       test('should save the anchor', async () => {
+        const addToSet = jest.spyOn(redisStorageService, 'addToSet').mockImplementation(() => Promise.resolve());
         const addObject = jest.spyOn(redisStorageService, 'addObject').mockImplementation(() => Promise.resolve());
 
         const key = 'C9ED6179884278AF4E0D91286E52B688EF5B6998AF5E33D7E574DA3A719CA3D8';
+        const hash = '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE';
 
         const transaction = {
-          anchor: '2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE',
+          hash,
           id: 'fake_transaction',
+          sender: '3NCEKjExpsxzyJpLutF8U9uVDiKu8oStn68',
           block: '1',
           position: '10',
         };
 
-        await storageService.saveMappedAnchor(key, transaction);
+        await storageService.saveMappedAnchor(key, transaction.hash, transaction);
+
+        expect(addToSet.mock.calls.length).toBe(1);
+        expect(addToSet.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`);
+        expect(addToSet.mock.calls[0][1]).toBe(hash);
 
         expect(addObject.mock.calls.length).toBe(1);
-        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}`);
+        expect(addObject.mock.calls[0][0]).toBe(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
         expect(addObject.mock.calls[0][1]).toEqual(transaction);
       });
     });
@@ -150,39 +153,42 @@ describe('StorageService', () => {
     describe('getMappedAnchor()', () => {
       test('should get the anchor from database', async () => {
         const getObject = jest
-            .spyOn(redisStorageService, 'getObject')
-            .mockImplementation(() => Promise.resolve({some: 'data'}));
+          .spyOn(redisStorageService, 'getObject')
+          .mockImplementation(() => Promise.resolve({ some: 'data' }));
 
-        const result = await storageService.getMappedAnchor('some-anchor');
+        const result = await storageService.getMappedAnchor('some-key', 'some-value');
 
         expect(getObject).toHaveBeenCalledTimes(1);
-        expect(getObject).toHaveBeenCalledWith('lto:mapped-anchor:some-anchor');
-        expect(result).toEqual({some: 'data'});
+        expect(getObject).toHaveBeenCalledWith('lto:mapped-anchor:some-key:some-value');
+        expect(result).toEqual({ some: 'data' });
       });
     });
 
     describe('indexTx()', () => {
       test('should index transaction type for address', async () => {
         const transaction = 'fake_transaction';
-        const indexTx = jest.spyOn(redisStorageService, 'indexTx').mockImplementation(() => Promise.resolve());
+        const addToSortedSet = jest
+          .spyOn(redisStorageService, 'addToSortedSet')
+          .mockImplementation(() => Promise.resolve());
 
         const type = 'anchor';
         const address = 'fake_address_WITH_CAPS';
         const timestamp = 1;
         await storageService.indexTx(type, address, transaction, timestamp);
 
-        expect(indexTx.mock.calls.length).toBe(1);
-        expect(indexTx.mock.calls[0][0]).toBe(type);
-        expect(indexTx.mock.calls[0][1]).toBe(address);
-        expect(indexTx.mock.calls[0][2]).toBe(transaction);
-        expect(indexTx.mock.calls[0][3]).toBe(timestamp);
+        expect(addToSortedSet.mock.calls.length).toBe(1);
+        expect(addToSortedSet.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
+        expect(addToSortedSet.mock.calls[0][1]).toBe(transaction);
+        expect(addToSortedSet.mock.calls[0][2]).toBe(timestamp);
       });
     });
 
     describe('getTx()', () => {
       test('should get transaction type for address', async () => {
         const transactions = ['fake_transaction'];
-        const getTx = jest.spyOn(redisStorageService, 'getTx').mockImplementation(async () => transactions);
+        const getSortedSet = jest
+          .spyOn(redisStorageService, 'getSortedSet')
+          .mockImplementation(async () => transactions);
 
         const type = 'anchor';
         const address = 'fake_address';
@@ -190,31 +196,29 @@ describe('StorageService', () => {
         const offset = 0;
         expect(await storageService.getTx(type, address, limit, offset)).toEqual(transactions);
 
-        expect(getTx.mock.calls.length).toBe(1);
-        expect(getTx.mock.calls[0][0]).toBe(type);
-        expect(getTx.mock.calls[0][1]).toBe(address);
-        expect(getTx.mock.calls[0][2]).toBe(limit);
-        expect(getTx.mock.calls[0][3]).toBe(offset);
+        expect(getSortedSet.mock.calls.length).toBe(1);
+        expect(getSortedSet.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
+        expect(getSortedSet.mock.calls[0][1]).toBe(limit);
+        expect(getSortedSet.mock.calls[0][2]).toBe(offset);
       });
     });
 
     describe('countTx()', () => {
       test('should count transaction type for address', async () => {
-        const countTx = jest.spyOn(redisStorageService, 'countTx').mockImplementation(async () => 3);
+        const countSortedSet = jest.spyOn(redisStorageService, 'countSortedSet').mockImplementation(async () => 3);
 
         const type = 'anchor';
         const address = 'fake_address';
         expect(await storageService.countTx(type, address)).toEqual(3);
 
-        expect(countTx.mock.calls.length).toBe(1);
-        expect(countTx.mock.calls[0][0]).toBe(type);
-        expect(countTx.mock.calls[0][1]).toBe(address);
+        expect(countSortedSet.mock.calls.length).toBe(1);
+        expect(countSortedSet.mock.calls[0][0]).toBe(`lto:tx:${type}:${address}`);
       });
     });
 
     describe('incrTxStats()', () => {
       test('should increment stats for transaction type', async () => {
-        const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
+        const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockResolvedValue(undefined);
 
         const type = 'anchor';
         const day = 18600;
@@ -263,7 +267,7 @@ describe('StorageService', () => {
     describe('saveProcessingHeight()', () => {
       test('should save processing height', async () => {
         const height = 100;
-        const setValue = jest.spyOn(redisStorageService, 'setValue').mockImplementation(async () => {});
+        const setValue = jest.spyOn(redisStorageService, 'setValue').mockResolvedValue(undefined);
 
         await storageService.saveProcessingHeight(height);
 
@@ -276,7 +280,7 @@ describe('StorageService', () => {
     describe('transaction fee burn', () => {
       describe('setTxFeeBurned()', () => {
         test('should set the new transcation fee burned value', async () => {
-          const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
+          const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockResolvedValue(undefined);
 
           await storageService.incrTxFeeBurned(20);
 
@@ -299,7 +303,7 @@ describe('StorageService', () => {
         });
 
         test('should not throw if key does not exist on database (getValue throws)', async () => {
-          const getValue = jest.spyOn(redisStorageService, 'getValue').mockRejectedValue(async () => {});
+          const getValue = jest.spyOn(redisStorageService, 'getValue').mockRejectedValue('not found');
 
           const result = await storageService.getTxFeeBurned();
 
@@ -313,96 +317,83 @@ describe('StorageService', () => {
 
     describe('verification methods', () => {
       const mockMethod = {
-        recipient: 'mock-recipient',
+        sender: '3N9ChkxWXqgdWLLErWFrSwjqARB6NtYsvZh',
+        recipient: '3NBcx7AQqDopBj3WfwCVARNYuZyt1L9xEVM',
         relationships: 0x0101,
-        sender: 'mock-sender',
         createdAt: 123456,
       };
 
       describe('getVerificationMethods()', () => {
         test('should return the verification methods from database', async () => {
-          const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': mockMethod,
-            };
-          });
-
-          const result = await storageService.getVerificationMethods('mock-sender');
-
           const mockVerificationMethod = new VerificationMethod(
             mockMethod.relationships,
-            mockMethod.sender,
             mockMethod.recipient,
             mockMethod.createdAt,
           );
 
-          expect(getObject.mock.calls.length).toBe(1);
-          expect(getObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
-          expect(result).toStrictEqual([mockVerificationMethod]);
-        });
+          const getBufferSet = jest
+            .spyOn(redisStorageService, 'getBufferSet')
+            .mockResolvedValue([mockVerificationMethod.toBuffer()]);
 
-        test('should skip revoked verification methods', async () => {
-          jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': { ...mockMethod, revokedAt: 123456 },
-            };
-          });
+          const result = await storageService.getVerificationMethods(mockMethod.sender);
 
-          const result = await storageService.getVerificationMethods('mock-sender');
-
-          expect(result).toStrictEqual([]);
+          expect(getBufferSet.mock.calls.length).toBe(1);
+          expect(getBufferSet.mock.calls[0][0]).toBe(`lto:did-methods:${mockMethod.sender}`);
+          expect(result).toContainEqual(mockVerificationMethod);
         });
       });
 
       describe('saveVerificationMethod()', () => {
         test('should save a new verification method', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
-          const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': mockMethod,
-            };
-          });
+          const addToSet = jest.spyOn(redisStorageService, 'addToSet').mockResolvedValue(undefined);
 
           const mockVerificationMethod = new VerificationMethod(
             mockMethod.relationships,
-            mockMethod.sender,
-            'some-other-recipient',
-            mockMethod.createdAt,
-          );
-
-          await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
-
-          expect(getObject.mock.calls.length).toBe(1);
-          expect(getObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
-
-          expect(setObject.mock.calls.length).toBe(1);
-          expect(setObject.mock.calls[0][0]).toBe('lto:verification:mock-sender');
-          expect(setObject.mock.calls[0][1]).toStrictEqual({
-            'mock-recipient': mockMethod,
-            'some-other-recipient': mockVerificationMethod.json(),
-          });
-        });
-
-        test('should overwrite an existing verification method for the same sender', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
-          jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
-            return {
-              'mock-recipient': mockMethod,
-            };
-          });
-
-          const mockVerificationMethod = new VerificationMethod(
-            0x0107,
-            mockMethod.sender,
             mockMethod.recipient,
             mockMethod.createdAt,
           );
 
-          await storageService.saveVerificationMethod('mock-sender', mockVerificationMethod);
+          await storageService.saveVerificationMethod(mockMethod.sender, mockVerificationMethod);
 
-          expect(setObject.mock.calls[0][1]).toStrictEqual({
-            'mock-recipient': { ...mockMethod, relationships: 0x0107 },
+          expect(addToSet.mock.calls.length).toBe(1);
+          expect(addToSet.mock.calls[0][0]).toBe(`lto:did-methods:${mockMethod.sender}`);
+          expect(addToSet.mock.calls[0][1]).toEqual(mockVerificationMethod.toBuffer());
+        });
+      });
+    });
+
+    describe('DID services', () => {
+      describe('getDIDServices()', () => {
+        it('should return the services from database', async () => {
+          const getSet = jest.spyOn(redisStorageService, 'getSet').mockImplementation(async () => {
+            return [
+              JSON.stringify({ id: 'foo1', type: 'bar1', serviceEndpoint: 'baz1', timestamp: 123456 }),
+              JSON.stringify({ id: 'foo2', type: 'bar2', serviceEndpoint: 'baz2', timestamp: 123456 }),
+            ];
           });
+
+          const result = await storageService.getDIDServices('mock-sender');
+
+          expect(getSet.mock.calls.length).toBe(1);
+          expect(getSet.mock.calls[0][0]).toBe(`lto:did-services:mock-sender`);
+
+          expect(result).toEqual([
+            { id: 'foo1', type: 'bar1', serviceEndpoint: 'baz1', timestamp: 123456 },
+            { id: 'foo2', type: 'bar2', serviceEndpoint: 'baz2', timestamp: 123456 },
+          ]);
+        });
+      });
+
+      describe('saveDIDService()', () => {
+        it('should return the services from database', async () => {
+          const addToSet = jest.spyOn(redisStorageService, 'addToSet').mockResolvedValue(undefined);
+          const mockService = { id: 'foo', type: 'bar', serviceEndpoint: 'baz', timestamp: 123456 };
+
+          await storageService.saveDIDService('mock-sender', mockService);
+
+          expect(addToSet.mock.calls.length).toBe(1);
+          expect(addToSet.mock.calls[0][0]).toBe(`lto:did-services:mock-sender`);
+          expect(addToSet.mock.calls[0][1]).toEqual(JSON.stringify(mockService));
         });
       });
     });
@@ -437,7 +428,7 @@ describe('StorageService', () => {
         const mockRole = { type: 100, role: 'authority' };
 
         test('should save a new trust network role association', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
+          const setObject = jest.spyOn(redisStorageService, 'setObject').mockResolvedValue(undefined);
           const getObject = jest.spyOn(redisStorageService, 'getObject').mockResolvedValue({});
 
           await storageService.saveRoleAssociation('mock-recipient', 'mock-sender', mockRole);
@@ -453,7 +444,7 @@ describe('StorageService', () => {
         });
 
         test('should overwrite an existing role association if it exists', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
+          const setObject = jest.spyOn(redisStorageService, 'setObject').mockResolvedValue(undefined);
           jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
             return {
               authority: { sender: 'mock-sender', type: mockRole.type },
@@ -472,7 +463,7 @@ describe('StorageService', () => {
         const mockRole = { type: 100, role: 'authority' };
 
         test('should remove a trust network role association', async () => {
-          const setObject = jest.spyOn(redisStorageService, 'setObject').mockImplementation(async () => {});
+          const setObject = jest.spyOn(redisStorageService, 'setObject').mockResolvedValue(undefined);
           const getObject = jest.spyOn(redisStorageService, 'getObject').mockImplementation(async () => {
             return {
               authority: { sender: 'mock-sender', type: mockRole.type },
@@ -493,7 +484,7 @@ describe('StorageService', () => {
     describe('operation stats', () => {
       describe('incrOperationStats()', () => {
         test('should increase the value of operation stats', async () => {
-          const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockImplementation(async () => {});
+          const incrValue = jest.spyOn(redisStorageService, 'incrValue').mockResolvedValue(undefined);
 
           await storageService.incrOperationStats(800, 5);
 
@@ -505,8 +496,9 @@ describe('StorageService', () => {
 
       describe('getOperationStats()', () => {
         test('should fetch the value of operation stats', async () => {
-          const getMultipleValues = jest.spyOn(redisStorageService, 'getMultipleValues')
-              .mockImplementation(async () => ['300', '329', '402', '293']);
+          const getMultipleValues = jest
+            .spyOn(redisStorageService, 'getMultipleValues')
+            .mockImplementation(async () => ['300', '329', '402', '293']);
 
           expect(await storageService.getOperationStats(18600, 18603)).toEqual([
             { period: '2020-12-04 00:00:00', count: 300 },
@@ -529,8 +521,8 @@ describe('StorageService', () => {
     describe('associations', () => {
       describe('saveAssociation()', () => {
         test('should save associations using regular storage', async () => {
-          const graphSave = jest.spyOn(redisGraphService, 'saveAssociation').mockImplementation(async () => {});
-          const redisSave = jest.spyOn(redisStorageService, 'sadd').mockImplementation(async () => {});
+          const graphSave = jest.spyOn(redisGraphService, 'saveAssociation').mockResolvedValue(undefined);
+          const redisSave = jest.spyOn(redisStorageService, 'addToSet').mockResolvedValue(undefined);
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';
@@ -547,7 +539,7 @@ describe('StorageService', () => {
 
       describe('getAssociations()', () => {
         test('should retrieve associations using regular storage', async () => {
-          const redisGet = jest.spyOn(redisStorageService, 'getArray').mockImplementation(async () => []);
+          const redisGet = jest.spyOn(redisStorageService, 'getSet').mockImplementation(async () => []);
           const graphGet = jest.spyOn(redisGraphService, 'getAssociations').mockImplementation(async () => {
             return { children: [], parents: [] };
           });
@@ -568,8 +560,9 @@ describe('StorageService', () => {
 
       describe('removeAssociation()', () => {
         test('should remove associations using regular storage', async () => {
-          const redisRemove = jest.spyOn(redisStorageService, 'srem').mockImplementation(async () => {});
-          const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
+          jest.spyOn(redisStorageService, 'getSet').mockResolvedValue([]);
+          const redisRemove = jest.spyOn(redisStorageService, 'delFromSet').mockResolvedValue(undefined);
+          const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockResolvedValue(undefined);
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';
@@ -594,8 +587,8 @@ describe('StorageService', () => {
     describe('associations', () => {
       describe('saveAssociation()', () => {
         test('should save associations using redis graph', async () => {
-          const graphSave = jest.spyOn(redisGraphService, 'saveAssociation').mockImplementation(async () => {});
-          const redisSave = jest.spyOn(redisStorageService, 'sadd').mockImplementation(async () => {});
+          const graphSave = jest.spyOn(redisGraphService, 'saveAssociation').mockResolvedValue(undefined);
+          const redisSave = jest.spyOn(redisStorageService, 'addToSet').mockResolvedValue(undefined);
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';
@@ -612,7 +605,7 @@ describe('StorageService', () => {
 
       describe('getAssociations()', () => {
         test('should retrieve associations using redis graph', async () => {
-          const redisGet = jest.spyOn(redisStorageService, 'getArray').mockImplementation(async () => []);
+          const redisGet = jest.spyOn(redisStorageService, 'getSet').mockImplementation(async () => []);
           const graphGet = jest.spyOn(redisGraphService, 'getAssociations').mockImplementation(async () => {
             return { children: [], parents: [] };
           });
@@ -632,8 +625,8 @@ describe('StorageService', () => {
 
       describe('removeAssociation()', () => {
         test('should remove associations using redis graph', async () => {
-          const redisRemove = jest.spyOn(redisStorageService, 'srem').mockImplementation(async () => {});
-          const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockImplementation(async () => {});
+          const redisRemove = jest.spyOn(redisStorageService, 'delFromSet').mockResolvedValue(undefined);
+          const graphRemove = jest.spyOn(redisGraphService, 'removeAssociation').mockResolvedValue(undefined);
 
           const sender = 'some-sender';
           const recipient = 'some-recipient';

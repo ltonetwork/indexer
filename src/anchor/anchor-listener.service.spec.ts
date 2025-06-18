@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmitterService } from '../emitter/emitter.service';
 import { AnchorModuleConfig } from './anchor.module';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { AnchorListenerService } from './anchor-listener.service';
 import { IndexEventsReturnType } from '../index/index.events';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 
 describe('AnchorListenerService', () => {
   let module: TestingModule;
@@ -15,11 +15,11 @@ describe('AnchorListenerService', () => {
 
   function spy() {
     const logger = {
-      debug: jest.spyOn(loggerService, 'debug').mockImplementation(() => {}),
+      debug: jest.spyOn(loggerService, 'debug').mockReturnValue(undefined),
     };
 
     const emitter = {
-      on: jest.spyOn(emitterService, 'on').mockImplementation(() => {}),
+      on: jest.spyOn(emitterService, 'on').mockReturnValue(undefined),
     };
 
     const config = {
@@ -60,8 +60,9 @@ describe('AnchorListenerService', () => {
 
     expect(spies.config.getAnchorIndexing.mock.calls.length).toBe(1);
     expect(spies.logger.debug.mock.calls.length).toBe(1);
-    expect(spies.logger.debug.mock.calls[0][0])
-        .toBe(`transaction-listener: Not processing anchor: config set to "none"`);
+    expect(spies.logger.debug.mock.calls[0][0]).toBe(
+      `transaction-listener: Not processing anchor: config set to "none"`,
+    );
     expect(spies.emitter.on.mock.calls.length).toBe(0);
   });
 });

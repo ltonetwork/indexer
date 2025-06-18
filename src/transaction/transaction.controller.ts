@@ -1,8 +1,8 @@
-import { Controller, Post, Req, Res, Get } from '@nestjs/common';
+import { Controller, Req, Res, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { TransactionService } from './transaction.service';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { NodeService } from '../node/node.service';
 export type txType = 'transfer' | 'anchor';
 
@@ -13,7 +13,7 @@ export class TransactionController {
     private readonly logger: LoggerService,
     private readonly node: NodeService,
     private readonly tx: TransactionService,
-  ) { }
+  ) {}
 
   @Get('addresses/:address')
   @ApiOperation({ summary: 'Get transactions by address' })

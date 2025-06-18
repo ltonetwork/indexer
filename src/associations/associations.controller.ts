@@ -28,9 +28,7 @@ export class AssociationsController {
       const associations = await this.service.getAssociations(address.trim());
       return res.status(200).json(associations);
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: 'Error retrieving associations', error });
+      return res.status(500).json({ message: 'Error retrieving associations', error });
     }
   }
 }

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
-import { EncoderService } from '../encoder/encoder.service';
+import { EncoderService } from '../common/encoder/encoder.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class MappedAnchorService {
     private readonly storage: StorageService,
     private readonly config: ConfigService,
     private readonly trust: TrustNetworkService,
-  ) { }
+  ) {}
 
   async index(index: IndexDocumentType, anchorIndexing: 'trust' | 'all') {
     const { transaction, blockHeight, position } = index;
@@ -33,15 +33,16 @@ export class MappedAnchorService {
       }
     }
 
-    for (const [key, value] of Object.entries(transaction.anchors as {[_: string]: string})) {
+    for (const [key, value] of Object.entries(transaction.anchors as { [_: string]: string })) {
       const hexKey = this.encoder.hexEncode(this.encoder.base58Decode(key));
       const hexValue = this.encoder.hexEncode(this.encoder.base58Decode(value));
 
       this.logger.debug(`mapped-anchor: save ${hexKey}:${hexValue} with transaction ${transaction.id}`);
 
-      await this.storage.saveMappedAnchor(hexKey, {
-        anchor: hexValue,
+      await this.storage.saveMappedAnchor(hexKey, hexValue, {
+        hash: hexValue,
         id: transaction.id,
+        sender: transaction.sender,
         blockHeight,
         position,
       });

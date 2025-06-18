@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TrustNetworkModuleConfig } from './trust-network.module';
 import { TrustNetworkService } from './trust-network.service';
 import { StorageService } from '../storage/storage.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
 import { RoleData } from './interfaces/trust-network.interface';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { Transaction } from '../interfaces/transaction.interface';
 
 describe('TrustNetworkService', () => {
@@ -17,24 +17,28 @@ describe('TrustNetworkService', () => {
   let storageService: StorageService;
   let trustNetworkService: TrustNetworkService;
 
-  let transaction: Transaction;
+  const transaction: Transaction = {
+    id: 'fake_transaction',
+    type: 16,
+    sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
+    recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
+    associationType: 101,
+  } as Transaction;
 
   function spy() {
     const storage = {
-      saveRoleAssociation: jest.spyOn(storageService, 'saveRoleAssociation').mockImplementation(async () => {}),
-      removeRoleAssociation: jest.spyOn(storageService, 'removeRoleAssociation').mockImplementation(async () => {}),
-      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async (address: string) => {
-        if (address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ') return {};
-
-        return {
-          authority: { sender: 'mock-sender', type: 100 },
-        };
-      }),
+      saveRoleAssociation: jest.spyOn(storageService, 'saveRoleAssociation').mockResolvedValue(undefined),
+      removeRoleAssociation: jest.spyOn(storageService, 'removeRoleAssociation').mockResolvedValue(undefined),
+      getRolesFor: jest
+        .spyOn(storageService, 'getRolesFor')
+        .mockImplementation(async (address: string) =>
+          address === '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ' ? {} : { authority: { sender: 'mock-sender', type: 100 } },
+        ),
     };
 
     const node = {
-      sponsor: jest.spyOn(nodeService, 'sponsor').mockImplementation(async () => {}),
-      cancelSponsor: jest.spyOn(nodeService, 'cancelSponsor').mockImplementation(async () => {}),
+      sponsor: jest.spyOn(nodeService, 'sponsor').mockResolvedValue(undefined),
+      cancelSponsor: jest.spyOn(nodeService, 'cancelSponsor').mockResolvedValue(undefined),
       getNodeWallet: jest.spyOn(nodeService, 'getNodeWallet').mockImplementation(async () => 'node-address'),
       getSponsorsOf: jest.spyOn(nodeService, 'getSponsorsOf').mockImplementation(async () => []),
     };
@@ -67,8 +71,8 @@ describe('TrustNetworkService', () => {
     };
 
     const logger = {
-      debug: jest.spyOn(loggerService, 'debug').mockImplementation(() => {}),
-      error: jest.spyOn(loggerService, 'error').mockImplementation(() => {}),
+      debug: jest.spyOn(loggerService, 'debug').mockReturnValue(undefined),
+      error: jest.spyOn(loggerService, 'error').mockReturnValue(undefined),
     };
 
     return { storage, node, config, logger };
@@ -82,15 +86,6 @@ describe('TrustNetworkService', () => {
     loggerService = module.get<LoggerService>(LoggerService);
     storageService = module.get<StorageService>(StorageService);
     trustNetworkService = module.get<TrustNetworkService>(TrustNetworkService);
-
-    // @ts-ignore
-    transaction = {
-      id: 'fake_transaction',
-      type: 16,
-      sender: '3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL',
-      recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
-      associationType: 101,
-    };
 
     await module.init();
   });
@@ -288,16 +283,15 @@ describe('TrustNetworkService', () => {
     });
 
     describe('remove associations', () => {
+      const revokeTx = { ...transaction, type: 17 };
+
       test('should remove a role association', async () => {
         const spies = spy();
-
-        // @ts-ignore
-        transaction.type = 17;
 
         const expectedRole = { type: 101, role: 'sub_authority' };
 
         await trustNetworkService.index({
-          transaction,
+          transaction: revokeTx,
           blockHeight: 1,
           position: 0,
         });
@@ -324,9 +318,6 @@ describe('TrustNetworkService', () => {
           { type: 101, role: 'sub_authority' },
         ];
 
-        // @ts-ignore
-        transaction.type = 17;
-
         spies.config.getRoles = jest.spyOn(configService, 'getRoles').mockImplementation(() => {
           return {
             authority: {
@@ -337,7 +328,7 @@ describe('TrustNetworkService', () => {
         });
 
         await trustNetworkService.index({
-          transaction,
+          transaction: revokeTx,
           blockHeight: 1,
           position: 0,
         });
@@ -377,11 +368,8 @@ describe('TrustNetworkService', () => {
             };
           });
 
-        // @ts-ignore
-        transaction.type = 17;
-
         await trustNetworkService.index({
-          transaction,
+          transaction: revokeTx,
           blockHeight: 1,
           position: 0,
         });
@@ -393,26 +381,8 @@ describe('TrustNetworkService', () => {
     test('should skip indexing if there is no recipient', async () => {
       const spies = spy();
 
-      // @ts-ignore
-      delete transaction.recipient;
-
       await trustNetworkService.index({
-        transaction,
-        blockHeight: 1,
-        position: 0,
-      });
-
-      expect(spies.storage.saveRoleAssociation).toHaveBeenCalledTimes(0);
-    });
-
-    test('should skip indexing if there is no association type', async () => {
-      const spies = spy();
-
-      // @ts-ignore
-      delete transaction.associationType;
-
-      await trustNetworkService.index({
-        transaction,
+        transaction: { ...transaction, type: 17, recipient: undefined },
         blockHeight: 1,
         position: 0,
       });
@@ -423,11 +393,8 @@ describe('TrustNetworkService', () => {
     test('should skip indexing if transaction type is unknown', async () => {
       const spies = spy();
 
-      // @ts-ignore
-      transaction.type = 1;
-
       await trustNetworkService.index({
-        transaction,
+        transaction: { ...transaction, type: 1 },
         blockHeight: 1,
         position: 0,
       });

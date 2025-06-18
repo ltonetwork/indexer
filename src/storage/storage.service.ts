@@ -1,17 +1,19 @@
 import { ModuleRef } from '@nestjs/core';
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '../common/config/config.service';
 import { StorageInterface } from './interfaces/storage.interface';
-import { StorageTypeEnum } from '../config/enums/storage.type.enum';
-import storageServices from './types';
-import PascalCase from 'pascal-case';
-import { LoggerService } from '../logger/logger.service';
-import { VerificationMethod } from '../identity/verification-method/model/verification-method.model';
-import { Role, RawRole } from '../trust-network/interfaces/trust-network.interface';
-import { RedisGraphService } from './redis-graph/redis-graph.service';
+import { StorageTypeEnum } from '../common/config/enums/storage.type.enum';
+import storageServices from './index';
+import { pascalCase } from 'pascal-case';
+import { LoggerService } from '../common/logger/logger.service';
+import { VerificationMethod } from '../did/verification-method/verification-method.model';
+import { Role } from '../trust-network/interfaces/trust-network.interface';
+import { RedisGraphService } from './redis/redis-graph.service';
+import { DIDDocumentService } from '../did/interfaces/did.interface';
+import { CredentialStatusStatementStored } from '../credential-status/interfaces/credential-status.interface';
 
 @Injectable()
-export class StorageService implements OnModuleInit, OnModuleDestroy {
+export class StorageService implements OnModuleInit {
   private storage: StorageInterface;
   private graphEnabled: boolean;
 
@@ -24,17 +26,15 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     if (this.config.getStorageType() === StorageTypeEnum.Redis) {
-      const name = PascalCase(`${StorageTypeEnum.Redis}_storage_service`);
+      const name = pascalCase(`${StorageTypeEnum.Redis}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     } else {
-      const name = PascalCase(`${StorageTypeEnum.LevelDB}_storage_service`);
+      const name = pascalCase(`${StorageTypeEnum.LevelDB}_storage_service`);
       this.storage = this.moduleRef.get(storageServices[name]);
     }
 
     this.graphEnabled = this.config.isAssociationGraphEnabled();
   }
-
-  async onModuleDestroy() {}
 
   getAnchor(hash: string): Promise<any> {
     return this.storage.getObject(`lto:anchor:${hash.toLowerCase()}`);
@@ -44,52 +44,112 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
     return this.storage.addObject(`lto:anchor:${hash.toLowerCase()}`, info);
   }
 
-  getMappedAnchor(key: string): Promise<any> {
-    return this.storage.getObject(`lto:mapped-anchor:${key.toLowerCase()}`);
+  async getMappedAnchorsByKey(key: string): Promise<Array<any>> {
+    const hashes = await this.storage.getSet(`lto:mapped-anchor:${key.toLowerCase()}`);
+    const keys = hashes.map((hash) => `lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
+
+    return Promise.all(keys.map((k) => this.storage.getObject(k)));
   }
 
-  saveMappedAnchor(key: string, info: object) {
-    return this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}`, info);
+  getMappedAnchor(key: string, hash: string): Promise<any> {
+    return this.storage.getObject(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`);
   }
 
-  getPublicKey(address: string): Promise<{publicKey?: string, keyType?: string}> {
-    return this.storage.getObject(`lto:pubkey:${address}`)
-        .catch(() => {
-          const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
-          return publicKey ? {publicKey, keyType: 'ed25519'} : {};
-        })
-        .then(r => r ? r as {publicKey: string, keyType: string} : {});
+  async saveMappedAnchor(key: string, hash: string, info: object): Promise<void> {
+    await Promise.all([
+      this.storage.addToSet(`lto:mapped-anchor:${key.toLowerCase()}`, hash),
+      this.storage.addObject(`lto:mapped-anchor:${key.toLowerCase()}:${hash.toLowerCase()}`, info),
+    ]);
   }
 
-  savePublicKey(address: string, publicKey: string, keyType: string) {
-    return this.storage.addObject(`lto:pubkey:${address}`, {publicKey, keyType});
+  getAccountCreated(address: string): Promise<number | null> {
+    return this.storage
+      .getValue(`lto:created:${address}`)
+      .catch(() => null)
+      .then((r) => Number(r));
+  }
+
+  getPublicKey(address: string): Promise<{ publicKey?: string; keyType?: string }> {
+    return this.storage
+      .getObject(`lto:pubkey:${address}`)
+      .catch(() => {
+        const publicKey = this.storage.getValue(`lto:pubkey:${address}`);
+        return publicKey ? { publicKey, keyType: 'ed25519' } : {};
+      })
+      .then((r) => (r ? (r as { publicKey: string; keyType: string }) : {}));
+  }
+
+  savePublicKey(address: string, publicKey: string, keyType: string, timestamp: number) {
+    return Promise.all([
+      this.storage.addValue(`lto:created:${address}`, String(timestamp)),
+      this.storage.addObject(`lto:pubkey:${address}`, { publicKey, keyType }),
+    ]);
   }
 
   async getVerificationMethods(address: string): Promise<VerificationMethod[]> {
-    const methods = await this.storage.getObject(`lto:verification:${address}`);
-
-    return Object.values(methods)
-      .filter(data => !data.revokedAt)
-      .map(data => new VerificationMethod(data.relationships, data.sender, data.recipient, data.createdAt));
+    const set = await this.storage.getBufferSet(`lto:did-methods:${address}`);
+    return set.map((buf) => VerificationMethod.from(buf));
   }
 
   async saveVerificationMethod(address: string, verificationMethod: VerificationMethod): Promise<void> {
-    const data = await this.storage.getObject(`lto:verification:${address}`);
-
-    const newData = verificationMethod.json();
-
-    data[newData.recipient] = newData;
-
-    return this.storage.setObject(`lto:verification:${address}`, data);
+    await this.storage.addToSet(`lto:did-methods:${address}`, verificationMethod.toBuffer());
   }
 
-  async getRolesFor(address: string): Promise<RawRole | {}> {
-    return this.storage.getObject(`lto:roles:${address}`);
+  async getDeactivateMethods(address: string): Promise<VerificationMethod[]> {
+    const set = await this.storage.getBufferSet(`lto:did-deactivate-methods:${address}`);
+    return set.map((buf) => VerificationMethod.from(buf));
+  }
+
+  async getDeactivateMethodRevokeDelay(address: string, recipient: string): Promise<number> {
+    const delay = await this.storage.getValue(`lto:did-revoke-delay:${address}:${recipient}`);
+    return delay ? Number(delay) : 0;
+  }
+
+  async saveDeactivateMethod(address: string, verificationMethod: VerificationMethod, revokeDelay = 0): Promise<void> {
+    if (revokeDelay > 0) {
+      const key = `lto:did-revoke-delay:${address}:${verificationMethod.recipient}`;
+      await this.storage.setValue(key, String(revokeDelay));
+    } else {
+      await this.storage.delValue(`lto:did-revoke-delay:${address}:${verificationMethod.recipient}`);
+    }
+
+    await this.storage.addToSet(`lto:did-deactivate-methods:${address}`, verificationMethod.toBuffer());
+  }
+
+  async deactivateDID(address: string, sender: string, timestamp: number) {
+    await this.storage.setObject(`lto:did-deactivated:${address}`, { sender, timestamp });
+  }
+
+  async isDIDDeactivated(address: string): Promise<{ sender: string; timestamp: number } | undefined> {
+    const record = await this.storage.getObject(`lto:did-deactivated:${address}`);
+    return record as { sender: string; timestamp: number } | undefined;
+  }
+
+  async saveDIDService(address: string, service: DIDDocumentService & { timestamp: number }): Promise<void> {
+    return this.storage.addToSet(`lto:did-services:${address}`, JSON.stringify(service));
+  }
+
+  async getDIDServices(address: string): Promise<Array<DIDDocumentService & { timestamp: number }>> {
+    return (await this.storage.getSet(`lto:did-services:${address}`)).map((s) => JSON.parse(s));
+  }
+
+  async saveCredentialStatus(address: string, data: CredentialStatusStatementStored): Promise<void> {
+    return this.storage.addToSet(`lto:credential-status:${address}`, JSON.stringify(data));
+  }
+
+  async getCredentialStatus(address: string): Promise<CredentialStatusStatementStored[]> {
+    const set = await this.storage.getSet(`lto:credential-status:${address}`);
+    return (set || []).map((s) => JSON.parse(s));
+  }
+
+  async getRolesFor(address: string): Promise<Record<string, { sender: string; type: number }>> {
+    return (await this.storage.getObject(`lto:roles:${address}`)) ?? {};
   }
 
   async saveRoleAssociation(recipient: string, sender: string, data: Role): Promise<void> {
     const roles = await this.storage.getObject(`lto:roles:${recipient}`);
 
+    // TODO: Test this with Redis, values are stored as strings, numbers, or buffers, not as objects
     roles[data.role] = { sender, type: data.type };
 
     return this.storage.setObject(`lto:roles:${recipient}`, roles);
@@ -108,8 +168,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       return await this.redisGraph.saveAssociation(sender, recipient);
     }
 
-    await this.storage.sadd(`lto:assoc:${sender}:childs`, recipient);
-    await this.storage.sadd(`lto:assoc:${recipient}:parents`, sender);
+    await this.storage.addToSet(`lto:assoc:${sender}:childs`, recipient);
+    await this.storage.addToSet(`lto:assoc:${recipient}:parents`, sender);
 
     this.logger.debug(`storage-service: Add assoc for ${sender} child ${recipient}`);
   }
@@ -119,19 +179,19 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       return await this.redisGraph.removeAssociation(sender, recipient);
     }
 
-    await this.storage.srem(`lto:assoc:${sender}:childs`, recipient);
-    await this.storage.srem(`lto:assoc:${recipient}:parents`, sender);
+    await this.storage.delFromSet(`lto:assoc:${sender}:childs`, recipient);
+    await this.storage.delFromSet(`lto:assoc:${recipient}:parents`, sender);
 
     await this.recurRemoveAssociation(recipient);
     this.logger.debug(`storage-service: removed assoc for ${sender} child ${recipient}`);
   }
 
   async recurRemoveAssociation(address: string) {
-    const childAssocs = await this.storage.getArray(`lto:assoc:${address}:childs`);
+    const childAssocs = await this.storage.getSet(`lto:assoc:${address}:childs`);
 
     for (const child of childAssocs) {
-      await this.storage.srem(`lto:assoc:${address}:childs`, child);
-      await this.storage.srem(`lto:assoc:${child}:parents`, address);
+      await this.storage.delFromSet(`lto:assoc:${address}:childs`, child);
+      await this.storage.delFromSet(`lto:assoc:${child}:parents`, address);
       await this.recurRemoveAssociation(child);
       this.logger.debug(`storage-service: Remove assoc for ${address} child ${child}`);
     }
@@ -142,8 +202,8 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
       return await this.redisGraph.getAssociations(address);
     }
 
-    const children = await this.storage.getArray(`lto:assoc:${address}:childs`);
-    const parents = await this.storage.getArray(`lto:assoc:${address}:parents`);
+    const children = await this.storage.getSet(`lto:assoc:${address}:childs`);
+    const parents = await this.storage.getSet(`lto:assoc:${address}:parents`);
 
     return { children, parents };
   }
@@ -194,20 +254,20 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
   }
 
   async incrLeaseStats(day: number, amountIn: number, amountOut: number): Promise<void> {
-    return Promise.all([
+    await Promise.all([
       this.storage.incrValue(`lto:stats:lease:in:${day}`, amountIn),
       this.storage.incrValue(`lto:stats:lease:out:${day}`, amountOut),
-    ]).then(() => {});
+    ]);
   }
 
-  async getLeaseStats(from, to): Promise<{ period: string; in: number, out: number }[]> {
+  async getLeaseStats(from, to): Promise<{ period: string; in: number; out: number }[]> {
     const length = to - from + 1;
 
     const keysIn = Array.from({ length }, (v, i) => `lto:stats:lease:in:${from + i}`);
-    const valuesIn = (await this.storage.getMultipleValues(keysIn)).map(amount => Number(amount || '0'));
+    const valuesIn = (await this.storage.getMultipleValues(keysIn)).map((amount) => Number(amount || '0'));
 
     const keysOut = Array.from({ length }, (v, i) => `lto:stats:lease:out:${from + i}`);
-    const valuesOut = (await this.storage.getMultipleValues(keysOut)).map(amount => Number(amount || '0'));
+    const valuesOut = (await this.storage.getMultipleValues(keysOut)).map((amount) => Number(amount || '0'));
 
     const periods = Array.from({ length }, (v, i) => new Date((from + i) * 86400000));
 
@@ -220,22 +280,22 @@ export class StorageService implements OnModuleInit, OnModuleDestroy {
 
   private formatPeriod(date: Date): string {
     const year = String(date.getUTCFullYear());
-    const month = ('0' + (date.getUTCMonth() + 1)).substr(-2);
-    const day = ('0' + date.getUTCDate()).substr(-2);
+    const month = ('0' + (date.getUTCMonth() + 1)).slice(-2);
+    const day = ('0' + date.getUTCDate()).slice(-2);
 
     return `${year}-${month}-${day} 00:00:00`;
   }
 
   countTx(type: string, address: string): Promise<number> {
-    return this.storage.countTx(type, address);
+    return this.storage.countSortedSet(`lto:tx:${type}:${address}`);
   }
 
   indexTx(type: string, address: string, transactionId: string, timestamp: number): Promise<void> {
-    return this.storage.indexTx(type, address, transactionId, timestamp);
+    return this.storage.addToSortedSet(`lto:tx:${type}:${address}`, transactionId, timestamp);
   }
 
   getTx(type: string, address: string, limit: number, offset: number): Promise<string[]> {
-    return this.storage.getTx(type, address, limit, offset);
+    return this.storage.getSortedSet(`lto:tx:${type}:${address}`, limit, offset);
   }
 
   async getProcessingHeight(): Promise<number | null> {

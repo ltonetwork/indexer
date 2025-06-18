@@ -1,14 +1,15 @@
 import { Get, Controller, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { ConfigService } from './common/config/config.service';
 
 @Controller()
 export class AppController {
-  constructor() { }
+  constructor(private config: ConfigService) {}
 
   @Get()
   @ApiExcludeEndpoint()
   async root(@Res() res: Response): Promise<void> {
-    return res.redirect('api-docs/');
+    return res.redirect(this.config.getApiDocsUrl());
   }
 }

@@ -1,0 +1,14 @@
+{
+  "env": "development",
+  "port": 3000,
+  "node": {
+    "url": "https://testnet.lto.network"
+  },
+  "log": {
+    "level": "info"
+  },
+  "starting_block": -1,
+  "generator": {
+    "indexing": true
+  }
+}

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InfoController } from './info.controller';
 import { InfoService } from './info.service';
-import { ConfigModule } from '../config/config.module';
+import { ConfigModule } from '../common/config/config.module';
 
 describe('InfoController', () => {
   let module: TestingModule;

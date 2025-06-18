@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { IndexDocumentType } from '../index/model/index.model';
 import { StorageService } from '../storage/storage.service';
 import { Role, RoleData } from './interfaces/trust-network.interface';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { NodeService } from '../node/node.service';
-import { Transaction } from 'interfaces/transaction.interface';
+import { Transaction } from '../transaction/interfaces/transaction.interface';
 
 @Injectable()
 export class TrustNetworkService {
@@ -29,7 +29,9 @@ export class TrustNetworkService {
     }
 
     if (!transaction.recipient) {
-      this.logger.debug(`trust-network: transaction ${transaction.id} didn't have a recipient address, skipped indexing`);
+      this.logger.debug(
+        `trust-network: transaction ${transaction.id} didn't have a recipient address, skipped indexing`,
+      );
       return;
     }
 
@@ -47,6 +49,11 @@ export class TrustNetworkService {
       this.logger.debug(`trust-network: removing role association`);
       return this.removeRoleAssociation(transaction);
     }
+  }
+
+  async hasRole(address: string): Promise<boolean> {
+    const senderRoles = await this.storage.getRolesFor(address);
+    return Object.keys(senderRoles).length > 0;
   }
 
   async getRolesFor(address: string): Promise<RoleData> {
@@ -78,14 +85,14 @@ export class TrustNetworkService {
       if (configData) {
         result.roles.push(role);
 
-        configData.issues?.forEach(eachIssues => {
-          if (result.issues_roles.findIndex(each => each.role === eachIssues.role) === -1) {
+        configData.issues?.forEach((eachIssues) => {
+          if (result.issues_roles.findIndex((each) => each.role === eachIssues.role) === -1) {
             result.issues_roles.push(eachIssues);
           }
         });
 
-        configData.authorization?.forEach(eachAuthorization => {
-          if (result.issues_authorization.findIndex(each => each === eachAuthorization) === -1) {
+        configData.authorization?.forEach((eachAuthorization) => {
+          if (result.issues_authorization.findIndex((each) => each === eachAuthorization) === -1) {
             result.issues_authorization.push(eachAuthorization);
           }
         });
@@ -111,14 +118,16 @@ export class TrustNetworkService {
         return;
       }
 
-      const isGettingSponsored = await this.hasSponsoredRoles(savedRoles.map(each => each.role));
+      const isGettingSponsored = await this.hasSponsoredRoles(savedRoles.map((each) => each.role));
 
       if (isGettingSponsored) {
         if (await this.isSponsoredByNode(transaction.recipient)) {
           return;
         }
 
-        this.logger.debug(`trust-network: recipient is being given a sponsored role, sending a transaction to the node`);
+        this.logger.debug(
+          `trust-network: recipient is being given a sponsored role, sending a transaction to the node`,
+        );
         await this.node.sponsor(transaction.recipient);
       }
     } catch (error) {
@@ -130,7 +139,7 @@ export class TrustNetworkService {
     const removedRoles: Role[] = [];
     const senderRoleData = await this.getRolesFor(transaction.sender);
 
-    senderRoleData.issues_roles.forEach(async eachRole => {
+    senderRoleData.issues_roles.forEach(async (eachRole) => {
       if (eachRole.type === transaction.associationType && !removedRoles.includes(eachRole)) {
         removedRoles.push(eachRole);
         await this.storage.removeRoleAssociation(transaction.recipient, eachRole);

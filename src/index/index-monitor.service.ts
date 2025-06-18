@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../logger/logger.service';
-import { ConfigService } from '../config/config.service';
-import { EncoderService } from '../encoder/encoder.service';
+import { LoggerService } from '../common/logger/logger.service';
+import { ConfigService } from '../common/config/config.service';
+import { EncoderService } from '../common/encoder/encoder.service';
 import { NodeService } from '../node/node.service';
 import { StorageService } from '../storage/storage.service';
 import delay from 'delay';
@@ -29,21 +29,17 @@ export class IndexMonitorService {
       try {
         this.logger.info('index-monitor: starting monitor');
 
-        if (this.started) {
-          return this.logger.warn('index-monitor: monitor already running');
-        }
-
         if (this.config.getRestartSync()) {
           await this.storage.clearProcessHeight();
         }
 
-        this.lastBlock = await this.storage.getProcessingHeight() || await this.initialProcessingHeight();
+        this.lastBlock = (await this.storage.getProcessingHeight()) || (await this.initialProcessingHeight());
         this.started = true;
 
         await this.process();
       } catch (e) {
         this.processing = false;
-        this.logger.error(`index-monitor: failed to start monitor: ${e}`);
+        this.logger.error(`index-monitor: ${e}`);
         this.started = false;
         await delay(2000);
       }
@@ -51,15 +47,12 @@ export class IndexMonitorService {
   }
 
   private async initialProcessingHeight() {
-    return this.config.getStartingBlock() < 0
-      ? await this.node.getLastBlockHeight()
-      : (this.config.getStartingBlock() as number);
+    return this.config.getStartingBlock() < 0 ? await this.node.getLastBlockHeight() : this.config.getStartingBlock();
   }
 
+  // noinspection InfiniteRecursionJS
   async process() {
-    if (!this.processing) {
-      await this.checkNewBlocks();
-    }
+    if (!this.processing) await this.checkNewBlocks();
 
     await delay(this.config.getMonitorInterval());
     return this.process();

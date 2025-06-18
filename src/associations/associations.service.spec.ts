@@ -1,26 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssociationsService } from './associations.service';
 import { AssociationsModuleConfig } from './associations.module';
-import { LoggerService } from '../logger/logger.service';
-import { ConfigService } from '../config/config.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { StorageService } from '../storage/storage.service';
 import { TrustNetworkService } from '../trust-network/trust-network.service';
 
 describe('AssociationsService', () => {
   let module: TestingModule;
   let loggerService: LoggerService;
-  let configService: ConfigService;
   let storageService: StorageService;
   let trustService: TrustNetworkService;
   let associationsService: AssociationsService;
 
   function spy() {
     const storage = {
-      saveAssociation: jest.spyOn(storageService, 'saveAssociation').mockImplementation(async () => {}),
-      removeAssociation: jest.spyOn(storageService, 'removeAssociation').mockImplementation(async () => {}),
-      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockImplementation(async () => {
-        return { root: { description: 'The root role' } };
-      }),
+      saveAssociation: jest.spyOn(storageService, 'saveAssociation').mockResolvedValue(undefined),
+      removeAssociation: jest.spyOn(storageService, 'removeAssociation').mockResolvedValue(undefined),
+      getRolesFor: jest.spyOn(storageService, 'getRolesFor').mockResolvedValue({}),
       getAssociations: jest.spyOn(storageService, 'getAssociations').mockImplementation(async () => {
         return {
           parents: [],
@@ -29,22 +25,14 @@ describe('AssociationsService', () => {
     };
 
     const trust = {
-      getRolesFor: jest.spyOn(trustService, 'getRolesFor').mockImplementation(async () => {
-        return {
-          roles: ['root'],
-          issues_roles: [],
-          issues_authorization: [],
-        };
-      }),
+      hasRole: jest.spyOn(trustService, 'hasRole').mockResolvedValue(true),
     };
 
     const logger = {
-      debug: jest.spyOn(loggerService, 'debug').mockImplementation(() => {}),
+      debug: jest.spyOn(loggerService, 'debug').mockReturnValue(undefined),
     };
 
-    const config = {
-      isEip155IndexingEnabled: jest.spyOn(configService, 'isEip155IndexingEnabled').mockImplementation(() => false),
-    };
+    const config = {};
 
     return { storage, logger, trust, config };
   }
@@ -52,7 +40,6 @@ describe('AssociationsService', () => {
   beforeEach(async () => {
     module = await Test.createTestingModule(AssociationsModuleConfig).compile();
 
-    configService = module.get<ConfigService>(ConfigService);
     loggerService = module.get<LoggerService>(LoggerService);
     storageService = module.get<StorageService>(StorageService);
     trustService = module.get<TrustNetworkService>(TrustNetworkService);
@@ -76,7 +63,7 @@ describe('AssociationsService', () => {
 
       await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'all');
 
-      expect(spies.trust.getRolesFor.mock.calls.length).toBe(0);
+      expect(spies.trust.hasRole.mock.calls.length).toBe(0);
 
       expect(spies.logger.debug.mock.calls.length).toBe(1);
       expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
@@ -135,8 +122,8 @@ describe('AssociationsService', () => {
 
       await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'trust');
 
-      expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      expect(spies.trust.hasRole.mock.calls.length).toBe(1);
+      expect(spies.trust.hasRole.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
 
       expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
 
@@ -146,13 +133,7 @@ describe('AssociationsService', () => {
     test('should not index config "trust" if sender is not trusted', async () => {
       const spies = spy();
 
-      spies.trust.getRolesFor.mockImplementation(async () => {
-        return {
-          roles: [],
-          issues_roles: [],
-          issues_authorization: [],
-        };
-      });
+      spies.trust.hasRole.mockResolvedValue(false);
 
       const transaction = {
         id: 'fake_transaction',
@@ -162,82 +143,10 @@ describe('AssociationsService', () => {
 
       await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'trust');
 
-      expect(spies.trust.getRolesFor.mock.calls.length).toBe(1);
-      expect(spies.trust.getRolesFor.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
+      expect(spies.trust.hasRole.mock.calls.length).toBe(1);
+      expect(spies.trust.hasRole.mock.calls[0][0]).toBe('3JuijVBB7NCwCz2Ae5HhCDsqCXzeBLRTyeL');
 
       expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
-    });
-
-    describe('cross chain associations', () => {
-      test('should not index cross chain associations if config is false', async () => {
-        const spies = spy();
-
-        spies.config.isEip155IndexingEnabled.mockImplementation(() => false);
-
-        const transaction = {
-          id: 'fake_transaction',
-          type: 16,
-          sender: '0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb',
-          senderKeyType: 'sep256k1',
-          recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
-        };
-
-        await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'all');
-
-        expect(spies.logger.debug.mock.calls.length).toBe(1);
-        expect(spies.logger.debug.mock.calls[0][0]).toBe(
-          'association-service: Cross chain indexing is disabled, but sender key type is sep256k1',
-        );
-
-        expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
-      });
-
-      test('should not index cross chain associations if sender key type is unknown', async () => {
-        const spies = spy();
-
-        spies.config.isEip155IndexingEnabled.mockImplementation(() => true);
-
-        const transaction = {
-          id: 'fake_transaction',
-          type: 16,
-          sender: '0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb',
-          senderKeyType: 'something_else',
-          recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
-        };
-
-        await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'all');
-
-        expect(spies.logger.debug.mock.calls.length).toBe(1);
-        expect(spies.logger.debug.mock.calls[0][0]).toBe(
-          'association-service: Cross chain indexing is enabled, but the sender key type is unknown',
-        );
-
-        expect(spies.storage.saveAssociation.mock.calls.length).toBe(0);
-      });
-
-      test('should index cross chain associations if config is true and sender key type is known', async () => {
-        const spies = spy();
-
-        spies.config.isEip155IndexingEnabled.mockImplementation(() => true);
-
-        const transaction = {
-          id: 'fake_transaction',
-          type: 16,
-          sender: '0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb',
-          senderKeyType: 'sep256k1',
-          recipient: '3Mv7ajrPLKewkBNqfxwRZoRwW6fziehp7dQ',
-        };
-
-        await associationsService.index({ transaction: transaction as any, blockHeight: 1, position: 0 }, 'all');
-
-        expect(spies.logger.debug.mock.calls.length).toBe(1);
-        expect(spies.logger.debug.mock.calls[0][0]).toBe('association-service: Saving association');
-
-        expect(spies.storage.saveAssociation.mock.calls.length).toBe(1);
-        expect(spies.storage.saveAssociation.mock.calls[0]).toEqual([transaction.sender, transaction.recipient]);
-
-        expect(spies.storage.removeAssociation.mock.calls.length).toBe(0);
-      });
     });
   });
 

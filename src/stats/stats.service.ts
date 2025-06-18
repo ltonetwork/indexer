@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { SupplyService } from './supply/supply.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { StorageService } from '../storage/storage.service';
 import { TransactionService } from '../transaction/transaction.service';
 import { Block } from '../interfaces/block.interface';
@@ -28,12 +28,12 @@ export class StatsService {
     private readonly supplyService: SupplyService,
     private readonly node: NodeService,
   ) {
-    this.configure({
-      operations: this.config.isStatsEnabled('operations'),
-      transactions: this.config.isStatsEnabled('transactions'),
-      supply: this.config.isStatsEnabled('supply'),
-      lease: this.config.isStatsEnabled('lease'),
-    });
+    this.configure(
+      this.config.isStatsEnabled('operations'),
+      this.config.isStatsEnabled('transactions'),
+      this.config.isStatsEnabled('supply'),
+      this.config.isStatsEnabled('lease'),
+    );
   }
 
   configure(options: ConfigurationOptions) {
@@ -45,7 +45,7 @@ export class StatsService {
 
   private calculateTxStats(block: Block) {
     if (!this.operationsEnabled && !this.transactionsEnabled) {
-      return {txsByType: {}, operations: 0};
+      return { txsByType: {}, operations: 0 };
     }
 
     const txsByType = { all: 0 };
@@ -60,10 +60,13 @@ export class StatsService {
     for (const transaction of block.transactions) {
       if (this.operationsEnabled) {
         operations +=
-            transaction.type === 15 ? ((transaction.anchors as string[]).length || 1 ) :
-            transaction.type === 22 ? (Object.values(transaction.anchors as object).length || 1 ) :
-            transaction.type === 11 ? transaction.transfers.length :
-            1;
+          transaction.type === 15
+            ? (transaction.anchors as string[]).length || 1
+            : transaction.type === 22
+            ? Object.values(transaction.anchors as object).length || 1
+            : transaction.type === 11
+            ? transaction.transfers.length
+            : 1;
       }
 
       if (this.transactionsEnabled) {
@@ -74,20 +77,20 @@ export class StatsService {
       }
     }
 
-    return {txsByType, operations};
+    return { txsByType, operations };
   }
 
-  private async calculateLease(block: Block): Promise<{in: number, out: number}> {
-    const amountIn = block.transactions.filter(tx => tx.type === 8).reduce((a, b) => a + b.amount, 0);
+  private async calculateLease(block: Block): Promise<{ in: number; out: number }> {
+    const amountIn = block.transactions.filter((tx) => tx.type === 8).reduce((a, b) => a + b.amount, 0);
 
-    const promises = block.transactions.filter(tx => tx.type === 9).map(tx => this.node.getTransaction(tx.leaseId));
+    const promises = block.transactions.filter((tx) => tx.type === 9).map((tx) => this.node.getTransaction(tx.leaseId));
     const amountOut = (await Promise.all(promises)).reduce((a, b) => a + b.amount, 0);
 
-    return {in: amountIn, out: amountOut};
+    return { in: amountIn, out: amountOut };
   }
 
   async index(block: Block): Promise<void> {
-    const {txsByType, operations} = this.calculateTxStats(block);
+    const { txsByType, operations } = this.calculateTxStats(block);
 
     const promises: Array<Promise<any>> = [];
     const day = Math.floor(block.timestamp / 86400000);
@@ -119,7 +122,7 @@ export class StatsService {
     return this.storage.getOperationStats(from, to);
   }
 
-  async getLeaseStats(from: number, to: number): Promise<{ period: string; in: number, out: number }[]> {
+  async getLeaseStats(from: number, to: number): Promise<{ period: string; in: number; out: number }[]> {
     return this.storage.getLeaseStats(from, to);
   }
 }

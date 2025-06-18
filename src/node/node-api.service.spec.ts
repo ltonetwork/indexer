@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RequestService } from '../request/request.service';
+import { RequestService } from '../common/request/request.service';
 import { NodeModuleConfig } from './node.module';
 import { NodeApiService } from './node-api.service';
-import { ConfigService } from '../config/config.service';
 import { AxiosResponse } from 'axios';
 
 describe('NodeApiService', () => {
   let module: TestingModule;
-  let configService: ConfigService;
   let nodeApiService: NodeApiService;
   let requestService: RequestService;
 
@@ -24,7 +22,6 @@ describe('NodeApiService', () => {
     module = await Test.createTestingModule(NodeModuleConfig).compile();
     await module.init();
 
-    configService = module.get<ConfigService>(ConfigService);
     nodeApiService = module.get<NodeApiService>(NodeApiService);
     requestService = module.get<RequestService>(RequestService);
   });
@@ -105,7 +102,7 @@ describe('NodeApiService', () => {
     test('should get the activation status', async () => {
       const spies = spy();
 
-      const mockResponse = { status: 200, data: { height: 12345678, } } as AxiosResponse;
+      const mockResponse = { status: 200, data: { height: 12345678 } } as AxiosResponse;
       spies.request.get.mockImplementation(() => Promise.resolve(mockResponse));
 
       const result = await nodeApiService.getActivationStatus();
@@ -171,13 +168,23 @@ describe('NodeApiService', () => {
 
       const transaction = { foo: 'bar' };
       const expectedHeaders = {
-        headers: { 'X-Api-Key': 'lt1secretapikey!', }
+        headers: { 'X-Api-Key': 'lt1secretapikey!' },
       };
 
       expect(await nodeApiService.signAndBroadcastTransaction(transaction)).toBe(response);
       expect(spies.request.post).toHaveBeenCalledTimes(2);
-      expect(spies.request.post).toHaveBeenNthCalledWith(1, 'http://localhost:6869/transactions/sign', transaction, expectedHeaders);
-      expect(spies.request.post).toHaveBeenNthCalledWith(2, 'http://localhost:6869/transactions/broadcast', response.data, expectedHeaders);
+      expect(spies.request.post).toHaveBeenNthCalledWith(
+        1,
+        'http://localhost:6869/transactions/sign',
+        transaction,
+        expectedHeaders,
+      );
+      expect(spies.request.post).toHaveBeenNthCalledWith(
+        2,
+        'http://localhost:6869/transactions/broadcast',
+        response.data,
+        expectedHeaders,
+      );
     });
   });
 
@@ -200,7 +207,11 @@ describe('NodeApiService', () => {
 
       expect(result).toBe(response);
       expect(spies.request.get).toHaveBeenCalledTimes(1);
-      expect(spies.request.get).toHaveBeenNthCalledWith(1, `http://localhost:6869/sponsorship/status/${address}`, options);
+      expect(spies.request.get).toHaveBeenNthCalledWith(
+        1,
+        `http://localhost:6869/sponsorship/status/${address}`,
+        options,
+      );
     });
   });
 });
